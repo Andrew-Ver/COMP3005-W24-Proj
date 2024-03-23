@@ -1,3 +1,3 @@
 export const errors: Record<string, string> = {
-  CredentialsSignIn: "Invalid email or password",
+    CredentialsSignIn: "Invalid email or password",
 };
