@@ -1,27 +1,41 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import {hash} from 'bcrypt';
-import pool from '../../db';
+import { hash } from "bcrypt";
+import pool from "../../db";
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-    if (req.method !== 'POST') {
-        return res.status(405).json({message: 'Method Not Allowed'});
+export default async function handler(
+    req: NextApiRequest,
+    res: NextApiResponse
+) {
+    if (req.method !== "POST") {
+        return res.status(405).json({ message: "Method Not Allowed" });
     }
-    const {username, password, role} = req.body;
+    const { username, name, password, role } = req.body;
 
+    console.log(req.body);
     try {
-        // hash password
-        const hashedPassword = await hash(password, 10); // You can adjust the salt rounds as needed
+        // Don't hash password for Assignment
+        // const hashedPassword = await hash(password, 10); // You can adjust the salt rounds as needed
         const query = `
-        INSERT INTO users (username, password_hash, role)
-        VALUES ($1, $2, $3)
-        RETURNING id, username, role;`;
+        INSERT INTO account (username, name, password, user_type)
+        VALUES ($1, $2, $3, $4)
+        RETURNING username, name, password, user_type;`;
 
-        const result = await pool.query(query, [username, hashedPassword, role]);
-        
+        /*
+            Note: DB schema has user_type column, but the frontend uses role
+            for conditional rendering
+        */
+
+        const result = await pool.query(query, [
+            username,
+            name,
+            password,
+            role,
+        ]);
+
         //return newly created user
         res.status(201).json({ user: result.rows[0] });
-    } catch (error) {
-        console.error('Error registering user:', error);
-        res.status(500).json({ message: 'Internal Server Error' });
+    } catch (error: any) {
+        //console.error("Error registering user:", error);
+        return res.status(400).json({ message: "Username already exists" });
     }
 }
