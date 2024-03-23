@@ -20,7 +20,7 @@ npm run dev
 ```
 
 If you get the jwt_session_error, you need to make a secret for nextauth:
-create `.env.local` in root directory 
+create `.env.local` in root directory
 run `openssl rand -base64 32`
 `.env.local` should be: `NEXTAUTH_SECRET=[the output of that command]`
 

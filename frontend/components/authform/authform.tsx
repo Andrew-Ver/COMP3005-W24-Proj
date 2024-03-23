@@ -45,7 +45,7 @@ export default function AuthForm(props: PaperProps) {
     },
   });
 
-  const handleFormSubmit = async (values: { username: any; password: any; }) => {
+  const handleFormSubmit = async (values: { username: any; password: any }) => {
     try {
       if (type === "login") {
         const result: any = await signIn("credentials", {
@@ -96,7 +96,6 @@ export default function AuthForm(props: PaperProps) {
           message: "User registered successfully",
           color: "green",
         });
-
       }
     } catch (error) {
       console.error("Error registering user:", error);
@@ -106,7 +105,7 @@ export default function AuthForm(props: PaperProps) {
         color: "red",
       });
     }
-  }
+  };
 
   return (
     <Paper radius="md" p="xl" withBorder {...props}>
@@ -117,9 +116,7 @@ export default function AuthForm(props: PaperProps) {
       <Divider labelPosition="center" my="lg" />
 
       {/* Route to api handler here */}
-      <form
-        onSubmit={form.onSubmit(handleFormSubmit)}
-      >
+      <form onSubmit={form.onSubmit(handleFormSubmit)}>
         <Stack>
           <TextInput
             required
