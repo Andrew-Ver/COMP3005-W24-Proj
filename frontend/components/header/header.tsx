@@ -1,5 +1,4 @@
 import cx from "clsx";
-import { useState } from "react";
 import {
   Container,
   Avatar,
@@ -10,49 +9,58 @@ import {
   Tabs,
   Burger,
   Button,
+  Tooltip,
+  Loader,
   Center,
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import classes from "./header.module.css";
+import { useRouter } from "next/router";
 
 import { signOut, useSession } from "next-auth/react";
 
+import { IconUserOff, IconUser } from "@tabler/icons-react";
+
+import { usePathname } from "next/navigation";
+
 const membersLinks = [
-  { link: "/home", title: "Home" },
-  { link: "/profile", title: "Profile" },
-  { link: "/schedule", title: "Schedule" },
-  { link: "/dashboard", title: "Dashboard" },
+  { href: "/", title: "Home" },
+  { href: "/profile", title: "Profile" },
+  { href: "/schedule", title: "Schedule" },
+  { href: "/dashboard", title: "Dashboard" },
 ];
 
 const trainerLinks = [
-  { link: "/home", title: "Home" },
-  { link: "/schedule", title: "Schedule" },
-  { link: "/search", title: "Search" },
+  { href: "/", title: "Home" },
+  { href: "/schedule", title: "Scheduling" },
+  { href: "/search", title: "Member Search" },
 ];
 
 const staffLinks = [
-  { link: "/home", title: "Home" },
-  { link: "/search", title: "Search" },
-  { link: "/room-booking", title: "Room Booking" },
-  { link: "/equipment-maintenance", title: "Equipment Maintenance" },
-  { link: "/class-schedule", title: "Class Schedule" },
-  { link: "/billing-and-payments", title: "Billing and Payments" },
+  { href: "/", title: "Home" },
+  { href: "/search", title: "Member Search" },
+  { href: "/room-booking", title: "Room Booking" },
+  { href: "/equipment-maintenance", title: "Equipment Maintenance" },
+  { href: "/class-schedule", title: "Class Schedule" },
+  { href: "/billing", title: "Billing and Payments" },
 ];
 
-const unauthenticatedLinks = [{ link: "/home", title: "Home" }];
+const unauthenticatedLinks = [{ href: "/", title: "Home" }];
 
 export default function Header() {
   const [opened, { toggle }] = useDisclosure(false);
 
-  const [showMenu, setShowMenu] = useState(false);
-
   const { data: session, status }: any = useSession();
+
+  const router = useRouter();
+
+  const pathname = usePathname();
 
   const user = {
     role: "",
   };
 
-  let links: any = [];
+  let links: Array<Record<string, string>> = [];
 
   if (session?.user) {
     user.role = "member";
@@ -68,12 +76,8 @@ export default function Header() {
     links = unauthenticatedLinks;
   }
 
-  // const activeTab =
-  //   links.find((link: any) => router.pathname.includes(link.link))?.title ||
-  //   "Home";
-
   const items = links.map((link: any) => (
-    <Tabs.Tab value={link.title} key={link.title}>
+    <Tabs.Tab value={link.href} key={link.href}>
       {link.title}
     </Tabs.Tab>
   ));
@@ -81,7 +85,7 @@ export default function Header() {
   return (
     <div className={classes.header}>
       <Container className={classes.mainSection} size="md">
-        <Group justify="space-between">
+        <Group justify="space-between" mx="1rem">
           <Menu
             shadow="md"
             width={200}
@@ -99,7 +103,7 @@ export default function Header() {
             </Menu.Target>
 
             <Menu.Dropdown>
-              {links.map((link: any) => (
+              {links.map((link: Record<string, string>) => (
                 <Menu.Item key={link.title} onClick={toggle}>
                   {link.title}
                 </Menu.Item>
@@ -112,34 +116,57 @@ export default function Header() {
           </Text>
 
           <Center>
+            {status === "loading" && <Loader size={30} color="blue" />}
             <UnstyledButton className={cx(classes.user)}>
               <Group gap={7}>
-                <Avatar alt={session?.user.name} radius="xl" size={30} />
+                <Avatar alt={session?.user.name} radius="lg" size={28}>
+                  {session?.user ? <IconUser color="blue" /> : <IconUserOff />}
+                </Avatar>
                 {session?.user && (
-                  <Text fw={700} size="sm" lh={1} mr={3}>
-                    {session?.user.name}
-                    {/* ({user.role}) */}
-                  </Text>
+                  <Tooltip
+                    label={session?.user.name}
+                    transitionProps={{ transition: "skew-up", duration: 300 }}
+                  >
+                    <Text fw={700} size="sm" lh={1} mr={3}>
+                      {session?.user.name}
+                      {/* ({user.role}) */}
+                    </Text>
+                  </Tooltip>
                 )}
                 {!session?.user && (
-                  <Text fw={700} size="sm" lh={1} mr={3}>
-                    Not logged in
-                  </Text>
+                  <Tooltip
+                    label="You are not logged in"
+                    transitionProps={{ transition: "skew-up", duration: 300 }}
+                  >
+                    <Text fw={700} size="sm" lh={1} mr={3}>
+                      Not logged in
+                    </Text>
+                  </Tooltip>
                 )}
               </Group>
             </UnstyledButton>
 
             {session?.user && (
-              <Button size="xs" onClick={() => signOut()}>
-                Log Out
-              </Button>
+              <Tooltip
+                label="Log Out"
+                transitionProps={{ transition: "skew-up", duration: 300 }}
+              >
+                <Button size="xs" onClick={() => signOut()}>
+                  Log Out
+                </Button>
+              </Tooltip>
             )}
           </Center>
         </Group>
       </Container>
       <Container size="md">
         <Tabs
-          defaultValue="Home"
+          // Set current active tab based on pathname
+          value={pathname}
+          // Change route on tab change
+          onChange={(value) =>
+            router.push(`${value}`, undefined, { shallow: true })
+          }
           variant="outline"
           visibleFrom="sm"
           classNames={{

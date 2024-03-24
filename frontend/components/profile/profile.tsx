@@ -7,7 +7,9 @@ export default function Profile() {
 
   return (
     <Stack gap="sm" align="center">
-      <Text size="lg">Health Metrics for {session.user.name} (member)</Text>
+      <Text size="lg">
+        Health Metrics for {session.user.name} ({session?.user.role})
+      </Text>
       <Divider my="sm" variant="dashed" />
       <MetricsTable></MetricsTable>
     </Stack>
