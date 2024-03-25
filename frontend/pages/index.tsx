@@ -1,4 +1,4 @@
-import { Center, Loader } from "@mantine/core";
+import { Center, Loader, Container } from "@mantine/core";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 
@@ -15,7 +15,14 @@ export default function IndexPage() {
   }
 
   if (session?.user && status === "authenticated") {
-    router.push("/profile");
+    return (
+      <Container>
+        <h1>
+          Welcome to Health & Fitness. Please use the links in the header to
+          navigate around.
+        </h1>
+      </Container>
+    );
   } else {
     router.push("/login");
   }
