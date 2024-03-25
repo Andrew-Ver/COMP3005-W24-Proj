@@ -11,6 +11,7 @@ DROP TABLE IF EXISTS group_class CASCADE;
 DROP TABLE IF EXISTS personal_training_session CASCADE;
 DROP TABLE IF EXISTS health_metric CASCADE;
 DROP TABLE IF EXISTS member_goal CASCADE;
+DROP TABLE IF EXISTS exercise_routine CASCADE;
 DROP TABLE IF EXISTS trainer_availability CASCADE;
 DROP TABLE IF EXISTS trainer_specialty CASCADE;
 DROP TABLE IF EXISTS member CASCADE;
@@ -73,6 +74,13 @@ CREATE TABLE member_goal (
     goal_type VARCHAR(50),
 	achieved BOOLEAN DEFAULT FALSE,
     PRIMARY KEY (member_id, goal_type),
+    FOREIGN KEY (member_id) REFERENCES member(member_id) ON DELETE CASCADE
+);
+
+CREATE TABLE exercise_routine (
+    member_id VARCHAR(50),
+    description VARCHAR(255),
+    PRIMARY KEY (member_id, description),
     FOREIGN KEY (member_id) REFERENCES member(member_id) ON DELETE CASCADE
 );
 
