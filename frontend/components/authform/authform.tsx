@@ -15,9 +15,11 @@ import {
   RadioGroup,
   Radio,
   Notification,
+  Tooltip,
+  rem,
 } from "@mantine/core";
 
-import React, { useState } from "react";
+import React from "react";
 
 import { useRouter } from "next/router";
 
@@ -26,8 +28,11 @@ import { useToggle, upperFirst } from "@mantine/hooks";
 
 import { useSession, signIn } from "next-auth/react";
 
+import { notifications } from "@mantine/notifications";
+
+import { IconX, IconCheck } from "@tabler/icons-react";
+
 export default function AuthForm(props: PaperProps) {
-  const [errorMessage, setErrorMessage] = useState("");
   const [type, toggle] = useToggle(["login", "register"]);
   const form = useForm({
     initialValues: {
@@ -45,106 +50,127 @@ export default function AuthForm(props: PaperProps) {
   const router = useRouter();
 
   return (
-    <>
-      {errorMessage && (
-        <Notification color="red" onClose={() => setErrorMessage("")}>
-          {errorMessage}
-        </Notification>
-      )}
+    <Paper radius="md" p="xl" withBorder {...props}>
+      <Text size="xl" fw={500}>
+        Welcome, please {type} to continue
+      </Text>
 
-      <Paper radius="md" p="xl" withBorder {...props}>
-        <Text size="xl" fw={500}>
-          Welcome, please {type} to continue
-        </Text>
+      <Divider labelPosition="center" my="lg" />
 
-        <Divider labelPosition="center" my="lg" />
+      {/* Route to api handler here */}
+      <form
+        onSubmit={form.onSubmit(async (values) => {
+          if (type === "login") {
+            const result: any = await signIn("credentials", {
+              username: values.username,
+              password: values.password,
+              redirect: false,
+            });
 
-        {/* Route to api handler here */}
-        <form
-          onSubmit={form.onSubmit(async (values) => {
-            if (type === "login") {
-              const result: any = await signIn("credentials", {
-                username: values.username,
-                password: values.password,
-                redirect: false,
+            if (!result.ok) {
+              // Handle the error here
+              notifications.show({
+                title: "Error Attempting to Log In",
+                icon: <IconX />,
+                message:
+                  result.error == "CredentialsSignin"
+                    ? "Invalid Credentials"
+                    : "An error occurred",
+                color: "red",
               });
-
-              if (!result.ok) {
-                // Handle the error here
-                // console.log("Error: ", result);
-                setErrorMessage(`Error: ${result.error}`);
-                form.reset();
-              } else {
-                router.push("/profile");
-              }
+              // Reset the form after an invalid login attempt
+              //form.reset();
+              form.setFieldValue("password", "");
+            } else {
+              notifications.show({
+                title: "User Logged In",
+                icon: <IconCheck />,
+                message: "Logged in successfully",
+                color: "green",
+              });
+              router.push("/profile");
             }
-          })}
-        >
-          <Stack>
-            <TextInput
+          } else if (type === "register") {
+            // Register the user here
+            // console.log("Registering user: ", values);
+            notifications.show({
+              title: "User Registered",
+              message: "User registered successfully",
+              color: "green",
+            });
+            form.reset();
+          }
+        })}
+      >
+        <Stack>
+          <TextInput
+            required
+            label="Userame"
+            placeholder="Your username"
+            value={form.values.username}
+            onChange={(event) =>
+              form.setFieldValue("username", event.currentTarget.value)
+            }
+            error={
+              form.errors.username &&
+              "Username should include at least 3 characters"
+            }
+            radius="md"
+          />
+
+          {type === "register" && (
+            <RadioGroup
+              label="User Role"
               required
-              label="Userame"
-              placeholder="Your username"
-              value={form.values.username}
-              onChange={(event) =>
-                form.setFieldValue("username", event.currentTarget.value)
-              }
-              error={
-                form.errors.username &&
-                "Username should include at least 3 characters"
-              }
-              radius="md"
-            />
-
-            {type === "register" && (
-              <RadioGroup
-                label="User Role"
-                required
-                value={form.values.role}
-                onChange={(event) => form.setFieldValue("role", event)}
-              >
-                <Group justify="center">
-                  <Radio value="member" label="Member" />
-                  <Radio value="trainer" label="Trainer" />
-                  <Radio value="staff" label="Staff" />
-                </Group>
-              </RadioGroup>
-            )}
-
-            <PasswordInput
-              required
-              label="Password"
-              placeholder="Your password"
-              value={form.values.password}
-              onChange={(event) =>
-                form.setFieldValue("password", event.currentTarget.value)
-              }
-              error={
-                form.errors.password &&
-                "Password should include at least 6 characters"
-              }
-              radius="md"
-            />
-          </Stack>
-
-          <Group justify="space-between" mt="xl">
-            <Anchor
-              component="button"
-              type="button"
-              c="dimmed"
-              onClick={() => toggle()}
-              size="xs"
+              value={form.values.role}
+              onChange={(event) => form.setFieldValue("role", event)}
             >
-              {type === "register"
-                ? "Already have an account? Login"
-                : "Don't have an account? Register"}
-            </Anchor>
+              <Group justify="center">
+                <Radio value="member" label="Member" />
+                <Radio value="trainer" label="Trainer" />
+                <Radio value="staff" label="Staff" />
+              </Group>
+            </RadioGroup>
+          )}
+
+          <PasswordInput
+            required
+            label="Password"
+            placeholder="Your password"
+            value={form.values.password}
+            onChange={(event) =>
+              form.setFieldValue("password", event.currentTarget.value)
+            }
+            error={
+              form.errors.password &&
+              "Password should include at least 6 characters"
+            }
+            radius="md"
+          />
+        </Stack>
+
+        <Group justify="space-between" mt="xl">
+          <Anchor
+            component="button"
+            type="button"
+            c="dimmed"
+            onClick={() => toggle()}
+            size="xs"
+          >
+            {type === "register"
+              ? "Already have an account? Login"
+              : "Don't have an account? Register"}
+          </Anchor>
+          <Tooltip
+            label={upperFirst(type)}
+            transitionProps={{ transition: "skew-up", duration: 300 }}
+          >
             <Button type="submit" radius="xl">
               {upperFirst(type)}
             </Button>
-          </Group>
-        </form>
-      </Paper>
-    </>
+          </Tooltip>
+        </Group>
+      </form>
+    </Paper>
   );
 }

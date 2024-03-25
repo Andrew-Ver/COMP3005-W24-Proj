@@ -1,4 +1,4 @@
-import { Stack, Divider, Text, Center } from "@mantine/core";
+import { Stack, Divider, Text, Center, Button } from "@mantine/core";
 import MetricsTable from "@/components/profile/metricsTable";
 import { useSession } from "next-auth/react";
 import { useEffect } from "react";
