@@ -2,7 +2,7 @@
     Zhenxuan Ding, Jiayu Hu and Andrew Verbovsky  */
 
 /*  Drop all the tables and types to ensure a clean start  */
-DROP TABLE IF EXISTS payment CASCADE;
+DROP TABLE IF EXISTS bill CASCADE;
 DROP TABLE IF EXISTS equipment CASCADE;
 DROP TABLE IF EXISTS room_booking CASCADE;
 DROP TABLE IF EXISTS room CASCADE;
@@ -87,13 +87,15 @@ CREATE TABLE health_metric (
     FOREIGN KEY (member_id) REFERENCES member(member_id) ON DELETE CASCADE
 );
 
-CREATE TABLE payment (
-    payment_id SERIAL PRIMARY KEY,
+CREATE TABLE bill (
+    bill_id SERIAL PRIMARY KEY,
     member_id VARCHAR(50) NOT NULL,
     amount DECIMAL NOT NULL,  -- Can be negative (refund)
-    payment_timestamp TIMESTAMP NOT NULL,
+	description VARCHAR(255),
+    bill_timestamp TIMESTAMP NOT NULL,
     for_service service_type NOT NULL,
-    FOREIGN KEY (member_id) REFERENCES member(member_id)  --Keep payment record even if the user is deleted
+	cleared BOOLEAN DEFAULT FALSE,
+    FOREIGN KEY (member_id) REFERENCES member(member_id)  --Keep bill record even if the user is deleted
 );
 
 CREATE TABLE personal_training_session (
@@ -101,11 +103,9 @@ CREATE TABLE personal_training_session (
     member_id VARCHAR(50) NOT NULL,
     availability_id INT NOT NULL,
 	description VARCHAR(255),
-	payment_id INT NOT NULL,
     completed BOOLEAN NOT NULL DEFAULT FALSE,
     FOREIGN KEY (member_id) REFERENCES member(member_id) ON DELETE CASCADE,
-    FOREIGN KEY (availability_id) REFERENCES trainer_availability(availability_id) ON DELETE CASCADE,
-    FOREIGN KEY (payment_id) REFERENCES payment(payment_id) ON DELETE CASCADE
+    FOREIGN KEY (availability_id) REFERENCES trainer_availability(availability_id) ON DELETE CASCADE
 );
 
 CREATE TABLE group_class (
@@ -120,11 +120,9 @@ CREATE TABLE group_class (
 CREATE TABLE class_member (
     class_id INT,
     member_id VARCHAR(50),
-	payment_id INT NOT NULL,
     PRIMARY KEY (class_id, member_id),
     FOREIGN KEY (class_id) REFERENCES group_class(class_id) ON DELETE CASCADE,
-    FOREIGN KEY (member_id) REFERENCES member(member_id) ON DELETE CASCADE,
-    FOREIGN KEY (payment_id) REFERENCES payment(payment_id) ON DELETE CASCADE
+    FOREIGN KEY (member_id) REFERENCES member(member_id) ON DELETE CASCADE
 );
 
 CREATE TABLE room (
@@ -149,7 +147,6 @@ CREATE TABLE equipment (
     room_id INT NOT NULL,
     needs_maintenance BOOLEAN NOT NULL DEFAULT FALSE,
     last_maintained_by VARCHAR(50),
-    last_maintained_at TIMESTAMP,  -- Can be NULL (initial status)
     FOREIGN KEY (room_id) REFERENCES room(room_id) ON DELETE CASCADE,
     FOREIGN KEY (last_maintained_by) REFERENCES administrator(administrator_id) -- Keep maintenance record even if the user is deleted
 );

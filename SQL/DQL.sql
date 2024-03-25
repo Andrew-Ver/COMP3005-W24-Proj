@@ -12,7 +12,7 @@ SELECT * FROM health_metric;
 SELECT * FROM personal_training_session;
 SELECT * FROM group_class;
 SELECT * FROM class_member;
-SELECT * FROM payment;
+SELECT * FROM bill;
 SELECT * FROM room;
 SELECT * FROM room_booking;
 SELECT * FROM equipment;
