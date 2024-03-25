@@ -32,12 +32,30 @@ export const authOptions: NextAuthOptions = {
       signIn: '/login',
     },
     callbacks: {
-      session({ session, user }) {
-        // session.user.id = user.id;
-        //console.log(user);
-        // session.user.role = user.role;
-        // session.user.password = user.password;
+      /*
+        jwt() is called when the JSON Web Token has been created.
+
+        Use the JWT token to fields like user.id or user.role to the token.
+      */
+      session({ session, user, token }: { session: any, user: any, token: any}) {
+        session.user.id = token.id;
+        session.user.role = token.role;
         return session;
+      },
+      jwt({ token, user, account, profile}) {
+        /*
+          jwt() is called whenever a JSON Web Token is created (i.e. at sign in)
+          This function is called whenever a JSON Web Token is created.
+          It is the responsibility of this function to add the user's ID (or another unique identifier) to the JWT payload.
+          The JWT is often used to identify the user in the client side of the application.
+          This is the function that should be used to add the user's ID to the JWT payload.
+        */
+        // console.log(token, user, account, profile, isNewUser)
+        if (user) {
+          token.id = user.id;
+          token.role = user.role;
+        }
+        return token;
       }
     },
 }

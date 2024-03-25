@@ -12,6 +12,7 @@ import {
   Tooltip,
   Loader,
   Center,
+  Stack,
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import classes from "./header.module.css";
@@ -36,16 +37,19 @@ const trainerLinks = [
   { href: "/search", title: "Member Search" },
 ];
 
-const staffLinks = [
+const adminLinks = [
   { href: "/", title: "Home" },
+  { href: "/schedule", title: "Class Schedule" },
   { href: "/search", title: "Member Search" },
   { href: "/room-booking", title: "Room Booking" },
-  { href: "/equipment-maintenance", title: "Equipment Maintenance" },
-  { href: "/class-schedule", title: "Class Schedule" },
-  { href: "/billing", title: "Billing and Payments" },
+  { href: "/maintenance", title: "Maintenance" },
+  { href: "/billing", title: "Billing" },
 ];
 
-const unauthenticatedLinks = [{ href: "/", title: "Home" }];
+const unauthenticatedLinks = [
+  { href: "/", title: "Home" },
+  { href: "/login", title: "Login" },
+];
 
 export default function Header() {
   const [opened, { toggle }] = useDisclosure(false);
@@ -56,22 +60,19 @@ export default function Header() {
 
   const pathname = usePathname();
 
-  const user = {
-    role: "",
+  const currentUser: Record<string, string> = {
+    role: session?.user?.role,
+    name: session?.user?.name,
   };
 
   let links: Array<Record<string, string>> = [];
 
-  if (session?.user) {
-    user.role = "member";
-  }
-
-  if (user.role === "member") {
+  if (currentUser.role === "member") {
     links = membersLinks;
-  } else if (user.role === "trainer") {
+  } else if (currentUser.role === "trainer") {
     links = trainerLinks;
-  } else if (user.role === "staff") {
-    links = staffLinks;
+  } else if (currentUser.role === "admin") {
+    links = adminLinks;
   } else {
     links = unauthenticatedLinks;
   }
@@ -115,7 +116,7 @@ export default function Header() {
             Health & Fitness Club
           </Text>
 
-          <Center>
+          <Stack>
             {status === "loading" && <Loader size={30} color="blue" />}
             <UnstyledButton className={cx(classes.user)}>
               <Group gap={7}>
@@ -128,8 +129,7 @@ export default function Header() {
                     transitionProps={{ transition: "skew-up", duration: 300 }}
                   >
                     <Text fw={700} size="sm" lh={1} mr={3}>
-                      {session?.user.name}
-                      {/* ({user.role}) */}
+                      {session?.user.name} ({currentUser.role})
                     </Text>
                   </Tooltip>
                 )}
@@ -156,7 +156,7 @@ export default function Header() {
                 </Button>
               </Tooltip>
             )}
-          </Center>
+          </Stack>
         </Group>
       </Container>
       <Container size="md">

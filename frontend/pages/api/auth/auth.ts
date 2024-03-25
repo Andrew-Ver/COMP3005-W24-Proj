@@ -6,28 +6,25 @@ import { compare } from "bcrypt";
 //
 const users: any = [
     {
-        "username": "john_member",
+        "username": "karl_member",
         "password": "member",
-        "firstname": "John",
-        "lastname": "Member",
-        "role": "member"
+        "role": "trainer",
+        "name": "The Mad Abdul Alhazred",
+        "id": 1,
     },
     {
         "username": "jane_trainer",
         "password": "trainer",
-        "firstname": "Jane",
-        "lastname": "Trainer",
-        "role": "admin"
+        "name": "Jane Trainer",
+        "role": "trainer",
+        "id": 2
     },
     {
-        "username": "karl-employee",
+        "username": "karl_employee",
         "password": "employee",
-        "firstname": "Karl",
-        "lastname": "Employee",
-        "role": "staff",
-        "name": "The Alan Reviews",
-        "email": "some email",
-        "id": 1,
+        "role": "admin",
+        "name": "The Mad Abdul Alhazred",
+        "id": 3,
     }
 ]
 

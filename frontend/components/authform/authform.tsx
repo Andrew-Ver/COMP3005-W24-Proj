@@ -21,8 +21,6 @@ import {
 
 import React from "react";
 
-import { useRouter } from "next/router";
-
 import { useForm } from "@mantine/form";
 import { useToggle, upperFirst } from "@mantine/hooks";
 
@@ -46,8 +44,6 @@ export default function AuthForm(props: PaperProps) {
       password: (value) => (value.length >= 6 ? null : "Password is too short"),
     },
   });
-
-  const router = useRouter();
 
   return (
     <Paper radius="md" p="xl" withBorder {...props}>
@@ -88,7 +84,6 @@ export default function AuthForm(props: PaperProps) {
                 message: "Logged in successfully",
                 color: "green",
               });
-              router.push("/profile");
             }
           } else if (type === "register") {
             // Register the user here

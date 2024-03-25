@@ -20,7 +20,17 @@ export default function Profile() {
   if (session) {
     return (
       <Stack gap="sm" align="center">
-        <Text size="lg">Health Metrics for {session?.user?.name}</Text>
+        <Text size="lg">
+          Health Metrics for {session?.user?.name}{" "}
+          <Text
+            size="xl"
+            fw={900}
+            variant="gradient"
+            gradient={{ from: "gray", to: "blue", deg: 48 }}
+          >
+            ({session?.user?.role})
+          </Text>
+        </Text>
         <Divider my="sm" variant="dashed" />
         <MetricsTable></MetricsTable>
       </Stack>
