@@ -8,6 +8,7 @@ SELECT * FROM member;
 SELECT * FROM trainer_specialty;
 SELECT * FROM trainer_availability;
 SELECT * FROM member_goal;
+SELECT * FROM exercise_routine;
 SELECT * FROM health_metric;
 SELECT * FROM personal_training_session;
 SELECT * FROM group_class;
