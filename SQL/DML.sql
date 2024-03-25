@@ -51,33 +51,35 @@ UPDATE trainer_availability
 SET is_booked = TRUE
 WHERE availability_id = 3;
 
--- Payments
-INSERT INTO payment (member_id, amount, payment_timestamp, for_service) VALUES
--- Payments for Membership
-('robert', 100.00, CURRENT_TIMESTAMP - INTERVAL '5 day', 'Membership'),  -- payment_id = 1
-('vojislav', 100.00, CURRENT_TIMESTAMP - INTERVAL '5 day', 'Membership'),  -- payment_id = 2
-('patrick', 100.00, CURRENT_TIMESTAMP - INTERVAL '5 day', 'Membership'),  -- payment_id = 3
--- Payments for Group Class
-('robert', 50.00, CURRENT_TIMESTAMP - INTERVAL '4 day', 'GroupClass'),  -- payment_id = 4
-('vojislav', 50.00, CURRENT_TIMESTAMP - INTERVAL '4 day', 'GroupClass'),  -- payment_id = 5
-('patrick', 50.00, CURRENT_TIMESTAMP - INTERVAL '4 day', 'GroupClass'),  -- payment_id = 6
--- Payments for Personal Training (Robert and Vojislav)
-('robert', 75.00, CURRENT_TIMESTAMP - INTERVAL '3 day', 'PersonalTraining'),  -- payment_id = 7
-('vojislav', 75.00, CURRENT_TIMESTAMP - INTERVAL '3 day', 'PersonalTraining');  -- payment_id = 8
+-- Linking group class enrollments
+INSERT INTO class_member (class_id, member_id) VALUES
+(1, 'robert'),
+(1, 'vojislav'),
+(1, 'patrick');
 
--- Linking group class enrollments with their payments
-INSERT INTO class_member (class_id, member_id, payment_id) VALUES
-(1, 'robert', 4),
-(1, 'vojislav', 5),
-(1, 'patrick', 6);
+-- Creating personal training sessions (Removed bill_id linkage as it does not exist in the schema)
+INSERT INTO personal_training_session (member_id, availability_id, description) VALUES
+('robert', 1, 'Strength Training with Andrew Proshare'), -- Link to Robert's Personal Training
+('vojislav', 2, 'Endurance Training with Hitori Bocchi'); -- Link to Vojislav's Personal Training
 
--- Creating personal training sessions with payment_id linkage
-INSERT INTO personal_training_session (member_id, availability_id, description, payment_id) VALUES
-('robert', 1, 'Strength Training with Andrew Proshare', 7), -- Link to Robert's Personal Training payment
-('vojislav', 2, 'Endurance Training with Hitori Bocchi', 8); -- Link to Vojislav's Personal Training payment
+-- Assuming trainer_availability table exists and is_booked is a valid column
 UPDATE trainer_availability
 SET is_booked = TRUE
 WHERE availability_id IN (1, 2);
+
+-- Payments
+INSERT INTO bill (member_id, amount, description, bill_timestamp, for_service, cleared) VALUES
+-- Payments for Membership
+('robert', 100.00, 'Membership purchase', CURRENT_TIMESTAMP - INTERVAL '5 day', 'Membership', true),
+('vojislav', 100.00, 'Membership purchase', CURRENT_TIMESTAMP - INTERVAL '5 day', 'Membership', true),
+('patrick', 100.00, 'Membership purchase', CURRENT_TIMESTAMP - INTERVAL '5 day', 'Membership', true),
+-- Payments for Group Class
+('robert', 50.00, 'Cardio Session with JY', CURRENT_TIMESTAMP - INTERVAL '4 day', 'GroupClass', true),
+('vojislav', 50.00, 'Cardio Session with JY', CURRENT_TIMESTAMP - INTERVAL '4 day', 'GroupClass', true),
+('patrick', 50.00, 'Cardio Session with JY', CURRENT_TIMESTAMP - INTERVAL '4 day', 'GroupClass', true),
+-- Payments for Personal Training (Robert and Vojislav)
+('robert', 75.00, 'Strength Training with Andrew Proshare', CURRENT_TIMESTAMP - INTERVAL '3 day', 'PersonalTraining', true),
+('vojislav', 75.00, 'Endurance Training with Hitori Bocchi', CURRENT_TIMESTAMP - INTERVAL '3 day', 'PersonalTraining', true);
 
 -- Creating rooms and equipment pieces
 INSERT INTO room (description) VALUES
@@ -86,15 +88,15 @@ INSERT INTO room (description) VALUES
 ('Yoga Studio'),  -- room_id = 3
 ('Cycling Room');  -- room_id = 4
 
-INSERT INTO equipment (description, room_id, needs_maintenance, last_maintained_by, last_maintained_at) VALUES
-('Treadmill', 1, FALSE, 'admin', CURRENT_TIMESTAMP - INTERVAL '1 days'),
-('Elliptical', 1, TRUE, NULL, NULL),
-('Dumbbell Set', 2, FALSE, 'admin', CURRENT_TIMESTAMP - INTERVAL '2 days'),
-('Adjustable Bench', 2, TRUE, NULL, NULL),
-('Yoga Mat', 3, FALSE, NULL, NULL),
-('Yoga Block', 3, FALSE, NULL, NULL),
-('Spin Bike (Nokia brand)', 4, FALSE, 'admin', CURRENT_TIMESTAMP - INTERVAL '3 days'),
-('Spin Bike (Ford brand)', 4, TRUE, 'admin', CURRENT_TIMESTAMP - INTERVAL '5 days');
+INSERT INTO equipment (description, room_id, needs_maintenance, last_maintained_by) VALUES
+('Treadmill', 1, FALSE, 'admin'),
+('Elliptical', 1, TRUE, NULL),
+('Dumbbell Set', 2, FALSE, 'admin'),
+('Adjustable Bench', 2, TRUE, NULL),
+('Yoga Mat', 3, FALSE, NULL),
+('Yoga Block', 3, FALSE, NULL),
+('Spin Bike (Nokia brand)', 4, FALSE, 'admin'),
+('Spin Bike (Ford brand)', 4, TRUE, 'admin');
 
 -- Book 'Cardio Zone' for 'Cardio Session with JY' 
 INSERT INTO room_booking (class_id, room_id, booked_by) VALUES
