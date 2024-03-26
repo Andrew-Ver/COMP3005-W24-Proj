@@ -74,18 +74,18 @@ SET is_booked = TRUE
 WHERE availability_id IN (1, 2);
 
 -- Payments
-INSERT INTO bill (member_id, amount, description, bill_timestamp, for_service, cleared) VALUES
+INSERT INTO bill (member_id, amount, description, bill_timestamp, cleared) VALUES
 -- Payments for Membership
-('robert', 100.00, 'Membership purchase', CURRENT_TIMESTAMP - INTERVAL '5 day', 'Membership', true),
-('vojislav', 100.00, 'Membership purchase', CURRENT_TIMESTAMP - INTERVAL '5 day', 'Membership', true),
-('patrick', 100.00, 'Membership purchase', CURRENT_TIMESTAMP - INTERVAL '5 day', 'Membership', true),
+('robert', 100.00, 'Membership purchase', CURRENT_TIMESTAMP - INTERVAL '5 day', true),
+('vojislav', 100.00, 'Membership purchase', CURRENT_TIMESTAMP - INTERVAL '5 day', true),
+('patrick', 100.00, 'Membership purchase', CURRENT_TIMESTAMP - INTERVAL '5 day', true),
 -- Payments for Group Class
-('robert', 50.00, 'Cardio Session with JY', CURRENT_TIMESTAMP - INTERVAL '4 day', 'GroupClass', true),
-('vojislav', 50.00, 'Cardio Session with JY', CURRENT_TIMESTAMP - INTERVAL '4 day', 'GroupClass', true),
-('patrick', 50.00, 'Cardio Session with JY', CURRENT_TIMESTAMP - INTERVAL '4 day', 'GroupClass', true),
+('robert', 50.00, 'Cardio Session with JY', CURRENT_TIMESTAMP - INTERVAL '4 day', true),
+('vojislav', 50.00, 'Cardio Session with JY', CURRENT_TIMESTAMP - INTERVAL '4 day', true),
+('patrick', 50.00, 'Cardio Session with JY', CURRENT_TIMESTAMP - INTERVAL '4 day', true),
 -- Payments for Personal Training (Robert and Vojislav)
-('robert', 75.00, 'Strength Training with Andrew Proshare', CURRENT_TIMESTAMP - INTERVAL '3 day', 'PersonalTraining', true),
-('vojislav', 75.00, 'Endurance Training with Hitori Bocchi', CURRENT_TIMESTAMP - INTERVAL '3 day', 'PersonalTraining', true);
+('robert', 75.00, 'Strength Training with Andrew Proshare', CURRENT_TIMESTAMP - INTERVAL '3 day', true),
+('vojislav', 75.00, 'Endurance Training with Hitori Bocchi', CURRENT_TIMESTAMP - INTERVAL '3 day', true);
 
 -- Creating rooms and equipment pieces
 INSERT INTO room (description) VALUES
