@@ -9,9 +9,14 @@ const pool = new Pool({
     port: 5432,
 });
 
-
+// Query for inserting data into the account table
 const insertAccountText = `INSERT INTO account(account_id, name, password, user_type) VALUES ($1, $2, $3, $4)`;
+// Query for inserting data into the bill table
 const insertBillText = `INSERT INTO bill(member_id, amount, description) VALUES ($1, $2, $3)`;
+// Query for checking trainer availability and booking a session
+const availabilityQueryText = `SELECT trainer_id, begin_time, end_time FROM trainer_availability WHERE availability_id = $1 AND is_booked = FALSE`;
+// Query for updating the availability status after booking a session
+const updateAvailabilityText = `UPDATE trainer_availability SET is_booked = TRUE WHERE availability_id = $1`;
 
 // Function to register a new member (registration page or by an administrator)
 async function registerMember(account_id, name, password, age, gender) {
@@ -233,41 +238,148 @@ async function addHealthMetric(member_id, weight, body_fat_percentage, systolic_
     }
 }
 
+// Function to add a personal training session for a member (by a member or administrator)
+async function addPersonalTrainingSession(member_id, availability_id, description) {
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+        const { rows: availability } = await client.query(availabilityQueryText, [availability_id]);
+        if (availability.length === 0) {
+            throw new Error('Availability not found or already booked.');
+        }
+        const { trainer_id, begin_time, end_time } = availability[0];
+
+        // Create the bill based on the duration of the session
+        const duration = (end_time - begin_time) / (1000 * 3600);
+        const rateQuery = `
+            SELECT rate_per_hour
+            FROM trainer
+            WHERE trainer_id = $1
+        `;
+        const { rows: rateRows } = await client.query(rateQuery, [trainer_id]);
+        if (rateRows.length === 0) {
+            throw new Error('Trainer not found.');
+        }
+        const { rate_per_hour } = rateRows[0];
+        const amount = rate_per_hour * duration;
+        await client.query(insertBillText, [member_id, amount, description]);
+
+        // Insert the session
+        const insertSessionText = `
+            INSERT INTO personal_training_session(member_id, availability_id, description)
+            VALUES ($1, $2, $3)
+            RETURNING session_id
+        `;
+        await client.query(insertSessionText, [member_id, availability_id, description]);
+
+        // Mark the availability as booked
+        await client.query(updateAvailabilityText, [availability_id]);
+        await client.query('COMMIT'); // Commit transaction
+        console.log('Personal training session added and billed successfully.');
+    } catch (err) {
+        await client.query('ROLLBACK'); // Rollback in case of any error
+        console.error('Failed to add personal training session and bill:', err.message);
+        throw err;
+    } finally {
+        client.release();
+    }
+}
+
+// Function to mark a personal training session as completed (by a trainer)
+async function markSessionCompleted(session_id) {
+    const client = await pool.connect();
+    try {
+        const updateSessionText = `
+            UPDATE personal_training_session
+            SET completed = TRUE
+            WHERE session_id = $1
+        `;
+        await client.query(updateSessionText, [session_id]);
+        console.log('Personal training session marked as completed.');
+    } catch (err) {
+        console.error('Failed to mark personal training session as completed:', err.message);
+        throw err;
+    } finally {
+        client.release();
+    }
+}
+
+// Function to add a group class (by a trainer or administrator)
+async function addGroupClass(availability_id, description, fee) {
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+        const { rows: availability } = await client.query(availabilityQueryText, [availability_id]);
+        if (availability.length === 0) {
+            throw new Error('Availability not found or already booked.');
+        }
+
+        // Insert the group class
+        const insertClassText = `
+            INSERT INTO group_class(availability_id, description, fee)
+            VALUES ($1, $2, $3)
+            RETURNING class_id
+        `;
+        await client.query(insertClassText, [availability_id, description, fee]);
+
+        // Update the trainer_availability to mark as booked
+        await client.query(updateAvailabilityText, [availability_id]);
+        await client.query('COMMIT'); // Commit transaction
+        console.log('Group class added successfully.');
+    } catch (err) {
+        await client.query('ROLLBACK'); // Rollback in case of an error
+        console.error('Failed to add group class:', err.message);
+        throw err;
+    } finally {
+        client.release();
+    }
+}
+
+// Function to mark a group class as completed (by a trainer)
+async function markClassCompleted(class_id) {
+    const client = await pool.connect();
+    try {
+        const updateClassText = `
+            UPDATE group_class
+            SET completed = TRUE
+            WHERE class_id = $1
+        `;
+        await client.query(updateClassText, [class_id]);
+        console.log('Group class marked as completed.');
+    } catch (err) {
+        console.error('Failed to mark group class as completed:', err.message);
+        throw err;
+    } finally {
+        client.release();
+    }
+}
 
 
 
-registerMember('userid123', 'John Doe', 'password123', 25, 'Male')
-    .then(() => console.log('Registration successful.'))
-    .catch(err => console.error('Registration failed:', err))
-    .finally(() => createBill('userid123', 50.00, 'Personal Training Session Fee')
-        .then(() => console.log('Bill creation successful.'))
-        .catch(err => console.error('Bill creation failed:', err))
-        .finally(() => payBill(1)
-            .then(() => console.log('Bill payment successful.'))
-            .catch(err => console.error('Bill payment failed:', err))
-            .finally(() => payBill(1)
-                .then(() => console.log('Bill payment successful.'))
-                .catch(err => console.error('Bill payment failed:', err))
-                .finally(() => addMemberGoal('userid123', 'Lose Weight')
-                    .then(() => console.log('Member goal added successfully.'))
-                    .catch(err => console.error('Failed to add member goal:', err))
-                    .finally(() => addExerciseRoutine('userid123', 'Morning jog for 30 minutes')
-                        .then(() => console.log('Exercise routine added successfully.'))
-                        .catch(err => console.error('Failed to add exercise routine:', err))
-                        .finally(() => addHealthMetric('userid123', 180, 20, 120, 80)
-                            .then(() => console.log('Health metric added successfully.'))
-                            .catch(err => console.error('Failed to add health metric:', err))
-                            .finally(() => markGoalAchieved('userid123', 'Lose Weight'))))))));
-registerTrainer('trainerid123', 'Alex Smith', 'password456', 75)
-    .then(() => console.log('Trainer registration successful.'))
-    .catch(err => console.error('Trainer registration failed:', err))
-    .finally(() => addTrainerSpecialty('trainerid123', 'Weightlifting')
-        .then(() => console.log('Trainer specialty added successfully.'))
-        .catch(err => console.error('Failed to add trainer specialty:', err))
-        .finally(() => addTrainerAvailability('trainerid123', '2021-12-01 10:00:00', '2021-12-01 12:00:00')
-            .then(() => console.log('Trainer availability added successfully.'))
-            .catch(err => console.error('Failed to add trainer availability:', err))));
-registerAdministrator('adminid123', 'Sam Lee', 'password789')
-    .then(() => console.log('Administrator registration successful.'))
-    .catch(err => console.error('Administrator registration failed:', err));
+async function main() {
+    // Register member and perform related operations
+    await registerMember('userid123', 'John Doe', 'password123', 25, 'Male');
+    await createBill('userid123', 50.00, 'Personal Training Session Fee');
+    await payBill(1);
+    await payBill(1); // Attempt to pay the bill a second time as in the original example
+    await addMemberGoal('userid123', 'Lose Weight');
+    await addExerciseRoutine('userid123', 'Morning jog for 30 minutes');
+    await addHealthMetric('userid123', 180, 20, 120, 80);
+    // Assuming markGoalAchieved function exists and is intended to be called here
+    await markGoalAchieved('userid123', 'Lose Weight');
 
+    // Register trainer and perform related operations
+    await registerTrainer('trainerid123', 'Alex Smith', 'password456', 75);
+    await addTrainerSpecialty('trainerid123', 'Weightlifting');
+    await addTrainerAvailability('trainerid123', '2021-12-01 10:00:00', '2021-12-01 12:00:00');
+    await addTrainerAvailability('trainerid123', '2021-12-02 14:00:00', '2021-12-02 16:00:00');
+    await addPersonalTrainingSession('userid123', 1, 'Weightlifting session');
+    await addGroupClass(2, 'Yoga class', 20.00);
+    await markSessionCompleted(1);
+    await markClassCompleted(1);
+
+    // Register administrator
+    await registerAdministrator('adminid123', 'Sam Lee', 'password789');
+}
+
+main().finally(() => pool.end());
