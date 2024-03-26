@@ -66,7 +66,8 @@ CREATE TABLE trainer_availability (
     is_booked BOOLEAN NOT NULL DEFAULT FALSE,
     begin_time TIMESTAMP NOT NULL,
     end_time TIMESTAMP NOT NULL,
-    FOREIGN KEY (trainer_id) REFERENCES trainer(trainer_id) ON DELETE CASCADE
+    FOREIGN KEY (trainer_id) REFERENCES trainer(trainer_id) ON DELETE CASCADE,
+	CHECK (begin_time < end_time)
 );
 
 CREATE TABLE member_goal (
@@ -86,7 +87,7 @@ CREATE TABLE exercise_routine (
 
 CREATE TABLE health_metric (
     member_id VARCHAR(50) NOT NULL,
-    metric_timestamp TIMESTAMP NOT NULL,
+    metric_timestamp TIMESTAMP NOT NULL DEFAULT NOW(),
     weight DECIMAL NOT NULL,
     body_fat_percentage DECIMAL NOT NULL,
     systolic_pressure INT NOT NULL,
@@ -100,8 +101,7 @@ CREATE TABLE bill (
     member_id VARCHAR(50) NOT NULL,
     amount DECIMAL NOT NULL,  -- Can be negative (refund)
 	description VARCHAR(255),
-    bill_timestamp TIMESTAMP NOT NULL,
-    for_service service_type NOT NULL,
+    bill_timestamp TIMESTAMP NOT NULL DEFAULT NOW(),
 	cleared BOOLEAN DEFAULT FALSE,
     FOREIGN KEY (member_id) REFERENCES member(member_id)  --Keep bill record even if the user is deleted
 );
