@@ -1,6 +1,6 @@
 import { User } from "next-auth";
-
 import { compare } from "bcrypt";
+import pool from "../../../db"
 
 // Some sample users just to test authentication
 //
@@ -31,13 +31,26 @@ const users: any = [
 type LoginFn = (username: string, password: string) => Promise<User | null>;
 
 export const login: LoginFn = async (username, password) => {
-    const user = users.find((user: any) => user.username === username);
+    // const user = users.find((user: any) => user.username === username);
+    try {
+        const client = await pool.connect();
+        const result = await client.query('SELECT * FROM users WHERE username = $1', [username]);
+        console.log("result: ", result)
+        client.release();
 
-    // Plaintext password comparison is not recommended
-    // change to use bcrypt.compare() and store hashed passwords later
-    if (user && (password === user.password) ) {
-        return user;
-    } else {
-        return null;
+        if (result.rows.length === 1) {
+            const user = result.rows[0];
+            console.log("user: ", user);
+            const passwordMatch = await compare(password, user.password_hash);
+            if (passwordMatch) {
+                // Passwords match, return user object without password
+                delete user.password_hash;
+                return user;
+            }
+        }
+        return null; // Username or password incorrect
+    } catch (error) {
+        console.error('Error authenticating user:', error);
+        throw error;
     }
 }

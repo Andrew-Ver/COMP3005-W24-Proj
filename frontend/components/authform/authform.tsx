@@ -45,6 +45,69 @@ export default function AuthForm(props: PaperProps) {
     },
   });
 
+  const handleFormSubmit = async (values: { username: any; password: any; }) => {
+    try {
+      if (type === "login") {
+        const result: any = await signIn("credentials", {
+          username: values.username,
+          password: values.password,
+          redirect: false,
+        });
+
+        if (!result.ok) {
+          // Handle the error here
+          notifications.show({
+            title: "Error Attempting to Log In",
+            icon: <IconX />,
+            message:
+              result.error == "CredentialsSignin"
+                ? "Invalid Credentials"
+                : "An error occurred",
+            color: "red",
+          });
+          // Reset the form after an invalid login attempt
+          //form.reset();
+          form.setFieldValue("password", "");
+        } else {
+          notifications.show({
+            title: "User Logged In",
+            icon: <IconCheck />,
+            message: "Logged in successfully",
+            color: "green",
+          });
+        }
+      } else if (type === "register") {
+        // Call the API endpoint to register the user
+        console.log("Registering user: ", values);
+        const response = await fetch("/api/register", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(values),
+        });
+        if (!response.ok) {
+          // Handle error response
+          throw new Error("Failed to register user");
+        }
+        form.reset();
+        notifications.show({
+          title: "User Registered",
+          message: "User registered successfully",
+          color: "green",
+        });
+
+      }
+    } catch (error) {
+      console.error("Error registering user:", error);
+      notifications.show({
+        title: "Error Registering User",
+        message: "An error occurred while registering user",
+        color: "red",
+      });
+    }
+  }
+
   return (
     <Paper radius="md" p="xl" withBorder {...props}>
       <Text size="xl" fw={500}>
@@ -55,47 +118,7 @@ export default function AuthForm(props: PaperProps) {
 
       {/* Route to api handler here */}
       <form
-        onSubmit={form.onSubmit(async (values) => {
-          if (type === "login") {
-            const result: any = await signIn("credentials", {
-              username: values.username,
-              password: values.password,
-              redirect: false,
-            });
-
-            if (!result.ok) {
-              // Handle the error here
-              notifications.show({
-                title: "Error Attempting to Log In",
-                icon: <IconX />,
-                message:
-                  result.error == "CredentialsSignin"
-                    ? "Invalid Credentials"
-                    : "An error occurred",
-                color: "red",
-              });
-              // Reset the form after an invalid login attempt
-              //form.reset();
-              form.setFieldValue("password", "");
-            } else {
-              notifications.show({
-                title: "User Logged In",
-                icon: <IconCheck />,
-                message: "Logged in successfully",
-                color: "green",
-              });
-            }
-          } else if (type === "register") {
-            // Register the user here
-            // console.log("Registering user: ", values);
-            notifications.show({
-              title: "User Registered",
-              message: "User registered successfully",
-              color: "green",
-            });
-            form.reset();
-          }
-        })}
+        onSubmit={form.onSubmit(handleFormSubmit)}
       >
         <Stack>
           <TextInput

@@ -10,7 +10,7 @@ These instructions will get you a copy of the project up and running on your loc
 ### Running
 
 
-Setup
+#### Setup frontend
 
 ```bash
 git clone 'https://github.com/Andrew-Ver/COMP3005-W24-Proj.git'
@@ -18,6 +18,24 @@ cd COMP3005-W24-Proj/frontend
 npm install
 npm run dev
 ```
+
+If you get the jwt_session_error, you need to make a secret for nextauth:
+create `.env.local` in root directory 
+run `openssl rand -base64 32`
+`.env.local` should be: `NEXTAUTH_SECRET=[the output of that command]`
+
+#### Setup backend
+1. Set up and run a database in PostgreSQL
+2. In `.env.local`, add the following lines:
+```bash
+DB_HOST=[your_database_host]
+DB_PORT=[your_database_port]
+DB_USER=[your_database_name]
+DB_PASSWORD=[your_database_password]
+DB_NAME=[your_database_name]
+```
+
+
 
 ## Built With
 
