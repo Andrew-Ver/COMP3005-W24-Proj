@@ -34,6 +34,15 @@ DB_USER=[your_database_name]
 DB_PASSWORD=[your_database_password]
 DB_NAME=[your_database_name]
 ```
+3. Create tables using following queries:
+```bash
+CREATE TABLE users (
+    id SERIAL PRIMARY KEY,
+    username VARCHAR(255) UNIQUE NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    role VARCHAR(50) NOT NULL
+);
+```
 
 
 
