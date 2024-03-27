@@ -4,7 +4,6 @@
 /*  Drop all the tables and types to ensure a clean start  */
 DROP TABLE IF EXISTS bill CASCADE;
 DROP TABLE IF EXISTS equipment CASCADE;
-DROP TABLE IF EXISTS room_booking CASCADE;
 DROP TABLE IF EXISTS room CASCADE;
 DROP TABLE IF EXISTS class_member CASCADE;
 DROP TABLE IF EXISTS group_class CASCADE;
@@ -116,13 +115,21 @@ CREATE TABLE personal_training_session (
     FOREIGN KEY (availability_id) REFERENCES trainer_availability(availability_id) ON DELETE CASCADE
 );
 
+CREATE TABLE room (
+    room_id SERIAL PRIMARY KEY,
+    description VARCHAR(255),
+	is_inactive BOOLEAN DEFAULT FALSE
+);
+
 CREATE TABLE group_class (
     class_id SERIAL PRIMARY KEY,
     availability_id INT NOT NULL,
 	description VARCHAR(255),
 	fee DECIMAL NOT NULL CHECK (fee > 0),
+    room_id INT,
     completed BOOLEAN NOT NULL DEFAULT FALSE,
-    FOREIGN KEY (availability_id) REFERENCES trainer_availability(availability_id) ON DELETE CASCADE
+    FOREIGN KEY (availability_id) REFERENCES trainer_availability(availability_id) ON DELETE CASCADE,
+    FOREIGN KEY (room_id) REFERENCES room(room_id) ON DELETE CASCADE
 );
 
 CREATE TABLE class_member (
@@ -133,28 +140,11 @@ CREATE TABLE class_member (
     FOREIGN KEY (member_id) REFERENCES member(member_id) ON DELETE CASCADE
 );
 
-CREATE TABLE room (
-    room_id SERIAL PRIMARY KEY,
-    description VARCHAR(255),
-	is_inactive BOOLEAN DEFAULT FALSE
-);
-
-CREATE TABLE room_booking (
-    booking_id SERIAL PRIMARY KEY,
-    class_id INT NOT NULL,
-    room_id INT NOT NULL,
-	booked_by VARCHAR(50) NOT NULL,
-    FOREIGN KEY (class_id) REFERENCES group_class(class_id) ON DELETE CASCADE,
-    FOREIGN KEY (room_id) REFERENCES room(room_id) ON DELETE CASCADE,
-    FOREIGN KEY (booked_by) REFERENCES administrator(administrator_id) ON DELETE CASCADE
-);
-
 CREATE TABLE equipment (
     equipment_id SERIAL PRIMARY KEY,
     description VARCHAR(255) NOT NULL,
     room_id INT NOT NULL,
     needs_maintenance BOOLEAN NOT NULL DEFAULT FALSE,
-    last_maintained_by VARCHAR(50),
-    FOREIGN KEY (room_id) REFERENCES room(room_id) ON DELETE CASCADE,
-    FOREIGN KEY (last_maintained_by) REFERENCES administrator(administrator_id) -- Keep maintenance record even if the user is deleted
+    last_maintained_at TIMESTAMP,  --Default is null (never maintained)
+    FOREIGN KEY (room_id) REFERENCES room(room_id) ON DELETE CASCADE
 );

@@ -15,5 +15,4 @@ SELECT * FROM group_class;
 SELECT * FROM class_member;
 SELECT * FROM bill;
 SELECT * FROM room;
-SELECT * FROM room_booking;
 SELECT * FROM equipment;
