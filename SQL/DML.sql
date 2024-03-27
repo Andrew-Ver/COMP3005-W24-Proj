@@ -94,16 +94,16 @@ INSERT INTO room (description) VALUES
 ('Yoga Studio'),  -- room_id = 3
 ('Cycling Room');  -- room_id = 4
 
-INSERT INTO equipment (description, room_id, needs_maintenance, last_maintained_by) VALUES
-('Treadmill', 1, FALSE, 'admin'),
-('Elliptical', 1, TRUE, NULL),
-('Dumbbell Set', 2, FALSE, 'admin'),
-('Adjustable Bench', 2, TRUE, NULL),
-('Yoga Mat', 3, FALSE, NULL),
-('Yoga Block', 3, FALSE, NULL),
-('Spin Bike (Nokia brand)', 4, FALSE, 'admin'),
-('Spin Bike (Ford brand)', 4, TRUE, 'admin');
+INSERT INTO equipment (description, room_id, needs_maintenance) VALUES
+('Treadmill', 1, FALSE),
+('Elliptical', 1, TRUE),
+('Dumbbell Set', 2, FALSE),
+('Adjustable Bench', 2, TRUE),
+('Yoga Mat', 3, FALSE),
+('Yoga Block', 3, FALSE),
+('Spin Bike (Nokia brand)', 4, FALSE),
+('Spin Bike (Ford brand)', 4, TRUE);
 
--- Book 'Cardio Zone' for 'Cardio Session with JY' 
-INSERT INTO room_booking (class_id, room_id, booked_by) VALUES
-(1, 1, 'admin');
+UPDATE group_class
+SET room_id = 1
+WHERE class_id = 1;
