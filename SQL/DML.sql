@@ -3,22 +3,22 @@
 
 -- Adding an administrator
 INSERT INTO account (username, name, password, user_type) VALUES ('admin', 'Manager', 'admin', 'Administrator');
-INSERT INTO administrator (administrator_id) VALUES ('admin');
+INSERT INTO administrator (admin_username) VALUES ('admin');
 
 -- Adding trainers
 INSERT INTO account (username, name, password, user_type) VALUES ('andrew', 'Andrew Proshare', 'password', 'Trainer');
-INSERT INTO trainer (trainer_id, rate_per_hour) VALUES ('andrew', 37.50);
-INSERT INTO trainer_specialty (trainer_id, specialty) VALUES ('andrew', 'mewing'), ('andrew', 'bonesmashing');
+INSERT INTO trainer (trainer_username, rate_per_hour) VALUES ('andrew', 37.50);
+INSERT INTO trainer_specialty (trainer_username, specialty) VALUES ('andrew', 'mewing'), ('andrew', 'bonesmashing');
 
 INSERT INTO account (username, name, password, user_type) VALUES ('mark', 'Hitori Bocchi', 'password', 'Trainer');
-INSERT INTO trainer (trainer_id, rate_per_hour) VALUES ('mark', 37.50);
-INSERT INTO trainer_specialty (trainer_id, specialty) VALUES ('mark', 'crawling'), ('mark', 'dooming');
+INSERT INTO trainer (trainer_username, rate_per_hour) VALUES ('mark', 37.50);
+INSERT INTO trainer_specialty (trainer_username, specialty) VALUES ('mark', 'crawling'), ('mark', 'dooming');
 
 INSERT INTO account (username, name, password, user_type) VALUES ('JY', 'JY', 'password', 'Trainer');
-INSERT INTO trainer (trainer_id, rate_per_hour) VALUES ('JY', 50.00);
+INSERT INTO trainer (trainer_username, rate_per_hour) VALUES ('JY', 50.00);
 
 -- Adding Trainer Availability
-INSERT INTO trainer_availability (trainer_id, begin_time, end_time) VALUES
+INSERT INTO trainer_availability (trainer_username, begin_time, end_time) VALUES
 ('andrew', '2024-04-23 09:00', '2024-04-23 11:00'),  -- availability_id = 1
 ('mark', '2024-04-23 12:00', '2024-04-23 14:00'),  -- availability_id = 2
 ('JY', '2024-04-23 15:00', '2024-04-23 17:00'),  -- availability_id = 3
@@ -28,23 +28,23 @@ INSERT INTO trainer_availability (trainer_id, begin_time, end_time) VALUES
 
 -- Adding Members
 INSERT INTO account (username, name, password, user_type) VALUES ('robert', 'Robert Prolog', 'password', 'Member');
-INSERT INTO member (member_id, age, gender) VALUES ('robert', 40, 'Male');
-INSERT INTO health_metric (member_id, metric_timestamp, weight, body_fat_percentage, systolic_pressure, diastolic_pressure) VALUES
+INSERT INTO member (member_username, age, gender) VALUES ('robert', 40, 'Male');
+INSERT INTO health_metric (member_username, metric_timestamp, weight, body_fat_percentage, systolic_pressure, diastolic_pressure) VALUES
 ('robert', '2024-03-22 08:00', 170, 15, 120, 80),
 ('robert', '2024-03-15 08:00', 171, 16, 122, 82);
-INSERT INTO member_goal (member_id, goal_type) VALUES ('robert', 'Lose Weight'), ('robert', 'Gain Muscle'), ('robert', 'Increase Stamina');
+INSERT INTO member_goal (member_username, goal_type) VALUES ('robert', 'Lose Weight'), ('robert', 'Gain Muscle'), ('robert', 'Increase Stamina');
 
 INSERT INTO account (username, name, password, user_type) VALUES ('vojislav', 'Vojislav Kewtee', 'password', 'Member');
-INSERT INTO member (member_id, age, gender) VALUES ('vojislav', 50, 'Male');
-INSERT INTO health_metric (member_id, metric_timestamp, weight, body_fat_percentage, systolic_pressure, diastolic_pressure) VALUES
+INSERT INTO member (member_username, age, gender) VALUES ('vojislav', 50, 'Male');
+INSERT INTO health_metric (member_username, metric_timestamp, weight, body_fat_percentage, systolic_pressure, diastolic_pressure) VALUES
 ('vojislav', '2024-03-22 08:00', 180, 20, 125, 85),
 ('vojislav', '2024-03-15 08:00', 182, 21, 128, 87);
-INSERT INTO member_goal (member_id, goal_type) VALUES ('vojislav', 'Run Marathon'), ('vojislav', 'Reduce Body Fat'), ('vojislav', 'Improve Flexibility');
+INSERT INTO member_goal (member_username, goal_type) VALUES ('vojislav', 'Run Marathon'), ('vojislav', 'Reduce Body Fat'), ('vojislav', 'Improve Flexibility');
 
 INSERT INTO account (username, name, password, user_type) VALUES ('patrick', 'Patrick Skip-List', 'password', 'Member');
-INSERT INTO member (member_id, age, gender) VALUES ('patrick', 45, 'Male');
+INSERT INTO member (member_username, age, gender) VALUES ('patrick', 45, 'Male');
 
-INSERT INTO exercise_routine (member_id, description) VALUES
+INSERT INTO exercise_routine (member_username, description) VALUES
 ('robert', 'Cardio: Running 30 minutes, 3 times a week'),
 ('robert', 'Strength Training: Upper body workouts, 2 times a week'),
 ('vojislav', 'Cardio: Long-distance running, gradually increasing distance'),
@@ -58,13 +58,13 @@ SET is_booked = TRUE
 WHERE availability_id = 3;
 
 -- Linking group class enrollments
-INSERT INTO class_member (class_id, member_id) VALUES
+INSERT INTO class_member (class_id, member_username) VALUES
 (1, 'robert'),
 (1, 'vojislav'),
 (1, 'patrick');
 
 -- Creating personal training sessions (Removed bill_id linkage as it does not exist in the schema)
-INSERT INTO personal_training_session (member_id, availability_id, description) VALUES
+INSERT INTO personal_training_session (member_username, availability_id, description) VALUES
 ('robert', 1, 'Strength Training with Andrew Proshare'), -- Link to Robert's Personal Training
 ('vojislav', 2, 'Endurance Training with Hitori Bocchi'); -- Link to Vojislav's Personal Training
 
@@ -74,7 +74,7 @@ SET is_booked = TRUE
 WHERE availability_id IN (1, 2);
 
 -- Payments
-INSERT INTO bill (member_id, amount, description, bill_timestamp, cleared) VALUES
+INSERT INTO bill (member_username, amount, description, bill_timestamp, cleared) VALUES
 -- Payments for Membership
 ('robert', 100.00, 'Membership purchase', CURRENT_TIMESTAMP - INTERVAL '5 day', true),
 ('vojislav', 100.00, 'Membership purchase', CURRENT_TIMESTAMP - INTERVAL '5 day', true),

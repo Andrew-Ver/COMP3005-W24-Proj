@@ -14,9 +14,9 @@ const pool = new Pool({
 // Query for inserting data into the account table
 const insertAccountQuery = `INSERT INTO account(username, name, password, user_type) VALUES ($1, $2, $3, $4)`;
 // Query for inserting data into the bill table
-const insertBillQuery = `INSERT INTO bill(member_id, amount, description) VALUES ($1, $2, $3)`;
+const insertBillQuery = `INSERT INTO bill(member_username, amount, description) VALUES ($1, $2, $3)`;
 // Query for checking trainer availability and booking a session
-const availabilityQueryQuery = `SELECT trainer_id, begin_time, end_time FROM trainer_availability WHERE availability_id = $1 AND is_booked = FALSE`;
+const availabilityQueryQuery = `SELECT trainer_username, begin_time, end_time FROM trainer_availability WHERE availability_id = $1 AND is_booked = FALSE`;
 // Query for updating the availability status after booking a session
 const updateAvailabilityQuery = `UPDATE trainer_availability SET is_booked = TRUE WHERE availability_id = $1`;
 
@@ -29,7 +29,7 @@ async function registerMember(username, name, password, age, gender) {
         await client.query(insertAccountQuery, [username, name, password, 'Member']);
         // Insert into member table
         const insertMemberQuery = `
-            INSERT INTO member(member_id, age, gender)
+            INSERT INTO member(member_username, age, gender)
             VALUES ($1, $2, $3)
         `;
         await client.query(insertMemberQuery, [username, age, gender]);
@@ -54,7 +54,7 @@ async function registerTrainer(username, name, password, rate_per_hour) {
         await client.query(insertAccountQuery, [username, name, password, 'Trainer']);
         // Insert into trainer table
         const insertTrainerQuery = `
-            INSERT INTO trainer(trainer_id, rate_per_hour)
+            INSERT INTO trainer(trainer_username, rate_per_hour)
             VALUES ($1, $2)
         `;
         await client.query(insertTrainerQuery, [username, rate_per_hour]);
@@ -77,7 +77,7 @@ async function registerAdministrator(username, name, password) {
         await client.query(insertAccountQuery, [username, name, password, 'Administrator']);
         // Insert into administrator table
         const insertAdminQuery = `
-            INSERT INTO administrator(administrator_id)
+            INSERT INTO administrator(admin_username)
             VALUES ($1)
         `;
         await client.query(insertAdminQuery, [username]);
@@ -92,10 +92,10 @@ async function registerAdministrator(username, name, password) {
 }
 
 // Function to create a new, extra bill for a member (by an administrator)
-async function createBill(member_id, amount, description) {
+async function createBill(member_username, amount, description) {
     const client = await pool.connect();
     try {
-        await client.query(insertBillQuery, [member_id, amount, description]);
+        await client.query(insertBillQuery, [member_username, amount, description]);
         console.log('Bill created successfully.');
     } catch (err) {
         throw err;
@@ -133,14 +133,14 @@ async function payBill(bill_id) {
 }
 
 // Function to add a specialty to a trainer (by a trainer)
-async function addTrainerSpecialty(trainer_id, specialty) {
+async function addTrainerSpecialty(trainer_username, specialty) {
     const client = await pool.connect();
     try {
         const insertSpecialtyQuery = `
-            INSERT INTO trainer_specialty(trainer_id, specialty)
+            INSERT INTO trainer_specialty(trainer_username, specialty)
             VALUES ($1, $2)
         `;
-        await client.query(insertSpecialtyQuery, [trainer_id, specialty]);
+        await client.query(insertSpecialtyQuery, [trainer_username, specialty]);
         console.log('Trainer specialty added successfully.');
     } catch (err) {
         console.error('Failed to add trainer specialty:', err.message);
@@ -151,14 +151,14 @@ async function addTrainerSpecialty(trainer_id, specialty) {
 }
 
 // Function to add availability for a trainer (by a trainer), begin_time and end_time must be timestamps
-async function addTrainerAvailability(trainer_id, begin_time, end_time) {
+async function addTrainerAvailability(trainer_username, begin_time, end_time) {
     const client = await pool.connect();
     try {
         const insertAvailabilityQuery = `
-            INSERT INTO trainer_availability(trainer_id, begin_time, end_time)
+            INSERT INTO trainer_availability(trainer_username, begin_time, end_time)
             VALUES ($1, $2, $3)
         `;
-        await client.query(insertAvailabilityQuery, [trainer_id, begin_time, end_time]);
+        await client.query(insertAvailabilityQuery, [trainer_username, begin_time, end_time]);
         console.log('Trainer availability added successfully.');
     } catch (err) {
         console.error('Failed to add trainer availability:', err.message);
@@ -169,14 +169,14 @@ async function addTrainerAvailability(trainer_id, begin_time, end_time) {
 }
 
 // Function to add a goal to a member (by a member)
-async function addMemberGoal(member_id, goal_type) {
+async function addMemberGoal(member_username, goal_type) {
     const client = await pool.connect();
     try {
         const insertGoalQuery = `
-            INSERT INTO member_goal(member_id, goal_type)
+            INSERT INTO member_goal(member_username, goal_type)
             VALUES ($1, $2)
         `;
-        await client.query(insertGoalQuery, [member_id, goal_type]);
+        await client.query(insertGoalQuery, [member_username, goal_type]);
         console.log('Member goal added successfully.');
     } catch (err) {
         console.error('Failed to add member goal:', err.message);
@@ -186,15 +186,15 @@ async function addMemberGoal(member_id, goal_type) {
     }
 }
 
-async function markGoalAchieved(member_id, goal_type) {
+async function markGoalAchieved(member_username, goal_type) {
     const client = await pool.connect();
     try {
         const updateGoalQuery = `
             UPDATE member_goal
             SET achieved = true
-            WHERE member_id = $1 AND goal_type = $2
+            WHERE member_username = $1 AND goal_type = $2
         `;
-        await client.query(updateGoalQuery, [member_id, goal_type]);
+        await client.query(updateGoalQuery, [member_username, goal_type]);
         console.log('Member goal marked as complete.');
     } catch (err) {
         console.error('Failed to mark member goal as complete:', err.message);
@@ -205,14 +205,14 @@ async function markGoalAchieved(member_id, goal_type) {
 }
 
 // Function to add an exercise routine to a member (by a member)
-async function addExerciseRoutine(member_id, description) {
+async function addExerciseRoutine(member_username, description) {
     const client = await pool.connect();
     try {
         const insertRoutineQuery = `
-            INSERT INTO exercise_routine(member_id, description)
+            INSERT INTO exercise_routine(member_username, description)
             VALUES ($1, $2)
         `;
-        await client.query(insertRoutineQuery, [member_id, description]);
+        await client.query(insertRoutineQuery, [member_username, description]);
         console.log('Exercise routine added successfully.');
     } catch (err) {
         console.error('Failed to add exercise routine:', err.message);
@@ -223,14 +223,14 @@ async function addExerciseRoutine(member_id, description) {
 }
 
 // Function to add a health metric to a member (by a member)
-async function addHealthMetric(member_id, weight, body_fat_percentage, systolic_pressure, diastolic_pressure) {
+async function addHealthMetric(member_username, weight, body_fat_percentage, systolic_pressure, diastolic_pressure) {
     const client = await pool.connect();
     try {
         const insertMetricQuery = `
-            INSERT INTO health_metric(member_id, weight, body_fat_percentage, systolic_pressure, diastolic_pressure)
+            INSERT INTO health_metric(member_username, weight, body_fat_percentage, systolic_pressure, diastolic_pressure)
             VALUES ($1, $2, $3, $4, $5)
         `;
-        await client.query(insertMetricQuery, [member_id, weight, body_fat_percentage, systolic_pressure, diastolic_pressure]);
+        await client.query(insertMetricQuery, [member_username, weight, body_fat_percentage, systolic_pressure, diastolic_pressure]);
         console.log('Health metric added successfully.');
     } catch (err) {
         console.error('Failed to add health metric:', err.message);
@@ -241,7 +241,7 @@ async function addHealthMetric(member_id, weight, body_fat_percentage, systolic_
 }
 
 // Function to add a personal training session for a member (by a member or administrator)
-async function addPersonalTrainingSession(member_id, availability_id, description) {
+async function addPersonalTrainingSession(member_username, availability_id, description) {
     const client = await pool.connect();
     try {
         await client.query('BEGIN');
@@ -249,30 +249,30 @@ async function addPersonalTrainingSession(member_id, availability_id, descriptio
         if (availability.length === 0) {
             throw new Error('Availability not found or already booked.');
         }
-        const { trainer_id, begin_time, end_time } = availability[0];
+        const { trainer_username, begin_time, end_time } = availability[0];
 
         // Create the bill based on the duration of the session
         const duration = (end_time - begin_time) / (1000 * 3600);
         const rateQuery = `
             SELECT rate_per_hour
             FROM trainer
-            WHERE trainer_id = $1
+            WHERE trainer_username = $1
         `;
-        const { rows: rateRows } = await client.query(rateQuery, [trainer_id]);
+        const { rows: rateRows } = await client.query(rateQuery, [trainer_username]);
         if (rateRows.length === 0) {
             throw new Error('Trainer not found.');
         }
         const { rate_per_hour } = rateRows[0];
         const amount = rate_per_hour * duration;
-        await client.query(insertBillQuery, [member_id, amount, description]);
+        await client.query(insertBillQuery, [member_username, amount, description]);
 
         // Insert the session
         const insertSessionQuery = `
-            INSERT INTO personal_training_session(member_id, availability_id, description)
+            INSERT INTO personal_training_session(member_username, availability_id, description)
             VALUES ($1, $2, $3)
             RETURNING session_id
         `;
-        await client.query(insertSessionQuery, [member_id, availability_id, description]);
+        await client.query(insertSessionQuery, [member_username, availability_id, description]);
 
         // Mark the availability as booked
         await client.query(updateAvailabilityQuery, [availability_id]);
@@ -357,7 +357,7 @@ async function markClassCompleted(class_id) {
 }
 
 // Function to register a member for a group class (by a member)
-async function registerClassMember(class_id, member_id) {
+async function registerClassMember(class_id, member_username) {
     const client = await pool.connect();
     try {
         await client.query('BEGIN');
@@ -374,13 +374,13 @@ async function registerClassMember(class_id, member_id) {
 
         // Register the member for the class
         const insertMemberQuery = `
-            INSERT INTO class_member(class_id, member_id)
+            INSERT INTO class_member(class_id, member_username)
             VALUES ($1, $2)
         `;
-        await client.query(insertMemberQuery, [class_id, member_id]);
+        await client.query(insertMemberQuery, [class_id, member_username]);
 
         // Create a bill for the class registration
-        await client.query(insertBillQuery, [member_id, classRow[0].fee, classRow[0].description]);
+        await client.query(insertBillQuery, [member_username, classRow[0].fee, classRow[0].description]);
         await client.query('COMMIT'); // Commit transaction
         console.log('Class member registered and billed successfully.');
     } catch (err) {
