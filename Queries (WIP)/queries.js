@@ -12,7 +12,7 @@ const pool = new Pool({
 });
 
 // Query for inserting data into the account table
-const insertAccountQuery = `INSERT INTO account(account_id, name, password, user_type) VALUES ($1, $2, $3, $4)`;
+const insertAccountQuery = `INSERT INTO account(username, name, password, user_type) VALUES ($1, $2, $3, $4)`;
 // Query for inserting data into the bill table
 const insertBillQuery = `INSERT INTO bill(member_id, amount, description) VALUES ($1, $2, $3)`;
 // Query for checking trainer availability and booking a session
@@ -21,20 +21,20 @@ const availabilityQueryQuery = `SELECT trainer_id, begin_time, end_time FROM tra
 const updateAvailabilityQuery = `UPDATE trainer_availability SET is_booked = TRUE WHERE availability_id = $1`;
 
 // Function to register a new member (registration page or by an administrator)
-async function registerMember(account_id, name, password, age, gender) {
+async function registerMember(username, name, password, age, gender) {
     const client = await pool.connect();
     try {
         await client.query('BEGIN'); // Start transaction
         // Insert into account table
-        await client.query(insertAccountQuery, [account_id, name, password, 'Member']);
+        await client.query(insertAccountQuery, [username, name, password, 'Member']);
         // Insert into member table
         const insertMemberQuery = `
             INSERT INTO member(member_id, age, gender)
             VALUES ($1, $2, $3)
         `;
-        await client.query(insertMemberQuery, [account_id, age, gender]);
+        await client.query(insertMemberQuery, [username, age, gender]);
         // Insert an unpaid bill for $100.00
-        await client.query(insertBillQuery, [account_id, 100.00, 'Membership purchase']);
+        await client.query(insertBillQuery, [username, 100.00, 'Membership purchase']);
         await client.query('COMMIT'); // Commit the transaction
         console.log('Member registered successfully with initial bill.');
     } catch (err) {
@@ -46,18 +46,18 @@ async function registerMember(account_id, name, password, age, gender) {
 }
 
 // Function to register a new trainer (by an administrator)
-async function registerTrainer(account_id, name, password, rate_per_hour) {
+async function registerTrainer(username, name, password, rate_per_hour) {
     const client = await pool.connect();
     try {
         await client.query('BEGIN'); // Start transaction
         // Insert into account table
-        await client.query(insertAccountQuery, [account_id, name, password, 'Trainer']);
+        await client.query(insertAccountQuery, [username, name, password, 'Trainer']);
         // Insert into trainer table
         const insertTrainerQuery = `
             INSERT INTO trainer(trainer_id, rate_per_hour)
             VALUES ($1, $2)
         `;
-        await client.query(insertTrainerQuery, [account_id, rate_per_hour]);
+        await client.query(insertTrainerQuery, [username, rate_per_hour]);
         await client.query('COMMIT'); // Commit the transaction
         console.log('Trainer registered successfully.');
     } catch (err) {
@@ -69,18 +69,18 @@ async function registerTrainer(account_id, name, password, rate_per_hour) {
 }
 
 // Function to register a new administrator (by an existing administrator)
-async function registerAdministrator(account_id, name, password) {
+async function registerAdministrator(username, name, password) {
     const client = await pool.connect();
     try {
         await client.query('BEGIN'); // Start transaction
         // Insert into account table
-        await client.query(insertAccountQuery, [account_id, name, password, 'Administrator']);
+        await client.query(insertAccountQuery, [username, name, password, 'Administrator']);
         // Insert into administrator table
         const insertAdminQuery = `
             INSERT INTO administrator(administrator_id)
             VALUES ($1)
         `;
-        await client.query(insertAdminQuery, [account_id]);
+        await client.query(insertAdminQuery, [username]);
         await client.query('COMMIT'); // Commit the transaction
         console.log('Administrator registered successfully.');
     } catch (err) {

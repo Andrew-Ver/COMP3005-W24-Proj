@@ -27,7 +27,7 @@ CREATE TYPE service_type AS ENUM ('Membership', 'PersonalTraining', 'GroupClass'
 CREATE TYPE gender AS ENUM ('Female', 'Male', 'Other');
 
 CREATE TABLE account (
-    account_id VARCHAR(50) PRIMARY KEY,
+    username VARCHAR(50) PRIMARY KEY,
     name VARCHAR(50) NOT NULL,
     password VARCHAR(50) NOT NULL,
 	is_inactive BOOLEAN DEFAULT FALSE,
@@ -35,16 +35,16 @@ CREATE TABLE account (
 );
 
 CREATE TABLE administrator (
-    administrator_id VARCHAR(50) PRIMARY KEY REFERENCES account(account_id) ON DELETE CASCADE
+    administrator_id VARCHAR(50) PRIMARY KEY REFERENCES account(username) ON DELETE CASCADE
 );
 
 CREATE TABLE trainer (
-    trainer_id VARCHAR(50) PRIMARY KEY REFERENCES account(account_id) ON DELETE CASCADE,
+    trainer_id VARCHAR(50) PRIMARY KEY REFERENCES account(username) ON DELETE CASCADE,
 	rate_per_hour DECIMAL NOT NULL CHECK (rate_per_hour > 0)
 );
 
 CREATE TABLE member (
-    member_id VARCHAR(50) PRIMARY KEY REFERENCES account(account_id) ON DELETE CASCADE,
+    member_id VARCHAR(50) PRIMARY KEY REFERENCES account(username) ON DELETE CASCADE,
     age numeric(3, 0) CHECK (
         age > 0
         AND age < 150
@@ -87,7 +87,7 @@ CREATE TABLE exercise_routine (
 CREATE TABLE health_metric (
     member_id VARCHAR(50) NOT NULL,
     metric_timestamp TIMESTAMP NOT NULL DEFAULT NOW(),
-    weight DECIMAL NOT NULL,
+    weight DECIMAL NOT NULL, --In lbs
     body_fat_percentage DECIMAL NOT NULL,
     systolic_pressure INT NOT NULL,
     diastolic_pressure INT NOT NULL,
