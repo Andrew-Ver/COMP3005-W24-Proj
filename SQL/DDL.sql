@@ -2,24 +2,24 @@
     Zhenxuan Ding, Jiayu Hu and Andrew Verbovsky  */
 
 /*  Drop all the tables and types to ensure a clean start  */
-DROP TABLE IF EXISTS bill CASCADE;
 DROP TABLE IF EXISTS equipment CASCADE;
-DROP TABLE IF EXISTS room CASCADE;
 DROP TABLE IF EXISTS class_member CASCADE;
 DROP TABLE IF EXISTS group_class CASCADE;
+DROP TABLE IF EXISTS room CASCADE;
 DROP TABLE IF EXISTS personal_training_session CASCADE;
+DROP TABLE IF EXISTS bill CASCADE;
 DROP TABLE IF EXISTS health_metric CASCADE;
-DROP TABLE IF EXISTS member_goal CASCADE;
 DROP TABLE IF EXISTS exercise_routine CASCADE;
+DROP TABLE IF EXISTS member_goal CASCADE;
 DROP TABLE IF EXISTS trainer_availability CASCADE;
 DROP TABLE IF EXISTS trainer_specialty CASCADE;
 DROP TABLE IF EXISTS member CASCADE;
 DROP TABLE IF EXISTS trainer CASCADE;
 DROP TABLE IF EXISTS administrator CASCADE;
 DROP TABLE IF EXISTS account CASCADE;
-DROP TYPE IF EXISTS service_type;
-DROP TYPE IF EXISTS user_type;
-DROP TYPE IF EXISTS gender;
+DROP TYPE IF EXISTS gender CASCADE;
+DROP TYPE IF EXISTS service_type CASCADE;
+DROP TYPE IF EXISTS user_type CASCADE;
 
 /*  Actual table and type creation  */
 CREATE TYPE user_type AS ENUM ('Administrator', 'Trainer', 'Member');
@@ -35,16 +35,16 @@ CREATE TABLE account (
 );
 
 CREATE TABLE administrator (
-    administrator_id VARCHAR(50) PRIMARY KEY REFERENCES account(username) ON DELETE CASCADE
+    admin_username VARCHAR(50) PRIMARY KEY REFERENCES account(username) ON DELETE CASCADE
 );
 
 CREATE TABLE trainer (
-    trainer_id VARCHAR(50) PRIMARY KEY REFERENCES account(username) ON DELETE CASCADE,
+    trainer_username VARCHAR(50) PRIMARY KEY REFERENCES account(username) ON DELETE CASCADE,
 	rate_per_hour DECIMAL NOT NULL CHECK (rate_per_hour > 0)
 );
 
 CREATE TABLE member (
-    member_id VARCHAR(50) PRIMARY KEY REFERENCES account(username) ON DELETE CASCADE,
+    member_username VARCHAR(50) PRIMARY KEY REFERENCES account(username) ON DELETE CASCADE,
     age numeric(3, 0) CHECK (
         age > 0
         AND age < 150
@@ -53,65 +53,65 @@ CREATE TABLE member (
 );
 
 CREATE TABLE trainer_specialty (
-    trainer_id VARCHAR(50),
+    trainer_username VARCHAR(50),
     specialty VARCHAR(50),
-    PRIMARY KEY (trainer_id, specialty),
-    FOREIGN KEY (trainer_id) REFERENCES trainer(trainer_id) ON DELETE CASCADE
+    PRIMARY KEY (trainer_username, specialty),
+    FOREIGN KEY (trainer_username) REFERENCES trainer(trainer_username) ON DELETE CASCADE
 );
 
 CREATE TABLE trainer_availability (
     availability_id SERIAL PRIMARY KEY,
-    trainer_id VARCHAR(50) NOT NULL,
+    trainer_username VARCHAR(50) NOT NULL,
     is_booked BOOLEAN NOT NULL DEFAULT FALSE,
     begin_time TIMESTAMP NOT NULL,
     end_time TIMESTAMP NOT NULL,
-    FOREIGN KEY (trainer_id) REFERENCES trainer(trainer_id) ON DELETE CASCADE,
+    FOREIGN KEY (trainer_username) REFERENCES trainer(trainer_username) ON DELETE CASCADE,
 	CHECK (begin_time < end_time)
 );
 
 CREATE TABLE member_goal (
-    member_id VARCHAR(50),
+    member_username VARCHAR(50),
     goal_type VARCHAR(50),
 	achieved BOOLEAN DEFAULT FALSE,
-    PRIMARY KEY (member_id, goal_type),
-    FOREIGN KEY (member_id) REFERENCES member(member_id) ON DELETE CASCADE
+    PRIMARY KEY (member_username, goal_type),
+    FOREIGN KEY (member_username) REFERENCES member(member_username) ON DELETE CASCADE
 );
 
 CREATE TABLE exercise_routine (
-    member_id VARCHAR(50),
+    member_username VARCHAR(50),
     description VARCHAR(255),
-    PRIMARY KEY (member_id, description),
-    FOREIGN KEY (member_id) REFERENCES member(member_id) ON DELETE CASCADE
+    PRIMARY KEY (member_username, description),
+    FOREIGN KEY (member_username) REFERENCES member(member_username) ON DELETE CASCADE
 );
 
 CREATE TABLE health_metric (
-    member_id VARCHAR(50) NOT NULL,
+    member_username VARCHAR(50) NOT NULL,
     metric_timestamp TIMESTAMP NOT NULL DEFAULT NOW(),
     weight DECIMAL NOT NULL, --In lbs
     body_fat_percentage DECIMAL NOT NULL,
     systolic_pressure INT NOT NULL,
     diastolic_pressure INT NOT NULL,
-    PRIMARY KEY (member_id, metric_timestamp),
-    FOREIGN KEY (member_id) REFERENCES member(member_id) ON DELETE CASCADE
+    PRIMARY KEY (member_username, metric_timestamp),
+    FOREIGN KEY (member_username) REFERENCES member(member_username) ON DELETE CASCADE
 );
 
 CREATE TABLE bill (
     bill_id SERIAL PRIMARY KEY,
-    member_id VARCHAR(50) NOT NULL,
+    member_username VARCHAR(50) NOT NULL,
     amount DECIMAL NOT NULL,  -- Can be negative (refund)
 	description VARCHAR(255),
     bill_timestamp TIMESTAMP NOT NULL DEFAULT NOW(),
 	cleared BOOLEAN DEFAULT FALSE,
-    FOREIGN KEY (member_id) REFERENCES member(member_id)  --Keep bill record even if the user is deleted
+    FOREIGN KEY (member_username) REFERENCES member(member_username)  --Keep bill record even if the user is deleted
 );
 
 CREATE TABLE personal_training_session (
     session_id SERIAL PRIMARY KEY,
-    member_id VARCHAR(50) NOT NULL,
+    member_username VARCHAR(50) NOT NULL,
     availability_id INT NOT NULL,
 	description VARCHAR(255),
     completed BOOLEAN NOT NULL DEFAULT FALSE,
-    FOREIGN KEY (member_id) REFERENCES member(member_id) ON DELETE CASCADE,
+    FOREIGN KEY (member_username) REFERENCES member(member_username) ON DELETE CASCADE,
     FOREIGN KEY (availability_id) REFERENCES trainer_availability(availability_id) ON DELETE CASCADE
 );
 
@@ -134,10 +134,10 @@ CREATE TABLE group_class (
 
 CREATE TABLE class_member (
     class_id INT,
-    member_id VARCHAR(50),
-    PRIMARY KEY (class_id, member_id),
+    member_username VARCHAR(50),
+    PRIMARY KEY (class_id, member_username),
     FOREIGN KEY (class_id) REFERENCES group_class(class_id) ON DELETE CASCADE,
-    FOREIGN KEY (member_id) REFERENCES member(member_id) ON DELETE CASCADE
+    FOREIGN KEY (member_username) REFERENCES member(member_username) ON DELETE CASCADE
 );
 
 CREATE TABLE equipment (
