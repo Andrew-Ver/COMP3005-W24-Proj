@@ -23,14 +23,13 @@ export const login: LoginFn = async (username, password) => {
             if (passwordMatch) {
                 // Passwords match, return user object without password
                 delete user.password_hash;
-                //
                 user.role = user.user_type;
                 return user;
             }
         }
         return null; // Username or password incorrect
     } catch (error) {
-        console.error("Error authenticating user:", error);
+        //console.error("Error authenticating user:", error);
         throw error;
     }
 };
