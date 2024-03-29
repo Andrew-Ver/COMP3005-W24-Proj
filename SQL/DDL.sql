@@ -18,13 +18,11 @@ DROP TABLE IF EXISTS trainer CASCADE;
 DROP TABLE IF EXISTS administrator CASCADE;
 DROP TABLE IF EXISTS account CASCADE;
 DROP TYPE IF EXISTS gender CASCADE;
-DROP TYPE IF EXISTS service_type CASCADE;
 DROP TYPE IF EXISTS user_type CASCADE;
 
 /*  Actual table and type creation  */
-CREATE TYPE user_type AS ENUM ('Administrator', 'Trainer', 'Member');
-CREATE TYPE service_type AS ENUM ('Membership', 'PersonalTraining', 'GroupClass');
-CREATE TYPE gender AS ENUM ('Female', 'Male', 'Other');
+CREATE TYPE user_type AS ENUM ('administrator', 'trainer', 'member');
+CREATE TYPE gender AS ENUM ('female', 'male', 'other');
 
 CREATE TABLE account (
     username VARCHAR(50) PRIMARY KEY,

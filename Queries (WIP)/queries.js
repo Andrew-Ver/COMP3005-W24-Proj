@@ -26,7 +26,7 @@ async function registerMember(username, name, password, age, gender) {
     try {
         await client.query('BEGIN'); // Start transaction
         // Insert into account table
-        await client.query(insertAccountQuery, [username, name, password, 'Member']);
+        await client.query(insertAccountQuery, [username, name, password, 'member']);
         // Insert into member table
         const insertMemberQuery = `
             INSERT INTO member(member_username, age, gender)
@@ -51,7 +51,7 @@ async function registerTrainer(username, name, password, rate_per_hour) {
     try {
         await client.query('BEGIN'); // Start transaction
         // Insert into account table
-        await client.query(insertAccountQuery, [username, name, password, 'Trainer']);
+        await client.query(insertAccountQuery, [username, name, password, 'trainer']);
         // Insert into trainer table
         const insertTrainerQuery = `
             INSERT INTO trainer(trainer_username, rate_per_hour)
@@ -74,7 +74,7 @@ async function registerAdministrator(username, name, password) {
     try {
         await client.query('BEGIN'); // Start transaction
         // Insert into account table
-        await client.query(insertAccountQuery, [username, name, password, 'Administrator']);
+        await client.query(insertAccountQuery, [username, name, password, 'administrator']);
         // Insert into administrator table
         const insertAdminQuery = `
             INSERT INTO administrator(admin_username)
@@ -633,7 +633,7 @@ async function searchMembers(searchString) {
             FROM account a
             JOIN member m ON a.username = m.member_username
             WHERE a.is_deleted = FALSE
-            AND a.user_type = 'Member'
+            AND a.user_type = 'member'
             AND (a.username ILIKE $1 OR a.name ILIKE $1)
             ORDER BY a.name;
         `;
@@ -924,8 +924,8 @@ async function updateMemberAgeAndGender(username, age, gender) {
 
 async function main() {
     // Register member and perform related operations
-    await registerMember('userid123', 'John Doe', 'password123', 25, 'Male');
-    await registerMember('userid456', 'Jane Smith', 'password123', 22, 'Female');
+    await registerMember('userid123', 'John Doe', 'password123', 25, 'male');
+    await registerMember('userid456', 'Jane Smith', 'password123', 22, 'female');
     await createBill('userid123', 50.00, 'Personal Training Session Fee');
     await payBill(1);
     await payBill(1); // Attempt to pay the bill a second time as in the original example
