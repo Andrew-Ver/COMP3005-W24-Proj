@@ -428,9 +428,9 @@ async function bookRoomForClass(class_id, room_id) {
         if (classRows[0].completed) throw new Error('Class is already completed.');
 
         // Check if the room is active
-        const roomActiveQuery = `SELECT is_inactive FROM room WHERE room_id = $1`;
+        const roomActiveQuery = `SELECT is_deleted FROM room WHERE room_id = $1`;
         const { rows: roomRows } = await client.query(roomActiveQuery, [room_id]);
-        if (roomRows.length === 0 || roomRows[0].is_inactive) throw new Error('Room is inactive or not found.');
+        if (roomRows.length === 0 || roomRows[0].is_deleted) throw new Error('Room is inactive or not found.');
 
         // Check for room availability conflicts
         const conflictQuery = `
@@ -480,7 +480,7 @@ async function getAvailableRoomsForClass(class_id) {
         const availableRoomsQuery = `
             SELECT DISTINCT r.room_id
             FROM room r
-            WHERE r.is_inactive = FALSE AND NOT EXISTS (
+            WHERE r.is_deleted = FALSE AND NOT EXISTS (
                 SELECT 1
                 FROM group_class gc
                 JOIN trainer_availability ta ON gc.availability_id = ta.availability_id

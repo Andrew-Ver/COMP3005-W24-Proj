@@ -30,7 +30,7 @@ CREATE TABLE account (
     username VARCHAR(50) PRIMARY KEY,
     name VARCHAR(50) NOT NULL,
     password VARCHAR(50) NOT NULL,
-	is_inactive BOOLEAN DEFAULT FALSE,
+    is_deleted BOOLEAN DEFAULT FALSE,
     user_type user_type NOT NULL
 );
 
@@ -40,7 +40,7 @@ CREATE TABLE administrator (
 
 CREATE TABLE trainer (
     trainer_username VARCHAR(50) PRIMARY KEY REFERENCES account(username) ON DELETE CASCADE,
-	rate_per_hour DECIMAL NOT NULL CHECK (rate_per_hour > 0)
+    rate_per_hour DECIMAL NOT NULL CHECK (rate_per_hour > 0)
 );
 
 CREATE TABLE member (
@@ -49,7 +49,7 @@ CREATE TABLE member (
         age > 0
         AND age < 150
     ),
-	gender gender
+    gender gender
 );
 
 CREATE TABLE trainer_specialty (
@@ -66,13 +66,13 @@ CREATE TABLE trainer_availability (
     begin_time TIMESTAMP NOT NULL,
     end_time TIMESTAMP NOT NULL,
     FOREIGN KEY (trainer_username) REFERENCES trainer(trainer_username) ON DELETE CASCADE,
-	CHECK (begin_time < end_time)
+    CHECK (begin_time < end_time)
 );
 
 CREATE TABLE member_goal (
     member_username VARCHAR(50),
     goal_type VARCHAR(50),
-	achieved BOOLEAN DEFAULT FALSE,
+    achieved BOOLEAN DEFAULT FALSE,
     PRIMARY KEY (member_username, goal_type),
     FOREIGN KEY (member_username) REFERENCES member(member_username) ON DELETE CASCADE
 );
@@ -99,9 +99,9 @@ CREATE TABLE bill (
     bill_id SERIAL PRIMARY KEY,
     member_username VARCHAR(50) NOT NULL,
     amount DECIMAL NOT NULL,  -- Can be negative (refund)
-	description VARCHAR(255),
+    description VARCHAR(255),
     bill_timestamp TIMESTAMP NOT NULL DEFAULT NOW(),
-	cleared BOOLEAN DEFAULT FALSE,
+    cleared BOOLEAN DEFAULT FALSE,
     FOREIGN KEY (member_username) REFERENCES member(member_username)  --Keep bill record even if the user is deleted
 );
 
@@ -109,7 +109,7 @@ CREATE TABLE personal_training_session (
     session_id SERIAL PRIMARY KEY,
     member_username VARCHAR(50) NOT NULL,
     availability_id INT NOT NULL,
-	description VARCHAR(255),
+    description VARCHAR(255),
     completed BOOLEAN NOT NULL DEFAULT FALSE,
     FOREIGN KEY (member_username) REFERENCES member(member_username) ON DELETE CASCADE,
     FOREIGN KEY (availability_id) REFERENCES trainer_availability(availability_id) ON DELETE CASCADE
@@ -118,14 +118,14 @@ CREATE TABLE personal_training_session (
 CREATE TABLE room (
     room_id SERIAL PRIMARY KEY,
     description VARCHAR(255),
-	is_inactive BOOLEAN DEFAULT FALSE
+    is_deleted BOOLEAN DEFAULT FALSE
 );
 
 CREATE TABLE group_class (
     class_id SERIAL PRIMARY KEY,
     availability_id INT NOT NULL,
-	description VARCHAR(255),
-	fee DECIMAL NOT NULL CHECK (fee > 0),
+    description VARCHAR(255),
+    fee DECIMAL NOT NULL CHECK (fee > 0),
     room_id INT,
     completed BOOLEAN NOT NULL DEFAULT FALSE,
     FOREIGN KEY (availability_id) REFERENCES trainer_availability(availability_id) ON DELETE CASCADE,
