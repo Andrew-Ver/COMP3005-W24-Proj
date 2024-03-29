@@ -579,6 +579,28 @@ async function maintainEquipment(equipment_id) {
     }
 }
 
+async function showEquipment() {
+    const client = await pool.connect();
+    try {
+        const query = `
+            SELECT *
+            FROM equipment
+        `;
+        const { rows } = await client.query(query);
+        if (rows.length === 0) {
+            console.log('No equipment found.');
+        } else {
+            console.log('Equipment:', rows);
+        }
+        return rows;
+    } catch (err) {
+        console.error('Failed to get equipment list:', err);
+        throw err;
+    } finally {
+        client.release();
+    }
+}
+
 // Function to search for members by username or name (by a trainer or administrator)
 async function searchMembers(searchString) {
     const client = await pool.connect();
@@ -679,6 +701,29 @@ async function getHealthMetrics(member_username) {
     }
 }
 
+async function getAvailableTrainerSlots() {
+    const client = await pool.connect();
+    try {
+        const query = `
+            SELECT availability_id, trainer_username, begin_time, end_time
+            FROM trainer_availability
+            WHERE is_booked = FALSE
+            ORDER BY trainer_username, begin_time;
+        `;
+        const { rows } = await client.query(query);
+        if (rows.length === 0) {
+            console.log('No available slots found.');
+        } else {
+            console.log('Available trainer slots:', rows);
+        }
+        return rows;
+    } catch (err) {
+        console.error('Failed to get available trainer slots:', err);
+        throw err;
+    } finally {
+        client.release();
+    }
+}
 
 async function main() {
     // Register member and perform related operations
