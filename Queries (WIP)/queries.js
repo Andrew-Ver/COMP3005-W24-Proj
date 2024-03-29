@@ -239,6 +239,28 @@ async function addExerciseRoutine(member_username, description) {
     }
 }
 
+// Function to remove an exercise routine from a member (by a member)
+async function removeExerciseRoutine(member_username, description) {
+    const client = await pool.connect();
+    try {
+        const deleteRoutineQuery = `
+            DELETE FROM exercise_routine
+            WHERE member_username = $1 AND description = $2;
+        `;
+        const res = await client.query(deleteRoutineQuery, [member_username, description]);
+        if (res.rowCount === 0) {
+            console.log('No exercise routine found or removed.');
+        } else {
+            console.log('Exercise routine removed successfully.');
+        }
+    } catch (err) {
+        console.error('Failed to remove exercise routine:', err.message);
+        throw err;
+    } finally {
+        client.release();
+    }
+}
+
 // Function to add a health metric to a member (by a member)
 async function addHealthMetric(member_username, weight, body_fat_percentage, systolic_pressure, diastolic_pressure) {
     const client = await pool.connect();
@@ -719,6 +741,131 @@ async function getAvailableTrainerSlots() {
         return rows;
     } catch (err) {
         console.error('Failed to get available trainer slots:', err);
+        throw err;
+    } finally {
+        client.release();
+    }
+}
+
+async function getCompletedPersonalSessions(member_username) {
+    const client = await pool.connect();
+    try {
+        const query = `
+            SELECT pts.session_id, pts.description, pts.completed, ta.end_time
+            FROM personal_training_session pts
+            JOIN trainer_availability ta ON pts.availability_id = ta.availability_id
+            WHERE pts.member_username = $1 AND pts.completed = TRUE
+            ORDER BY pts.session_id;
+        `;
+        const { rows } = await client.query(query, [member_username]);
+        if (rows.length === 0) {
+            console.log('No completed training sessions found for the member.');
+        } else {
+            console.log('Completed training sessions with end times:', rows);
+        }
+        return rows;
+    } catch (err) {
+        console.error('Failed to get completed training sessions:', err);
+        throw err;
+    } finally {
+        client.release();
+    }
+}
+
+
+async function getCompletedClasses(member_username) {
+    const client = await pool.connect();
+    try {
+        const query = `
+            SELECT gc.class_id, gc.description, gc.completed, ta.end_time
+            FROM group_class gc
+            JOIN class_member cm ON gc.class_id = cm.class_id
+            JOIN trainer_availability ta ON gc.availability_id = ta.availability_id
+            WHERE cm.member_username = $1 AND gc.completed = TRUE
+            ORDER BY gc.class_id;
+        `;
+        const { rows } = await client.query(query, [member_username]);
+        if (rows.length === 0) {
+            console.log('No completed classes found for the member.');
+        } else {
+            console.log('Completed classes with end times:', rows);
+        }
+        return rows;
+    } catch (err) {
+        console.error('Failed to get completed classes:', err);
+        throw err;
+    } finally {
+        client.release();
+    }
+}
+
+// Function to soft-delete a user account (by an administrator)
+async function deleteUser(username) {
+    const client = await pool.connect();
+    try {
+        const query = `
+            UPDATE account
+            SET is_deleted = TRUE
+            WHERE username = $1;
+        `;
+        await client.query(query, [username]);
+        console.log('User successfully marked as deleted:', username);
+    } catch (err) {
+        console.error('Failed to delete user:', err);
+        throw err;
+    } finally {
+        client.release();
+    }
+}
+
+async function changeUserPassword(username, newPassword) {
+    const client = await pool.connect();
+    try {
+        const query = `
+            UPDATE account
+            SET password = $2
+            WHERE username = $1;
+        `;
+        await client.query(query, [username, newPassword]);
+        console.log('Password successfully updated for user:', username);
+    } catch (err) {
+        console.error('Failed to change password:', err);
+        throw err;
+    } finally {
+        client.release();
+    }
+}
+
+async function changeName(username, newName) {
+    const client = await pool.connect();
+    try {
+        const query = `
+            UPDATE account
+            SET name = $2
+            WHERE username = $1;
+        `;
+        await client.query(query, [username, newName]);
+        console.log('Name successfully updated for user:', username);
+    } catch (err) {
+        console.error('Failed to change name:', err);
+        throw err;
+    } finally {
+        client.release();
+    }
+}
+
+async function updateMemberAgeAndGender(username, age, gender) {
+    const client = await pool.connect();
+    try {
+        const query = `
+            UPDATE member
+            SET age = $2, gender = $3
+            WHERE member_username = $1;
+        `;
+        await client.query(query, [username, age, gender]);
+        console.log('Member age and gender successfully updated for user:', username);
+    } catch (err) {
+        console.error('Failed to update member info:', err);
         throw err;
     } finally {
         client.release();
