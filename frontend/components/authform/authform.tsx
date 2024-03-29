@@ -1,12 +1,9 @@
 import {
     TextInput,
     PasswordInput,
-    Checkbox,
     Anchor,
     Paper,
-    Title,
     Text,
-    Container,
     PaperProps,
     Group,
     Divider,
@@ -14,9 +11,7 @@ import {
     Button,
     RadioGroup,
     Radio,
-    Notification,
     Tooltip,
-    rem,
     Flex,
 } from "@mantine/core";
 
@@ -25,7 +20,7 @@ import React from "react";
 import { useForm } from "@mantine/form";
 import { useToggle, upperFirst } from "@mantine/hooks";
 
-import { useSession, signIn } from "next-auth/react";
+import { signIn } from "next-auth/react";
 
 import { notifications } from "@mantine/notifications";
 
@@ -39,14 +34,14 @@ export default function AuthForm(props: PaperProps) {
             password: "",
             firstname: "",
             lastname: "",
-            role: "Member",
+            role: "member",
         },
 
         validate: {
             username: (value) =>
                 value.length >= 3 ? null : "Name is too short",
             password: (value) =>
-                value.length >= 6 ? null : "Password is too short",
+                value.length >= 5 ? null : "Password is too short",
             // firstname: (value) =>
             //     value.length >= 3 ? null : "Name is too short",
             // lastname: (value) =>
@@ -62,11 +57,10 @@ export default function AuthForm(props: PaperProps) {
     }) => {
         if (type === "login") {
             const result: any = await signIn("credentials", {
-                username: values.username,
+                username: values.username.toLowerCase(),
                 password: values.password,
                 redirect: false,
             });
-
             console.log(`result: ${JSON.stringify(result)}`);
 
             if (!result.ok) {
@@ -93,7 +87,6 @@ export default function AuthForm(props: PaperProps) {
             }
         } else if (type === "register") {
             // Call the API endpoint to register the user
-            console.log("Registering user: ", values);
             const response: any = await fetch("/api/register", {
                 method: "POST",
                 headers: {
@@ -102,8 +95,17 @@ export default function AuthForm(props: PaperProps) {
                 //body: JSON.stringify(values),
                 // Combine first and last name into a single name field
                 body: JSON.stringify({
-                    ...values,
-                    name: `${values.firstname} ${values.lastname}`,
+                    // ...values, (Unpack values)
+                    // But instead we are converting the username to lowercase at registration
+                    username: values.username.toLowerCase(),
+                    password: values.password,
+                    // disregard type-error,
+                    role: values.role,
+                    // Titlecase the name
+                    name: `${values.firstname} ${values.lastname}`.replace(
+                        /\b\w/g,
+                        (c: any) => c.toUpperCase()
+                    ),
                 }),
             });
             if (!response.ok) {
@@ -123,13 +125,13 @@ export default function AuthForm(props: PaperProps) {
                 //toggle();
                 notifications.show({
                     title: "User Registered",
-                    message: "User registered successfully",
+                    message: `Successfully Registered as: ${values.username}`,
                     color: "green",
                 });
                 // Login after successfully registration
                 try {
                     await signIn("credentials", {
-                        username: values.username,
+                        username: values.username.toLowerCase(),
                         password: values.password,
                         redirect: false,
                     });
@@ -138,7 +140,7 @@ export default function AuthForm(props: PaperProps) {
                     notifications.show({
                         title: "Error Attempting to Log In",
                         icon: <IconX />,
-                        message: "An error occurred",
+                        message: `An error occurred (${error})`,
                         color: "red",
                     });
                 }
@@ -228,10 +230,10 @@ export default function AuthForm(props: PaperProps) {
                                 }
                             >
                                 <Group justify="center">
-                                    <Radio value="Member" label="Member" />
-                                    <Radio value="Trainer" label="Trainer" />
+                                    <Radio value="member" label="Member" />
+                                    <Radio value="trainer" label="Trainer" />
                                     <Radio
-                                        value="Administrator"
+                                        value="administrator"
                                         label="Staff"
                                     />
                                 </Group>

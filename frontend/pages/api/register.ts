@@ -11,7 +11,6 @@ export default async function handler(
     }
     const { username, name, password, role } = req.body;
 
-    console.log(req.body);
     try {
         // Don't hash password for Assignment
         // const hashedPassword = await hash(password, 10); // You can adjust the salt rounds as needed

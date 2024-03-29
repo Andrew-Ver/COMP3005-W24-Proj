@@ -2,6 +2,7 @@ import cx from "clsx";
 import {
     Container,
     Avatar,
+    Badge,
     UnstyledButton,
     Group,
     Text,
@@ -11,8 +12,11 @@ import {
     Button,
     Tooltip,
     Loader,
-    Center,
-    Stack,
+    Flex,
+    Space,
+    useMantineColorScheme,
+    useComputedColorScheme,
+    ActionIcon,
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import classes from "./header.module.css";
@@ -24,26 +28,27 @@ import { IconUserOff, IconUser } from "@tabler/icons-react";
 
 import { usePathname } from "next/navigation";
 
+import { IconSun, IconMoon } from "@tabler/icons-react";
+
 const membersLinks = [
     { href: "/", title: "Home" },
-    { href: "/profile", title: "Profile" },
-    { href: "/schedule", title: "Schedule" },
-    { href: "/dashboard", title: "Dashboard" },
+    { href: "/member/profile", title: "Profile" },
+    { href: "/member/schedule", title: "Schedule" },
+    { href: "/member/dashboard", title: "Dashboard" },
 ];
 
 const trainerLinks = [
     { href: "/", title: "Home" },
-    { href: "/schedule", title: "Scheduling" },
-    { href: "/search", title: "Member Search" },
+    { href: "/trainer/schedule", title: "Scheduling" },
+    { href: "/trainer/search", title: "Member Search" },
 ];
 
 const adminLinks = [
     { href: "/", title: "Home" },
-    { href: "/schedule", title: "Class Schedule" },
-    { href: "/search", title: "Member Search" },
-    { href: "/room-booking", title: "Room Booking" },
-    { href: "/maintenance", title: "Maintenance" },
-    { href: "/billing", title: "Billing" },
+    { href: "/admin/equipment", title: "Maintenance" },
+    { href: "/admin/room-booking", title: "Room Booking" },
+    { href: "/admin/schedule", title: "Class Schedule" },
+    { href: "/admin/search", title: "Member Search" },
 ];
 
 const unauthenticatedLinks = [
@@ -65,13 +70,19 @@ export default function Header() {
         name: session?.user?.name,
     };
 
+    const { setColorScheme } = useMantineColorScheme();
+
+    const computedColorScheme = useComputedColorScheme("light", {
+        getInitialValueInEffect: true,
+    });
+
     let links: Array<Record<string, string>> = [];
 
-    if (currentUser.role === "Member") {
+    if (currentUser.role === "member") {
         links = membersLinks;
-    } else if (currentUser.role === "Trainer") {
+    } else if (currentUser.role === "trainer") {
         links = trainerLinks;
-    } else if (currentUser.role === "Administrator") {
+    } else if (currentUser.role === "administrator") {
         links = adminLinks;
     } else {
         links = unauthenticatedLinks;
@@ -86,6 +97,7 @@ export default function Header() {
                 duration: 300,
             }}
             position="bottom"
+            color="rgb(51, 58, 115)"
         >
             <Tabs.Tab value={link.href} key={link.href}>
                 {link.title}
@@ -96,7 +108,12 @@ export default function Header() {
     return (
         <div className={classes.header}>
             <Container className={classes.mainSection} size="md">
-                <Group justify="space-between" mx="1rem">
+                <Flex
+                    justify="space-between"
+                    align="center"
+                    mx="1rem"
+                    direction="row"
+                >
                     <Menu
                         shadow="md"
                         width={200}
@@ -115,7 +132,14 @@ export default function Header() {
 
                         <Menu.Dropdown>
                             {links.map((link: Record<string, string>) => (
-                                <Menu.Item key={link.title} onClick={toggle}>
+                                <Menu.Item
+                                    value={link.href}
+                                    key={link.title}
+                                    onClick={() => {
+                                        toggle();
+                                        router.push(link.href);
+                                    }}
+                                >
                                     {link.title}
                                 </Menu.Item>
                             ))}
@@ -126,7 +150,7 @@ export default function Header() {
                         Health & Fitness Club
                     </Text>
 
-                    <Stack>
+                    <Flex direction="column" justify="center">
                         {status === "loading" && (
                             <Loader size={30} color="blue" />
                         )}
@@ -145,12 +169,17 @@ export default function Header() {
                                 </Avatar>
                                 {session?.user && (
                                     <Tooltip
-                                        label={session?.user.name}
+                                        label={
+                                            "Logged in as: " +
+                                            session?.user.name
+                                        }
                                         transitionProps={{
                                             transition: "skew-up",
                                             duration: 300,
                                         }}
                                         position="bottom"
+                                        offset={15}
+                                        color="rgb(51, 58, 115)"
                                     >
                                         <Text fw={700} size="sm" lh={1} mr={3}>
                                             {currentUser.name} (
@@ -165,7 +194,9 @@ export default function Header() {
                                             transition: "skew-up",
                                             duration: 300,
                                         }}
-                                        position="left"
+                                        position="bottom"
+                                        offset={15}
+                                        color="rgb(51, 58, 115)"
                                     >
                                         <Text fw={700} size="sm" lh={1} mr={3}>
                                             Not logged in
@@ -174,23 +205,59 @@ export default function Header() {
                                 )}
                             </Group>
                         </UnstyledButton>
-
-                        {session?.user && (
-                            <Tooltip
-                                label="Log Out"
-                                transitionProps={{
-                                    transition: "skew-up",
-                                    duration: 300,
-                                }}
-                                position="bottom"
+                        <Flex
+                            direction="row"
+                            align="center"
+                            justify="space-between"
+                            px={12}
+                            py={1}
+                        >
+                            <ActionIcon
+                                variant="outline"
+                                radius="md"
+                                onClick={() =>
+                                    setColorScheme(
+                                        computedColorScheme === "light"
+                                            ? "dark"
+                                            : "light"
+                                    )
+                                }
                             >
-                                <Button size="xs" onClick={() => signOut()}>
-                                    Log Out
-                                </Button>
-                            </Tooltip>
-                        )}
-                    </Stack>
-                </Group>
+                                <IconSun
+                                    className={cx(classes.icon, classes.light)}
+                                    stroke={1.5}
+                                />
+                                <IconMoon
+                                    className={cx(classes.icon, classes.dark)}
+                                    stroke={1.5}
+                                />
+                            </ActionIcon>
+
+                            <Space w="sm" />
+
+                            {session?.user && (
+                                <Tooltip
+                                    label="Log Out"
+                                    transitionProps={{
+                                        transition: "skew-up",
+                                        duration: 300,
+                                    }}
+                                    position="bottom"
+                                    color="rgb(51, 58, 115)"
+                                >
+                                    <Button
+                                        variant="outline"
+                                        size="xs"
+                                        radius="lg"
+                                        onClick={() => signOut()}
+                                    >
+                                        Log Out
+                                    </Button>
+                                </Tooltip>
+                            )}
+                        </Flex>
+                    </Flex>
+                </Flex>
             </Container>
             <Container size="md">
                 <Tabs
