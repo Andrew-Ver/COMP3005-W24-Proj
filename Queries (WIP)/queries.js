@@ -747,6 +747,56 @@ async function getAvailableTrainerSlots() {
     }
 }
 
+async function changeClassScheduling(class_id, from_availability_id, to_availability_id) {
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+
+        // Check if the class is already completed
+        const checkClassCompletedQuery = `
+            SELECT completed FROM group_class WHERE class_id = $1;
+        `;
+        const { rows: classRows } = await client.query(checkClassCompletedQuery, [class_id]);
+        if (classRows.length === 0) throw new Error('Class not found.');
+        if (classRows[0].completed) throw new Error('Cannot change scheduling for a completed class.');
+
+        // Check if the target availability is already booked
+        const checkAvailabilityQuery = `
+            SELECT is_booked FROM trainer_availability WHERE availability_id = $1;
+        `;
+        const { rows: availabilityRows } = await client.query(checkAvailabilityQuery, [to_availability_id]);
+        if (availabilityRows.length === 0) throw new Error('Target availability not found.');
+        if (availabilityRows[0].is_booked) throw new Error('Target availability is already booked.');
+
+        // Mark the previous availability as not booked
+        const markPreviousAvailabilityQuery = `
+            UPDATE trainer_availability SET is_booked = FALSE WHERE availability_id = $1;
+        `;
+        await client.query(markPreviousAvailabilityQuery, [from_availability_id]);
+
+        // Update the group_class with the new availability_id and reset the room_id to NULL (you need to book again)
+        const updateClassQuery = `
+            UPDATE group_class SET availability_id = $2, room_id = NULL WHERE class_id = $1;
+        `;
+        await client.query(updateClassQuery, [class_id, to_availability_id]);
+
+        // Mark the new availability as booked
+        const markNewAvailabilityQuery = `
+            UPDATE trainer_availability SET is_booked = TRUE WHERE availability_id = $1;
+        `;
+        await client.query(markNewAvailabilityQuery, [to_availability_id]);
+
+        await client.query('COMMIT');
+        console.log('Class scheduling changed successfully.');
+    } catch (err) {
+        await client.query('ROLLBACK');
+        console.error('Failed to change class scheduling:', err.message);
+        throw err;
+    } finally {
+        client.release();
+    }
+}
+
 async function getCompletedPersonalSessions(member_username) {
     const client = await pool.connect();
     try {
