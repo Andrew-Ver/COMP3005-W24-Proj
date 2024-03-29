@@ -6,7 +6,7 @@
     );
     border-bottom: rem(1px) solid
         light-dark(var(--mantine-color-gray-2), transparent);
-    margin-bottom: rem(120px);
+    margin-bottom: rem(30px);
 }
 
 .mainSection {
@@ -21,7 +21,7 @@
 
     &:hover {
         background-color: light-dark(
-            var(--mantine-color-white),
+            var(--mantine-color-blue-light),
             var(--mantine-color-dark-8)
         );
     }
@@ -33,7 +33,7 @@
 
 .userActive {
     background-color: light-dark(
-        var(--mantine-color-white),
+        var(--mantine-color-blue-light),
         var(--mantine-color-dark-8)
     );
 }
@@ -76,5 +76,30 @@
             var(--mantine-color-dark-7)
         );
         border-bottom-color: transparent;
+    }
+}
+
+.icon {
+    width: rem(22px);
+    height: rem(22px);
+}
+
+.dark {
+    @mixin dark {
+        display: none;
+    }
+
+    @mixin light {
+        display: block;
+    }
+}
+
+.light {
+    @mixin light {
+        display: none;
+    }
+
+    @mixin dark {
+        display: block;
     }
 }
