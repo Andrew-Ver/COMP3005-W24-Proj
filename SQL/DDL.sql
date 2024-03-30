@@ -11,8 +11,6 @@ DROP TABLE IF EXISTS bill CASCADE;
 DROP TABLE IF EXISTS health_metric CASCADE;
 DROP TABLE IF EXISTS exercise_routine CASCADE;
 DROP TABLE IF EXISTS member_goal CASCADE;
-DROP TABLE IF EXISTS exercise_routine CASCADE;
-DROP TABLE IF EXISTS member_goal CASCADE;
 DROP TABLE IF EXISTS trainer_availability CASCADE;
 DROP TABLE IF EXISTS trainer_specialty CASCADE;
 DROP TABLE IF EXISTS member CASCADE;
@@ -84,13 +82,6 @@ CREATE TABLE exercise_routine (
     FOREIGN KEY (member_username) REFERENCES member(member_username) ON DELETE CASCADE
 );
 
-CREATE TABLE exercise_routine (
-    member_username VARCHAR(50),
-    description VARCHAR(255),
-    PRIMARY KEY (member_username, description),
-    FOREIGN KEY (member_username) REFERENCES member(member_username) ON DELETE CASCADE
-);
-
 CREATE TABLE health_metric (
     member_username VARCHAR(50) NOT NULL,
     metric_timestamp TIMESTAMP NOT NULL DEFAULT NOW(),
@@ -107,16 +98,6 @@ CREATE TABLE bill (
     member_username VARCHAR(50) NOT NULL,
     amount DECIMAL NOT NULL,  -- Can be negative (refund)
     description VARCHAR(255),
-    bill_timestamp TIMESTAMP NOT NULL DEFAULT NOW(),
-    cleared BOOLEAN DEFAULT FALSE,
-    FOREIGN KEY (member_username) REFERENCES member(member_username)  --Keep bill record even if the user is deleted
-);
-
-CREATE TABLE bill (
-    bill_id SERIAL PRIMARY KEY,
-    member_username VARCHAR(50) NOT NULL,
-    amount DECIMAL NOT NULL,  -- Can be negative (refund)
-	description VARCHAR(255),
     bill_timestamp TIMESTAMP NOT NULL DEFAULT NOW(),
     cleared BOOLEAN DEFAULT FALSE,
     FOREIGN KEY (member_username) REFERENCES member(member_username)  --Keep bill record even if the user is deleted
