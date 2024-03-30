@@ -26,7 +26,7 @@ async function registerMember(username, name, password, age, gender) {
     try {
         await client.query('BEGIN'); // Start transaction
         // Insert into account table
-        await client.query(insertAccountQuery, [username, name, password, 'Member']);
+        await client.query(insertAccountQuery, [username, name, password, 'member']);
         // Insert into member table
         const insertMemberQuery = `
             INSERT INTO member(member_username, age, gender)
@@ -51,7 +51,7 @@ async function registerTrainer(username, name, password, rate_per_hour) {
     try {
         await client.query('BEGIN'); // Start transaction
         // Insert into account table
-        await client.query(insertAccountQuery, [username, name, password, 'Trainer']);
+        await client.query(insertAccountQuery, [username, name, password, 'trainer']);
         // Insert into trainer table
         const insertTrainerQuery = `
             INSERT INTO trainer(trainer_username, rate_per_hour)
@@ -74,7 +74,7 @@ async function registerAdministrator(username, name, password) {
     try {
         await client.query('BEGIN'); // Start transaction
         // Insert into account table
-        await client.query(insertAccountQuery, [username, name, password, 'Administrator']);
+        await client.query(insertAccountQuery, [username, name, password, 'administrator']);
         // Insert into administrator table
         const insertAdminQuery = `
             INSERT INTO administrator(admin_username)
@@ -154,6 +154,23 @@ async function addTrainerSpecialty(trainer_username, specialty) {
 async function addTrainerAvailability(trainer_username, begin_time, end_time) {
     const client = await pool.connect();
     try {
+        // Check for time conflict with existing availability
+        const conflictCheckQuery = `
+            SELECT 1
+            FROM trainer_availability
+            WHERE trainer_username = $1
+            AND (
+                begin_time < $3
+                AND end_time > $2
+            )
+        `;
+        const conflictResult = await client.query(conflictCheckQuery, [trainer_username, begin_time, end_time]);
+        if (conflictResult.rows.length > 0) {
+            console.log('Trainer has an existing availability that conflicts with the provided time.');
+            return;
+        }
+
+        // Add the new availability if there is no conflict
         const insertAvailabilityQuery = `
             INSERT INTO trainer_availability(trainer_username, begin_time, end_time)
             VALUES ($1, $2, $3)
@@ -216,6 +233,28 @@ async function addExerciseRoutine(member_username, description) {
         console.log('Exercise routine added successfully.');
     } catch (err) {
         console.error('Failed to add exercise routine:', err.message);
+        throw err;
+    } finally {
+        client.release();
+    }
+}
+
+// Function to remove an exercise routine from a member (by a member)
+async function removeExerciseRoutine(member_username, description) {
+    const client = await pool.connect();
+    try {
+        const deleteRoutineQuery = `
+            DELETE FROM exercise_routine
+            WHERE member_username = $1 AND description = $2;
+        `;
+        const res = await client.query(deleteRoutineQuery, [member_username, description]);
+        if (res.rowCount === 0) {
+            console.log('No exercise routine found or removed.');
+        } else {
+            console.log('Exercise routine removed successfully.');
+        }
+    } catch (err) {
+        console.error('Failed to remove exercise routine:', err.message);
         throw err;
     } finally {
         client.release();
@@ -428,17 +467,17 @@ async function bookRoomForClass(class_id, room_id) {
         if (classRows[0].completed) throw new Error('Class is already completed.');
 
         // Check if the room is active
-        const roomActiveQuery = `SELECT is_inactive FROM room WHERE room_id = $1`;
+        const roomActiveQuery = `SELECT is_deleted FROM room WHERE room_id = $1`;
         const { rows: roomRows } = await client.query(roomActiveQuery, [room_id]);
-        if (roomRows.length === 0 || roomRows[0].is_inactive) throw new Error('Room is inactive or not found.');
+        if (roomRows.length === 0 || roomRows[0].is_deleted) throw new Error('Room is inactive or not found.');
 
         // Check for room availability conflicts
         const conflictQuery = `
             SELECT c.class_id
             FROM group_class c
             JOIN trainer_availability a ON c.availability_id = a.availability_id
-            WHERE c.room_id = $1 AND c.class_id != $2 AND NOT (
-                a.end_time <= $3 OR a.begin_time >= $4
+            WHERE c.room_id = $1 AND c.class_id != $2 AND (
+                a.begin_time < $4 AND a.end_time > $3
             )
         `;
         const conflictRows = await client.query(conflictQuery, [room_id, class_id, classRows[0].begin_time, classRows[0].end_time]);
@@ -480,15 +519,14 @@ async function getAvailableRoomsForClass(class_id) {
         const availableRoomsQuery = `
             SELECT DISTINCT r.room_id
             FROM room r
-            WHERE r.is_inactive = FALSE AND NOT EXISTS (
+            WHERE r.is_deleted = FALSE AND NOT EXISTS (
                 SELECT 1
                 FROM group_class gc
                 JOIN trainer_availability ta ON gc.availability_id = ta.availability_id
                 WHERE gc.room_id = r.room_id
                 AND (
-                    (ta.begin_time < $1 AND ta.end_time > $1)
-                    OR (ta.begin_time < $2 AND ta.end_time > $2)
-                    OR (ta.begin_time >= $1 AND ta.end_time <= $2)
+                    ta.begin_time < $2
+                    AND ta.end_time > $1
                 )
                 AND gc.completed = FALSE
             )
@@ -563,9 +601,331 @@ async function maintainEquipment(equipment_id) {
     }
 }
 
+async function showEquipment() {
+    const client = await pool.connect();
+    try {
+        const query = `
+            SELECT *
+            FROM equipment
+        `;
+        const { rows } = await client.query(query);
+        if (rows.length === 0) {
+            console.log('No equipment found.');
+        } else {
+            console.log('Equipment:', rows);
+        }
+        return rows;
+    } catch (err) {
+        console.error('Failed to get equipment list:', err);
+        throw err;
+    } finally {
+        client.release();
+    }
+}
+
+// Function to search for members by username or name (by a trainer or administrator)
+async function searchMembers(searchString) {
+    const client = await pool.connect();
+    try {
+        const fuzzySearchString = `%${searchString}%`;
+        const searchMemberQuery = `
+            SELECT a.username, a.name, m.age, m.gender
+            FROM account a
+            JOIN member m ON a.username = m.member_username
+            WHERE a.is_deleted = FALSE
+            AND a.user_type = 'member'
+            AND (a.username ILIKE $1 OR a.name ILIKE $1)
+            ORDER BY a.name;
+        `;
+
+        const { rows } = await client.query(searchMemberQuery, [fuzzySearchString]);
+        if (rows.length === 0) {
+            console.log('No matching members found.');
+        } else {
+            console.log('Matching members:', rows);
+        }
+        return rows;
+    } catch (err) {
+        console.error('Failed to search for members:', err);
+        throw err;
+    } finally {
+        client.release();
+    }
+}
+
+async function getMemberGoals(member_username) {
+    const client = await pool.connect();
+    try {
+        const query = `
+            SELECT goal_type, achieved
+            FROM member_goal
+            WHERE member_username = $1;
+        `;
+        const { rows } = await client.query(query, [member_username]);
+        if (rows.length === 0) {
+            console.log('No goals found for member.');
+        } else {
+            console.log('Member goals:', rows);
+        }
+        return rows;
+    } catch (err) {
+        console.error('Failed to get member goals:', err);
+        throw err;
+    } finally {
+        client.release();
+    }
+}
+
+async function getExerciseRoutines(member_username) {
+    const client = await pool.connect();
+    try {
+        const query = `
+            SELECT description
+            FROM exercise_routine
+            WHERE member_username = $1;
+        `;
+        const { rows } = await client.query(query, [member_username]);
+        if (rows.length === 0) {
+            console.log('No exercise routines found for member.');
+        } else {
+            console.log('Exercise routines:', rows);
+        }
+        return rows;
+    } catch (err) {
+        console.error('Failed to get exercise routines:', err);
+        throw err;
+    } finally {
+        client.release();
+    }
+}
+
+async function getHealthMetrics(member_username) {
+    const client = await pool.connect();
+    try {
+        const query = `
+            SELECT metric_timestamp, weight, body_fat_percentage, systolic_pressure, diastolic_pressure
+            FROM health_metric
+            WHERE member_username = $1
+            ORDER BY metric_timestamp DESC;
+        `;
+        const { rows } = await client.query(query, [member_username]);
+        if (rows.length === 0) {
+            console.log('No health metrics found for member.');
+        } else {
+            console.log('Health metrics:', rows);
+        }
+        return rows;
+    } catch (err) {
+        console.error('Failed to get health metrics:', err);
+        throw err;
+    } finally {
+        client.release();
+    }
+}
+
+async function getAvailableTrainerSlots() {
+    const client = await pool.connect();
+    try {
+        const query = `
+            SELECT availability_id, trainer_username, begin_time, end_time
+            FROM trainer_availability
+            WHERE is_booked = FALSE
+            ORDER BY trainer_username, begin_time;
+        `;
+        const { rows } = await client.query(query);
+        if (rows.length === 0) {
+            console.log('No available slots found.');
+        } else {
+            console.log('Available trainer slots:', rows);
+        }
+        return rows;
+    } catch (err) {
+        console.error('Failed to get available trainer slots:', err);
+        throw err;
+    } finally {
+        client.release();
+    }
+}
+
+async function changeClassScheduling(class_id, from_availability_id, to_availability_id) {
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+
+        // Check if the class is already completed
+        const checkClassCompletedQuery = `
+            SELECT completed FROM group_class WHERE class_id = $1;
+        `;
+        const { rows: classRows } = await client.query(checkClassCompletedQuery, [class_id]);
+        if (classRows.length === 0) throw new Error('Class not found.');
+        if (classRows[0].completed) throw new Error('Cannot change scheduling for a completed class.');
+
+        // Check if the target availability is already booked
+        const checkAvailabilityQuery = `
+            SELECT is_booked FROM trainer_availability WHERE availability_id = $1;
+        `;
+        const { rows: availabilityRows } = await client.query(checkAvailabilityQuery, [to_availability_id]);
+        if (availabilityRows.length === 0) throw new Error('Target availability not found.');
+        if (availabilityRows[0].is_booked) throw new Error('Target availability is already booked.');
+
+        // Mark the previous availability as not booked
+        const markPreviousAvailabilityQuery = `
+            UPDATE trainer_availability SET is_booked = FALSE WHERE availability_id = $1;
+        `;
+        await client.query(markPreviousAvailabilityQuery, [from_availability_id]);
+
+        // Update the group_class with the new availability_id and reset the room_id to NULL (you need to book again)
+        const updateClassQuery = `
+            UPDATE group_class SET availability_id = $2, room_id = NULL WHERE class_id = $1;
+        `;
+        await client.query(updateClassQuery, [class_id, to_availability_id]);
+
+        // Mark the new availability as booked
+        const markNewAvailabilityQuery = `
+            UPDATE trainer_availability SET is_booked = TRUE WHERE availability_id = $1;
+        `;
+        await client.query(markNewAvailabilityQuery, [to_availability_id]);
+
+        await client.query('COMMIT');
+        console.log('Class scheduling changed successfully.');
+    } catch (err) {
+        await client.query('ROLLBACK');
+        console.error('Failed to change class scheduling:', err.message);
+        throw err;
+    } finally {
+        client.release();
+    }
+}
+
+async function getCompletedPersonalSessions(member_username) {
+    const client = await pool.connect();
+    try {
+        const query = `
+            SELECT pts.session_id, pts.description, pts.completed, ta.end_time
+            FROM personal_training_session pts
+            JOIN trainer_availability ta ON pts.availability_id = ta.availability_id
+            WHERE pts.member_username = $1 AND pts.completed = TRUE
+            ORDER BY pts.session_id;
+        `;
+        const { rows } = await client.query(query, [member_username]);
+        if (rows.length === 0) {
+            console.log('No completed training sessions found for the member.');
+        } else {
+            console.log('Completed training sessions with end times:', rows);
+        }
+        return rows;
+    } catch (err) {
+        console.error('Failed to get completed training sessions:', err);
+        throw err;
+    } finally {
+        client.release();
+    }
+}
+
+
+async function getCompletedClasses(member_username) {
+    const client = await pool.connect();
+    try {
+        const query = `
+            SELECT gc.class_id, gc.description, gc.completed, ta.end_time
+            FROM group_class gc
+            JOIN class_member cm ON gc.class_id = cm.class_id
+            JOIN trainer_availability ta ON gc.availability_id = ta.availability_id
+            WHERE cm.member_username = $1 AND gc.completed = TRUE
+            ORDER BY gc.class_id;
+        `;
+        const { rows } = await client.query(query, [member_username]);
+        if (rows.length === 0) {
+            console.log('No completed classes found for the member.');
+        } else {
+            console.log('Completed classes with end times:', rows);
+        }
+        return rows;
+    } catch (err) {
+        console.error('Failed to get completed classes:', err);
+        throw err;
+    } finally {
+        client.release();
+    }
+}
+
+// Function to soft-delete a user account (by an administrator)
+async function deleteUser(username) {
+    const client = await pool.connect();
+    try {
+        const query = `
+            UPDATE account
+            SET is_deleted = TRUE
+            WHERE username = $1;
+        `;
+        await client.query(query, [username]);
+        console.log('User successfully marked as deleted:', username);
+    } catch (err) {
+        console.error('Failed to delete user:', err);
+        throw err;
+    } finally {
+        client.release();
+    }
+}
+
+async function changeUserPassword(username, newPassword) {
+    const client = await pool.connect();
+    try {
+        const query = `
+            UPDATE account
+            SET password = $2
+            WHERE username = $1;
+        `;
+        await client.query(query, [username, newPassword]);
+        console.log('Password successfully updated for user:', username);
+    } catch (err) {
+        console.error('Failed to change password:', err);
+        throw err;
+    } finally {
+        client.release();
+    }
+}
+
+async function changeName(username, newName) {
+    const client = await pool.connect();
+    try {
+        const query = `
+            UPDATE account
+            SET name = $2
+            WHERE username = $1;
+        `;
+        await client.query(query, [username, newName]);
+        console.log('Name successfully updated for user:', username);
+    } catch (err) {
+        console.error('Failed to change name:', err);
+        throw err;
+    } finally {
+        client.release();
+    }
+}
+
+async function updateMemberAgeAndGender(username, age, gender) {
+    const client = await pool.connect();
+    try {
+        const query = `
+            UPDATE member
+            SET age = $2, gender = $3
+            WHERE member_username = $1;
+        `;
+        await client.query(query, [username, age, gender]);
+        console.log('Member age and gender successfully updated for user:', username);
+    } catch (err) {
+        console.error('Failed to update member info:', err);
+        throw err;
+    } finally {
+        client.release();
+    }
+}
+
 async function main() {
     // Register member and perform related operations
-    await registerMember('userid123', 'John Doe', 'password123', 25, 'Male');
+    await registerMember('userid123', 'John Doe', 'password123', 25, 'male');
+    await registerMember('userid456', 'Jane Smith', 'password123', 22, 'female');
     await createBill('userid123', 50.00, 'Personal Training Session Fee');
     await payBill(1);
     await payBill(1); // Attempt to pay the bill a second time as in the original example
@@ -578,18 +938,33 @@ async function main() {
     // Register trainer and perform related operations
     await registerTrainer('trainerid123', 'Alex Smith', 'password456', 75);
     await addTrainerSpecialty('trainerid123', 'Weightlifting');
-    await addTrainerAvailability('trainerid123', '2021-12-01 10:00:00', '2021-12-01 12:00:00');
-    await addTrainerAvailability('trainerid123', '2021-12-02 14:00:00', '2021-12-02 16:00:00');
-    await addPersonalTrainingSession('userid123', 1, 'Weightlifting session');
+    await addTrainerAvailability('trainerid123', '2021-12-01 10:00:00', '2021-12-01 12:00:00');//1
+    await addTrainerAvailability('trainerid123', '2021-12-01 11:00:00', '2021-12-02 16:00:00');
+    await addTrainerAvailability('trainerid123', '2021-12-02 14:00:00', '2021-12-02 16:00:00');//2
+    await addTrainerAvailability('trainerid123', '2021-12-01 12:00:00', '2021-12-01 14:00:00');//3
+    await addPersonalTrainingSession('userid123', 2, 'Weightlifting session');
     await markSessionCompleted(1);
+    await registerTrainer('trainerid456', 'Sarah Johnson', 'password456', 60);
+    await addTrainerSpecialty('trainerid456', 'Cardio');
+    await addTrainerAvailability('trainerid456', '2021-12-01 08:00:00', '2021-12-01 11:00:00');//4
 
     // Add room and book room for class
-    await addGroupClass(2, 'Yoga class', 20.00);
+    await addGroupClass(1, 'Yoga class', 20.00);
+    await addGroupClass(3, 'Weightlifting session', 30.00);
+    await addGroupClass(4, 'Cardio session', 20.00);
     await registerClassMember(1, 'userid123');
     await addRoom('Room 1');
     await addRoom('Room 2');
+    await addRoom('Room 3');
     await bookRoomForClass(1, 1);
-    const result = await getAvailableRoomsForClass(1);
+    await bookRoomForClass(2, 2);
+    await bookRoomForClass(3, 3);
+    let result = await getAvailableRoomsForClass(1);
+    console.log(result);
+    result = await getAvailableRoomsForClass(2);
+    console.log(result);
+    result = await getAvailableRoomsForClass(3);
+    console.log(result);
     await markClassCompleted(1);
     await addEquipment('Treadmill', 1);
     await addEquipment('Dumbbells', 1);
@@ -602,11 +977,39 @@ async function main() {
     treadmill = await pool.query('SELECT * FROM equipment WHERE description = $1', ['Treadmill']);
     console.log(treadmill);
 
-    console.log(result);
+    await searchMembers('jane');
 
 
     // Register administrator
     await registerAdministrator('adminid123', 'Sam Lee', 'password789');
 }
 
+async function overlapTest() {
+    await registerTrainer('trainerid123', 'Alex Smith', 'password456', 75);
+    await addTrainerAvailability('trainerid123', '2021-12-01 10:00:00', '2021-12-01 12:00:00');
+    await addTrainerAvailability('trainerid123', '2021-12-01 08:00:00', '2021-12-01 11:00:00');
+    await addTrainerAvailability('trainerid123', '2021-12-01 11:00:00', '2021-12-02 16:00:00');
+    await addTrainerAvailability('trainerid123', '2021-12-01 10:00:00', '2021-12-01 12:00:00');
+    await addTrainerAvailability('trainerid123', '2021-12-01 10:30:00', '2021-12-01 11:30:00');
+    await addTrainerAvailability('trainerid123', '2021-12-02 14:00:00', '2021-12-02 16:00:00');
+    await addTrainerAvailability('trainerid123', '2021-12-01 12:00:00', '2021-12-01 14:00:00');
+}
+
+async function roomConflictTest() {
+    await addRoom('Room 1');
+    await addRoom('Room 2');
+    await addRoom('Room 3');
+    await registerTrainer('trainerid123', 'Alex Smith', 'password456', 75);
+    await addTrainerAvailability('trainerid123', '2021-12-01 10:00:00', '2021-12-01 12:00:00');
+    await registerTrainer('trainerid456', 'Sarah Johnson', 'password456', 60);
+    await addTrainerAvailability('trainerid456', '2021-12-01 08:00:00', '2021-12-01 11:00:00');
+
+    await addGroupClass(1, 'Yoga class', 20.00);
+    await addGroupClass(2, 'Weightlifting session', 30.00);
+    await bookRoomForClass(2, 1);
+    await bookRoomForClass(1, 1);
+}
+
 main().finally(() => pool.end());
+//overlapTest().finally(() => pool.end());
+//roomConflictTest().finally(() => pool.end());
