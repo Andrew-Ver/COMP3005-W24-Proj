@@ -6,15 +6,15 @@ import { DefaultUser } from "next-auth";
 // in our session callback function
 declare module "next-auth" {
     interface Session {
-      user: {
-        id: string;
-        role: string;
-      } & DefaultSession["user"];
+        user: {
+            id: string;
+            role: string;
+        } & DefaultSession["user"];
     }
     interface User {
-        id: string;
+        //id: string;
         role: string;
         name: string;
-        email?: string;
+        //email?: string;
     }
-};
+}
