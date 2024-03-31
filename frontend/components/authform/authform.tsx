@@ -36,14 +36,25 @@ export default function AuthForm(props: PaperProps) {
       lastname: "",
       role: "member",
     },
+    validateInputOnChange: true,
 
     validate: {
-      username: (value) => (value.length >= 3 ? null : "Name is too short"),
-      password: (value) => (value.length >= 5 ? null : "Password is too short"),
-      // firstname: (value) =>
-      //     value.length >= 3 ? null : "Name is too short",
-      // lastname: (value) =>
-      //     value.length >= 3 ? null : "Name is too short",
+      username: (value) =>
+        value.length >= 3 && value.length <= 25
+          ? null
+          : "Username must be between 3-25 characters",
+      password: (value) =>
+        value.length >= 5 && value.length <= 30
+          ? null
+          : "Password must be between 5-30 characters",
+      firstname: (value) =>
+        value.length >= 3 && value.length <= 25 && type === "register"
+          ? null
+          : "Must be between 3 and 25 characters",
+      lastname: (value) =>
+        value.length >= 3 && value.length <= 25 && type === "register"
+          ? null
+          : "Must be between 3 and 25 characters",
     },
   });
 
@@ -52,7 +63,7 @@ export default function AuthForm(props: PaperProps) {
     password: string;
     firstname?: string;
     lastname?: string;
-    role?: string;
+    role: string;
   }) => {
     if (type === "login") {
       const result: any = await signIn("credentials", {
@@ -60,9 +71,9 @@ export default function AuthForm(props: PaperProps) {
         password: values.password,
         redirect: false,
       });
-      console.log(`result: ${JSON.stringify(result)}`);
 
       if (!result.ok) {
+        console.log(result.error);
         // Handle the error here
         notifications.show({
           title: "Error Attempting to Log In",
@@ -70,7 +81,7 @@ export default function AuthForm(props: PaperProps) {
           message:
             result.error == "CredentialsSignin"
               ? "Invalid Credentials"
-              : "An error occurred",
+              : "Internal Server Error",
           color: "red",
         });
         // Reset the form after an invalid login attempt
@@ -167,8 +178,8 @@ export default function AuthForm(props: PaperProps) {
               form.setFieldValue("username", event.currentTarget.value)
             }
             error={
-              form.errors.username &&
-              "Username should include at least 3 characters"
+              form.errors.username
+              //&& "Username should include at least 3 characters"
             }
             radius="md"
           />
@@ -185,8 +196,8 @@ export default function AuthForm(props: PaperProps) {
                     form.setFieldValue("firstname", event.currentTarget.value)
                   }
                   error={
-                    form.errors.firstname &&
-                    "First name should include at least 3 characters"
+                    form.errors.firstname
+                    // && "First name should include at least 3 characters"
                   }
                   radius="md"
                 ></TextInput>
@@ -199,8 +210,8 @@ export default function AuthForm(props: PaperProps) {
                     form.setFieldValue("lastname", event.currentTarget.value)
                   }
                   error={
-                    form.errors.lastname &&
-                    "Last name should include at least 3 characters"
+                    form.errors.lastname
+                    // && "Last name should include at least 3 characters"
                   }
                   radius="md"
                 ></TextInput>
@@ -230,8 +241,8 @@ export default function AuthForm(props: PaperProps) {
               form.setFieldValue("password", event.currentTarget.value)
             }
             error={
-              form.errors.password &&
-              "Password should include at least 5 characters"
+              form.errors.password
+              // && "Password should include at least 6 characters"
             }
             radius="md"
           />
