@@ -35,24 +35,26 @@ export default function AuthForm(props: PaperProps) {
       firstname: "",
       lastname: "",
       role: "member",
-      rateperhour: ""
     },
+    validateInputOnChange: true,
 
     validate: {
-      username: (value) => (value.length >= 3 ? null : "Name is too short"),
-      password: (value) => (value.length >= 5 ? null : "Password is too short"),
-      rateperhour: (value, values) => {
-        if (values.role === "trainer") {
-          if (!value) {
-            return "Rate per hour is required for trainers";
-          } else if (isNaN(parseFloat(value))) {
-            return "Rate per hour must be a number";
-          } else if (parseFloat(value) <= 0) {
-            return "Rate per hour must be a positive number";
-          }
-        }
-        return null;
-      },
+      username: (value) =>
+        value.length >= 3 && value.length <= 25
+          ? null
+          : "Username must be between 3-25 characters",
+      password: (value) =>
+        value.length >= 5 && value.length <= 30
+          ? null
+          : "Password must be between 5-30 characters",
+      firstname: (value) =>
+        value.length >= 3 && value.length <= 25 && type === "register"
+          ? null
+          : "Must be between 3 and 25 characters",
+      lastname: (value) =>
+        value.length >= 3 && value.length <= 25 && type === "register"
+          ? null
+          : "Must be between 3 and 25 characters",
     },
   });
 
@@ -61,8 +63,7 @@ export default function AuthForm(props: PaperProps) {
     password: string;
     firstname?: string;
     lastname?: string;
-    role?: string;
-    rateperhour: string;
+    role: string;
   }) => {
     if (type === "login") {
       const result: any = await signIn("credentials", {
@@ -70,9 +71,9 @@ export default function AuthForm(props: PaperProps) {
         password: values.password,
         redirect: false,
       });
-      // console.log(`result: ${JSON.stringify(result)}`);
 
       if (!result.ok) {
+        console.log(result.error);
         // Handle the error here
         notifications.show({
           title: "Error Attempting to Log In",
@@ -80,7 +81,7 @@ export default function AuthForm(props: PaperProps) {
           message:
             result.error == "CredentialsSignin"
               ? "Invalid Credentials"
-              : "An error occurred",
+              : "Internal Server Error",
           color: "red",
         });
         // Reset the form after an invalid login attempt
@@ -95,8 +96,8 @@ export default function AuthForm(props: PaperProps) {
         });
       }
     } else if (type === "register") {
-      // Call the API endpoint to register the user in the account db
-      const accountResponse: any = await fetch("/api/register", {
+      // Call the API endpoint to register the user
+      const response: any = await fetch("/api/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -117,46 +118,19 @@ export default function AuthForm(props: PaperProps) {
           ),
         }),
       });
-
-      // Call the API endpoint to register the user in the trainer db
-      const trainerResponse: any = await fetch("/api/trainer/register", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        //body: JSON.stringify(values),
-        body: JSON.stringify({
-          username: values.username.toLowerCase(),
-          rateperhour: values.rateperhour
-        }),
-      });
-
-      if (!accountResponse.ok) {
+      if (!response.ok) {
         // Handle the error message here
         // using (await response.json()).message), as retrieved from the API
         notifications.show({
           title: "Error Attempting to Register",
           icon: <IconX />,
-          message: (await accountResponse.json()).message,
+          message: (await response.json()).message,
           color: "red",
         });
         // Reset the form after an invalid login attempt
         //form.reset();
         form.setFieldValue("password", "");
-      } 
-      else if (!trainerResponse.ok) {
-        // Handle the error message here
-        // using (await response.json()).message), as retrieved from the API
-        notifications.show({
-          title: "Error Attempting to Register to Trainer Database",
-          icon: <IconX />,
-          message: (await trainerResponse.json()).message,
-          color: "red",
-        });
-        // Reset the form after an invalid login attempt
-        //form.reset();
-      }
-      else {
+      } else {
         form.reset();
         //toggle();
         notifications.show({
@@ -164,8 +138,6 @@ export default function AuthForm(props: PaperProps) {
           message: `Successfully Registered as: ${values.username}`,
           color: "green",
         });
-
-
         // Login after successfully registration
         try {
           await signIn("credentials", {
@@ -206,8 +178,8 @@ export default function AuthForm(props: PaperProps) {
               form.setFieldValue("username", event.currentTarget.value)
             }
             error={
-              form.errors.username &&
-              "Username should include at least 3 characters"
+              form.errors.username
+              //&& "Username should include at least 3 characters"
             }
             radius="md"
           />
@@ -224,8 +196,8 @@ export default function AuthForm(props: PaperProps) {
                     form.setFieldValue("firstname", event.currentTarget.value)
                   }
                   error={
-                    form.errors.firstname &&
-                    "First name should include at least 3 characters"
+                    form.errors.firstname
+                    // && "First name should include at least 3 characters"
                   }
                   radius="md"
                 ></TextInput>
@@ -238,8 +210,8 @@ export default function AuthForm(props: PaperProps) {
                     form.setFieldValue("lastname", event.currentTarget.value)
                   }
                   error={
-                    form.errors.lastname &&
-                    "Last name should include at least 3 characters"
+                    form.errors.lastname
+                    // && "Last name should include at least 3 characters"
                   }
                   radius="md"
                 ></TextInput>
@@ -257,23 +229,6 @@ export default function AuthForm(props: PaperProps) {
                   <Radio value="administrator" label="Staff" />
                 </Group>
               </RadioGroup>
-              {form.values.role === "trainer" && (
-                <TextInput
-                  required
-                  label="Rate Per Hour"
-                  placeholder="$0/h"
-                  value={form.values.rateperhour}
-                  onChange={(event) =>
-                    form.setFieldValue("rateperhour", event.currentTarget.value)
-                  }
-                  error={
-                    form.errors.rateperhour &&
-                    "Rate per hour is required for trainers"
-                  }
-                  radius="md"
-                  >
-                </TextInput>
-              )}
             </>
           )}
 
@@ -286,8 +241,8 @@ export default function AuthForm(props: PaperProps) {
               form.setFieldValue("password", event.currentTarget.value)
             }
             error={
-              form.errors.password &&
-              "Password should include at least 5 characters"
+              form.errors.password
+              // && "Password should include at least 6 characters"
             }
             radius="md"
           />
