@@ -48,11 +48,11 @@ export default function AuthForm(props: PaperProps) {
           ? null
           : "Password must be between 5-30 characters",
       firstname: (value) =>
-        value.length >= 3 && value.length <= 25 && type === "register"
+        (value.length >= 3 && value.length <= 25) || type === "login"
           ? null
           : "Must be between 3 and 25 characters",
       lastname: (value) =>
-        value.length >= 3 && value.length <= 25 && type === "register"
+        (value.length >= 3 && value.length <= 25) || type === "login"
           ? null
           : "Must be between 3 and 25 characters",
     },
