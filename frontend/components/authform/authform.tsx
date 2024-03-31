@@ -35,15 +35,24 @@ export default function AuthForm(props: PaperProps) {
       firstname: "",
       lastname: "",
       role: "member",
+      rateperhour: ""
     },
 
     validate: {
       username: (value) => (value.length >= 3 ? null : "Name is too short"),
       password: (value) => (value.length >= 5 ? null : "Password is too short"),
-      // firstname: (value) =>
-      //     value.length >= 3 ? null : "Name is too short",
-      // lastname: (value) =>
-      //     value.length >= 3 ? null : "Name is too short",
+      rateperhour: (value, values) => {
+        if (values.role === "trainer") {
+          if (!value) {
+            return "Rate per hour is required for trainers";
+          } else if (isNaN(parseFloat(value))) {
+            return "Rate per hour must be a number";
+          } else if (parseFloat(value) <= 0) {
+            return "Rate per hour must be a positive number";
+          }
+        }
+        return null;
+      },
     },
   });
 
@@ -53,6 +62,7 @@ export default function AuthForm(props: PaperProps) {
     firstname?: string;
     lastname?: string;
     role?: string;
+    rateperhour: string;
   }) => {
     if (type === "login") {
       const result: any = await signIn("credentials", {
@@ -60,7 +70,7 @@ export default function AuthForm(props: PaperProps) {
         password: values.password,
         redirect: false,
       });
-      console.log(`result: ${JSON.stringify(result)}`);
+      // console.log(`result: ${JSON.stringify(result)}`);
 
       if (!result.ok) {
         // Handle the error here
@@ -85,8 +95,8 @@ export default function AuthForm(props: PaperProps) {
         });
       }
     } else if (type === "register") {
-      // Call the API endpoint to register the user
-      const response: any = await fetch("/api/register", {
+      // Call the API endpoint to register the user in the account db
+      const accountResponse: any = await fetch("/api/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -107,19 +117,46 @@ export default function AuthForm(props: PaperProps) {
           ),
         }),
       });
-      if (!response.ok) {
+
+      // Call the API endpoint to register the user in the trainer db
+      const trainerResponse: any = await fetch("/api/trainer/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        //body: JSON.stringify(values),
+        body: JSON.stringify({
+          username: values.username.toLowerCase(),
+          rateperhour: values.rateperhour
+        }),
+      });
+
+      if (!accountResponse.ok) {
         // Handle the error message here
         // using (await response.json()).message), as retrieved from the API
         notifications.show({
           title: "Error Attempting to Register",
           icon: <IconX />,
-          message: (await response.json()).message,
+          message: (await accountResponse.json()).message,
           color: "red",
         });
         // Reset the form after an invalid login attempt
         //form.reset();
         form.setFieldValue("password", "");
-      } else {
+      } 
+      else if (!trainerResponse.ok) {
+        // Handle the error message here
+        // using (await response.json()).message), as retrieved from the API
+        notifications.show({
+          title: "Error Attempting to Register to Trainer Database",
+          icon: <IconX />,
+          message: (await trainerResponse.json()).message,
+          color: "red",
+        });
+        // Reset the form after an invalid login attempt
+        //form.reset();
+      }
+      else {
         form.reset();
         //toggle();
         notifications.show({
@@ -127,6 +164,8 @@ export default function AuthForm(props: PaperProps) {
           message: `Successfully Registered as: ${values.username}`,
           color: "green",
         });
+
+
         // Login after successfully registration
         try {
           await signIn("credentials", {
@@ -218,6 +257,23 @@ export default function AuthForm(props: PaperProps) {
                   <Radio value="administrator" label="Staff" />
                 </Group>
               </RadioGroup>
+              {form.values.role === "trainer" && (
+                <TextInput
+                  required
+                  label="Rate Per Hour"
+                  placeholder="$0/h"
+                  value={form.values.rateperhour}
+                  onChange={(event) =>
+                    form.setFieldValue("rateperhour", event.currentTarget.value)
+                  }
+                  error={
+                    form.errors.rateperhour &&
+                    "Rate per hour is required for trainers"
+                  }
+                  radius="md"
+                  >
+                </TextInput>
+              )}
             </>
           )}
 
