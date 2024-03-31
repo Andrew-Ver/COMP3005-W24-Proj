@@ -1,6 +1,6 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { hash } from "bcrypt";
-import pool from "../../db";
+import { sql } from "@vercel/postgres";
 
 export default async function handler(
     req: NextApiRequest,
@@ -14,25 +14,34 @@ export default async function handler(
     try {
         // Don't hash password for Assignment
         // const hashedPassword = await hash(password, 10); // You can adjust the salt rounds as needed
-        const query = `
-        INSERT INTO account (username, name, password, user_type)
-        VALUES ($1, $2, $3, $4)
-        RETURNING username, name, password, user_type;`;
+        const result = await sql`
+            INSERT INTO account (username, name, password, user_type)
+            VALUES (${username}, ${name}, ${password}, ${role})
+            RETURNING username, name, user_type;`;
+        // const query = await sql`
+        //     INSERT INTO account (username, name, password, user_type)
+        //     VALUES ($1, $2, $3, $4)
+        //     RETURNING username, name, password, user_type;`;
+        // `
+        // INSERT INTO account (username, name, password, user_type)
+        // VALUES ($1, $2, $3, $4)
+        // RETURNING username, name, password, user_type;`;
 
         /*
             Note: DB schema has user_type column, but the frontend uses role
             for conditional rendering
         */
 
-        const result = await pool.query(query, [
-            username,
-            name,
-            password,
-            role,
-        ]);
+        // const result = await pool.query(query, [
+        //     username,
+        //     name,
+        //     password,
+        //     role,
+        // ]);
+        res.status(201).json({ user: result.rows[0] });
 
         //return newly created user
-        res.status(201).json({ user: result.rows[0] });
+        //res.status(201).json({ user: result.rows[0] });
     } catch (error: any) {
         const errorCodes: Record<string, string> = {
             "23505": "Username already exists",
@@ -48,6 +57,8 @@ export default async function handler(
         //     "Error registering user:",
         //     errorCodes[error.code] || error?.message
         // );
+        console.log(error)
+
         return res.status(400).json({
             message: errorCodes[error.code] || "Internal Server Error",
         });
