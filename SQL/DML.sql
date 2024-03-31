@@ -50,12 +50,6 @@ INSERT INTO exercise_routine (member_username, description) VALUES
 ('vojislav', 'Cardio: Long-distance running, gradually increasing distance'),
 ('patrick', 'Cardio: Cycling 20 minutes, 3 times a week');
 
-INSERT INTO exercise_routine (member_username, description) VALUES
-('robert', 'Cardio: Running 30 minutes, 3 times a week'),
-('robert', 'Strength Training: Upper body workouts, 2 times a week'),
-('vojislav', 'Cardio: Long-distance running, gradually increasing distance'),
-('patrick', 'Cardio: Cycling 20 minutes, 3 times a week');
-
 -- Creating group classes
 INSERT INTO group_class (availability_id, description, fee) VALUES
 (3, 'Cardio Session with JY', 50.00);  -- class_id = 1
