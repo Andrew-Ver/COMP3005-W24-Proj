@@ -34,7 +34,22 @@ export default async function handler(
         //return newly created user
         res.status(201).json({ user: result.rows[0] });
     } catch (error: any) {
-        //console.error("Error registering user:", error);
-        return res.status(400).json({ message: "Username already exists" });
+        const errorCodes: Record<string, string> = {
+            "23505": "Username already exists",
+            "22P02": "Invalid input",
+            "23502": "Missing input",
+            "23503": "Invalid role",
+            "22001": "Input too long",
+            "22007": "Invalid input",
+            "23514": "Invalid input",
+        };
+
+        // console.error(
+        //     "Error registering user:",
+        //     errorCodes[error.code] || error?.message
+        // );
+        return res.status(400).json({
+            message: errorCodes[error.code] || "Internal Server Error",
+        });
     }
 }
