@@ -50,6 +50,7 @@ export const authOptions: NextAuthOptions = {
         }) {
             session.user.id = token.id;
             session.user.role = token.role;
+            session.user.username = user.username;
             return session;
         },
         jwt({ token, user, account, profile }) {
@@ -64,6 +65,7 @@ export const authOptions: NextAuthOptions = {
             if (user) {
                 token.id = user.id;
                 token.role = user.role;
+                token.username = user.username;
             }
             return token;
         },
