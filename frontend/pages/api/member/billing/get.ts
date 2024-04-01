@@ -3,7 +3,8 @@ import pool from "@/db";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
 
-    const {member_username} = req.body;
+  const { member_username } = req.body;
+  console.log("member_username: ", member_username)
 
   const query = `SELECT  
                 bill_id,
@@ -17,6 +18,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 ORDER BY bill_timestamp ASC;`;
 
   const result = await pool.query(query, [member_username]);
+  console.log(result)
 
   // among a few other changes
   result.rows.forEach((row: any) => {
