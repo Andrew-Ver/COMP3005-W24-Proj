@@ -73,6 +73,7 @@ export default function AuthForm(props: PaperProps) {
       });
 
       if (!result.ok) {
+        console.log(result.error);
         // Handle the error here
         notifications.show({
           title: "Error Attempting to Log In",
