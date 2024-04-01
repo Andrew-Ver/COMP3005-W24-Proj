@@ -215,7 +215,7 @@ export default function AuthForm(props: PaperProps) {
         <Stack>
           <TextInput
             required
-            label="Userame"
+            label="Username"
             placeholder="Your username"
             value={form.values.username}
             onChange={(event) =>

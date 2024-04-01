@@ -1,6 +1,5 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import { hash } from "bcrypt";
-import pool from "../../db";
+import pool from "@/db";
 
 export default async function handler(
     req: NextApiRequest,
@@ -13,23 +12,17 @@ export default async function handler(
 
     try {
         // Don't hash password for Assignment
-        // const hashedPassword = await hash(password, 10); // You can adjust the salt rounds as needed
-        const query = `
-        INSERT INTO account (username, name, password, user_type)
+
+        const createAccountQuery = `INSERT INTO account (username, name, password, user_type)
         VALUES ($1, $2, $3, $4)
         RETURNING username, name, password, user_type;`;
 
-        /*
-            Note: DB schema has user_type column, but the frontend uses role
-            for conditional rendering
-        */
+        const result = await pool.query(createAccountQuery, [username, name, password, role]);
 
-        const result = await pool.query(query, [
-            username,
-            name,
-            password,
-            role,
-        ]);
+        const createMemberQuery = `
+                        INSERT INTO member (member_username, age, gender)
+                        VALUES ($1, $2, $3);`;
+        const createMemberResult = await pool.query(createMemberQuery, [username, 20, "male"]);
 
         //return newly created user
         res.status(201).json({ user: result.rows[0] });
@@ -44,10 +37,6 @@ export default async function handler(
             "23514": "Invalid input",
         };
 
-        // console.error(
-        //     "Error registering user:",
-        //     errorCodes[error.code] || error?.message
-        // );
         return res.status(400).json({
             message: errorCodes[error.code] || "Internal Server Error",
         });
