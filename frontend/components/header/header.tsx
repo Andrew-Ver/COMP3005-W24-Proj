@@ -33,7 +33,7 @@ import { IconSun, IconMoon } from "@tabler/icons-react";
 const membersLinks = [
   { href: "/", title: "Home" },
   { href: "/member/profile", title: "Profile" },
-  { href: "/member/schedule", title: "Schedule" },
+  { href: "/member/personal-training", title: "Personal Training" },
   { href: "/member/dashboard", title: "Dashboard" },
 ];
 
