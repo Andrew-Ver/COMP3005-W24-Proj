@@ -12,8 +12,12 @@ import {
   Title,
   Divider,
   Button,
+  TextInput,
+  Box,
+  Group,
 } from "@mantine/core";
 import { ModalsProvider, modals } from "@mantine/modals";
+
 import {
   QueryClient,
   QueryClientProvider,
@@ -21,6 +25,7 @@ import {
 } from "@tanstack/react-query";
 
 import { useSession } from "next-auth/react";
+import { Form, useForm } from "@mantine/form";
 
 type Metric = {
   availability_id: number;
@@ -98,6 +103,7 @@ const Example = () => {
     createDisplayMode: "row", // ('modal', and 'custom' are also available)
     enableEditing: false,
     enableRowSelection: (row) => row.original.is_booked == false,
+    enableMultiRowSelection: false, //shows radio buttons instead of checkboxes
     // getRowId: (row) => row.availability_id.toString(),
     mantineToolbarAlertBannerProps: isLoadingMetricsError
       ? {
@@ -117,29 +123,100 @@ const Example = () => {
     },
     renderTopToolbarCustomActions: ({ table }) => (
       <Button
-        onClick={() => {
-          const rowSelection = table.getState().rowSelection; //read state
-          const selectedRows = table.getSelectedRowModel().rows; //or read entire rows
-        }}
+        onClick={handleBookSelected}
       >
         Book Selected Time Slot
       </Button>
     ),
   });
 
+  // After press the button
+  const { data: session, status } = useSession();
+
+  const handleDescriptionSubmitted = async (description: string) => {
+    console.log("Submit clicked")
+    const member_username = session?.user?.username;
+    const selectedRow = table.getSelectedRowModel().rows[0]; //or read entire rows
+    const availability_id = selectedRow.original.availability_id;
+
+    const dataToSend = {
+      member_username,
+      availability_id,
+      description
+    };
+
+    console.log("dataToSend: ", dataToSend);
+    
+    // try {
+    //   const response = await fetch("/api/member/personal-training/register", {
+    //     method: "POST",
+    //     headers: {
+    //       "Content-Type": "application/json",
+    //     },
+    //     body: JSON.stringify(dataToSend),
+    //   });
+  
+    //   if (response.ok) {
+    //     // Handle successful response
+    //     console.log("Data submitted successfully:", dataToSend);
+    //     modals.closeAll();
+    //   } else {
+    //     // Handle error response
+    //     console.error("Error submitting data:", response.statusText);
+    //   }
+    // } catch (error) {
+    //   // Handle network error
+    //   console.error("Network error:", error);
+    // }
+  }
+  
+  function DescriptionForm() {
+    const form = useForm({
+      initialValues: {
+        description: '',
+      },
+    });
+  
+    return (
+      <Box mx="auto">
+        <form onSubmit={form.onSubmit((values) => handleDescriptionSubmitted(values.description))}>
+          <TextInput
+            label="Description"
+            placeholder="Description for this personal training session (optional)"
+          />
+          <Group justify="flex-end" mt="md">
+            <Button type="submit" fullWidth>Submit</Button>
+          </Group>
+        </form>
+      </Box>
+    );
+  }
+  
+
+  const handleBookSelected = () => {
+    modals.open({
+      title: 'Add Description',
+      children: (
+        <DescriptionForm></DescriptionForm>
+      ),
+    });
+  }
+
+
+
   return <MantineReactTable table={table} />;
 };
 
 //READ hook (get users from api)
 function useGetMetrics() {
-  
+
   return useQuery<Metric[]>({
     queryKey: ["metrics"],
     queryFn: async () => {
       //send api request here
       const response = await fetch("/api/member/trainer-availability/get", {
         method: "POST",
-        body: JSON.stringify({ }),
+        body: JSON.stringify({}),
         headers: {
           "Content-Type": "application/json",
         },
