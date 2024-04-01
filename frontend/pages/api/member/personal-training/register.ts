@@ -8,7 +8,7 @@ export default async function handler(
     if (req.method !== "POST") {
         return res.status(405).json({ message: "Method Not Allowed" });
     }
-    const { member_username, availability_id, description } = req.body;
+    const { member_username, availability_id, description, trainer_username, begin_time, end_time } = req.body;
 
     try {
 
@@ -25,6 +25,27 @@ export default async function handler(
         WHERE availability_id = $1;
         `
         await pool.query(isBookedQuery, [availability_id]);
+
+        // get the trainer's rate per hour
+        const trainerRow = await pool.query('SELECT * FROM trainer WHERE trainer_username = $1', [trainer_username]);
+        const trainerRate = trainerRow.rows[0].rate_per_hour;
+
+        // get the duration
+        const beginTimestamp = new Date(begin_time).getTime();
+        const endTimestamp = new Date(end_time).getTime();
+        const durationMs = endTimestamp - beginTimestamp;
+        const durationHours = durationMs / (1000 * 60 * 60);
+
+        // calculate the amount
+        const amount = trainerRate * durationHours;
+        console.log("amount: ", amount)
+
+        // add the bill
+        const insertBillQuery = `
+        INSERT INTO bill (member_username, amount, description, bill_timestamp, cleared) VALUES ($1, $2, $3, $4, $5)
+        `
+        const formatted_time = new Date().toISOString();
+        await pool.query(insertBillQuery, [member_username, amount, description, formatted_time, false]);
 
         //return newly created registered personal training session
         res.status(201).json({ personal_training_session: result.rows[0] });

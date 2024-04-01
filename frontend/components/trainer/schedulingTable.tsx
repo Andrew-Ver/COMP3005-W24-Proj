@@ -65,6 +65,7 @@ const Example = () => {
       {
         accessorKey: "begin_time",
         header: "Begin Time",
+        minSize: 300,
         mantineEditTextInputProps: {
             type: "string",
             required: true,
@@ -81,6 +82,7 @@ const Example = () => {
       {
         accessorKey: "end_time",
         header: "End Time",
+        minSize: 300,
         mantineEditTextInputProps: {
           type: "string",
           required: true,
@@ -162,7 +164,6 @@ const Example = () => {
     createDisplayMode: "row", // ('modal', and 'custom' are also available)
     editDisplayMode: "row", // ('modal', 'cell', 'table', and 'custom' are also available)
     enableEditing: true,
-    enableColumnResizing: true,
     getRowId: (row) => row.id,
     mantineToolbarAlertBannerProps: isLoadingMetricsError
       ? {
