@@ -17,7 +17,9 @@
         "baseUrl": ".",
         // Using "paths" allows you to configure module path aliases
         "paths": {
-            "@/components/*": ["components/*"]
+            "@/components/*": ["components/*"],
+            "@/pages/*": ["pages/*"],
+            "@/*": ["*"],
         }
     },
     "include": [
