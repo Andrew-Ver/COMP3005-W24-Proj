@@ -9,4 +9,20 @@ const pool = new Pool({
     port: parseInt(process.env.DB_PORT || ""),
 });
 
+// For when deployed on vercel
+// const pool = new Pool({
+//     connectionString: process.env.POSTGRES_URL,
+//   })
+
 export default pool;
+
+
+// Some type definitions
+
+export type Metric = {
+    id: string;
+    metric_timestamp: string;
+    weight: string;
+    body_fat_percentage: string;
+    blood_pressure: string;
+  };
