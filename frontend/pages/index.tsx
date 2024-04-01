@@ -1,10 +1,8 @@
 import { Center, Loader, Title, Space, Stack, Button } from "@mantine/core";
 import { useSession } from "next-auth/react";
-import { useRouter } from "next/router";
 
 export default function IndexPage() {
   const { data: session, status }: any = useSession();
-  const router = useRouter();
 
   if (status == "loading") {
     return (
