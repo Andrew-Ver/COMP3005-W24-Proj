@@ -30,6 +30,7 @@ export type Metric = {
 export type TimeSlot = {
     id: string;
     username: string;
+    is_booked: boolean;
     begin_time: string;
     end_time: string;
 }
