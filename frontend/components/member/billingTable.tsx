@@ -88,7 +88,7 @@ const Example = () => {
             {
                 accessorKey: "cleared",
                 header: "Cleared?",
-                accessorFn: (row) => { return !row.cleared ? 'Paid' : 'Not paid' }
+                accessorFn: (row) => { return row.cleared ? 'Paid' : 'Not paid' }
             }
         ],
         []
@@ -149,7 +149,7 @@ function useGetMetrics() {
             //send api request here
             const response = await fetch("/api/member/billing/get", {
                 method: "POST",
-                body: JSON.stringify({ username: session?.user?.username }),
+                body: JSON.stringify({ member_username: session?.user?.username }),
                 headers: {
                     "Content-Type": "application/json",
                 },
