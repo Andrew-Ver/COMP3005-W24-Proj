@@ -26,3 +26,10 @@ export type Metric = {
     body_fat_percentage: string;
     blood_pressure: string;
   };
+
+export type TimeSlot = {
+    id: string;
+    username: string;
+    begin_time: string;
+    end_time: string;
+}
