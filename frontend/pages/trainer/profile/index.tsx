@@ -6,12 +6,14 @@ import { getSession, useSession } from 'next-auth/react';
 export default function Profile() {
     const [ratePerHour, setRatePerHour] = useState<string | null>(null);
     const { data: session, status }: any = useSession();
-    const username = session?.user?.name;
-    // console.log("username: ", username)
+    const username = session?.user?.username;
+    console.log("username: ", username)
+    console.log("name: ", session?.user?.name)
+    console.log("role: ", session?.user?.role)
 
-    // useEffect(() => {
-    //     fetchRatePerHour();
-    // }, []);
+    useEffect(() => {
+        fetchRatePerHour();
+    }, []);
 
     const fetchRatePerHour = async () => {
         try {

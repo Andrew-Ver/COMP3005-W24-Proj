@@ -37,10 +37,9 @@ export default function AuthForm(props: PaperProps) {
       role: "member",
       rateperhour: ""
     },
+    validateInputOnChange: true,
 
     validate: {
-      username: (value) => (value.length >= 3 ? null : "Name is too short"),
-      password: (value) => (value.length >= 5 ? null : "Password is too short"),
       rateperhour: (value, values) => {
         if (values.role === "trainer") {
           if (!value) {
@@ -53,6 +52,22 @@ export default function AuthForm(props: PaperProps) {
         }
         return null;
       },
+      username: (value) =>
+        value.length >= 3 && value.length <= 25
+          ? null
+          : "Username must be between 3-25 characters",
+      password: (value) =>
+        value.length >= 5 && value.length <= 30
+          ? null
+          : "Password must be between 5-30 characters",
+      firstname: (value) =>
+        (value.length >= 3 && value.length <= 25) || type === "login"
+          ? null
+          : "Must be between 3 and 25 characters",
+      lastname: (value) =>
+        (value.length >= 3 && value.length <= 25) || type === "login"
+          ? null
+          : "Must be between 3 and 25 characters",
     },
   });
 
@@ -73,6 +88,7 @@ export default function AuthForm(props: PaperProps) {
       // console.log(`result: ${JSON.stringify(result)}`);
 
       if (!result.ok) {
+        console.log(result.error);
         // Handle the error here
         notifications.show({
           title: "Error Attempting to Log In",
@@ -80,7 +96,7 @@ export default function AuthForm(props: PaperProps) {
           message:
             result.error == "CredentialsSignin"
               ? "Invalid Credentials"
-              : "An error occurred",
+              : "Internal Server Error",
           color: "red",
         });
         // Reset the form after an invalid login attempt
@@ -206,8 +222,8 @@ export default function AuthForm(props: PaperProps) {
               form.setFieldValue("username", event.currentTarget.value)
             }
             error={
-              form.errors.username &&
-              "Username should include at least 3 characters"
+              form.errors.username
+              //&& "Username should include at least 3 characters"
             }
             radius="md"
           />
@@ -224,8 +240,8 @@ export default function AuthForm(props: PaperProps) {
                     form.setFieldValue("firstname", event.currentTarget.value)
                   }
                   error={
-                    form.errors.firstname &&
-                    "First name should include at least 3 characters"
+                    form.errors.firstname
+                    // && "First name should include at least 3 characters"
                   }
                   radius="md"
                 ></TextInput>
@@ -238,8 +254,8 @@ export default function AuthForm(props: PaperProps) {
                     form.setFieldValue("lastname", event.currentTarget.value)
                   }
                   error={
-                    form.errors.lastname &&
-                    "Last name should include at least 3 characters"
+                    form.errors.lastname
+                    // && "Last name should include at least 3 characters"
                   }
                   radius="md"
                 ></TextInput>
@@ -286,8 +302,8 @@ export default function AuthForm(props: PaperProps) {
               form.setFieldValue("password", event.currentTarget.value)
             }
             error={
-              form.errors.password &&
-              "Password should include at least 5 characters"
+              form.errors.password
+              // && "Password should include at least 6 characters"
             }
             radius="md"
           />

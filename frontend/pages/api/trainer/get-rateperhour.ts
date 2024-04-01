@@ -12,7 +12,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     try {
         // Query the database to get the rate per hour for the trainer
         const query = "SELECT rate_per_hour FROM trainer WHERE trainer_username = $1";
-        const result = await pool.query(query, ["trainer111"]);
+        const result = await pool.query(query, [username]);
 
         // If the query is successful, return the rate per hour
         if (result.rows.length > 0) {
