@@ -138,36 +138,42 @@ const Example = () => {
     const member_username = session?.user?.username;
     const selectedRow = table.getSelectedRowModel().rows[0]; //or read entire rows
     const availability_id = selectedRow.original.availability_id;
+    const trainer_username = selectedRow.original.trainer_username;
+    const begin_time = selectedRow.original.begin_time;
+    const end_time = selectedRow.original.end_time;
 
     const dataToSend = {
       member_username,
       availability_id,
-      description
+      description,
+      trainer_username,
+      begin_time,
+      end_time
     };
 
     console.log("dataToSend: ", dataToSend);
     
-    // try {
-    //   const response = await fetch("/api/member/personal-training/register", {
-    //     method: "POST",
-    //     headers: {
-    //       "Content-Type": "application/json",
-    //     },
-    //     body: JSON.stringify(dataToSend),
-    //   });
+    try {
+      const response = await fetch("/api/member/personal-training/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(dataToSend),
+      });
   
-    //   if (response.ok) {
-    //     // Handle successful response
-    //     console.log("Data submitted successfully:", dataToSend);
-    //     modals.closeAll();
-    //   } else {
-    //     // Handle error response
-    //     console.error("Error submitting data:", response.statusText);
-    //   }
-    // } catch (error) {
-    //   // Handle network error
-    //   console.error("Network error:", error);
-    // }
+      if (response.ok) {
+        // Handle successful response
+        console.log("Data submitted successfully:", dataToSend);
+        modals.closeAll();
+      } else {
+        // Handle error response
+        console.error("Error submitting data:", response.statusText);
+      }
+    } catch (error) {
+      // Handle network error
+      console.error("Network error:", error);
+    }
   }
   
   function DescriptionForm() {
