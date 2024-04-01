@@ -15,6 +15,7 @@ import {
     TextInput,
     Box,
     Group,
+    Text
 } from "@mantine/core";
 import { ModalsProvider, modals } from "@mantine/modals";
 
@@ -52,7 +53,7 @@ export default function BillingTable() {
     return (
         <Stack gap="sm" align="center">
             <Title order={2} c="rgb(73, 105, 137)" ta="center">
-                Time Slots for All Trainers
+                Billings for Member {session?.user?.name}
             </Title>
             <ExampleWithProviders />
             <Divider my="sm" variant="dashed" />
@@ -127,13 +128,52 @@ const Example = () => {
             showProgressBars: isFetchingMetrics,
         },
         renderTopToolbarCustomActions: ({ table }) => (
-            <Button>
+            <Button onClick={handlePaySelected}>
                 Pay Selected Bills
             </Button>
         ),
     });
 
 
+    const handlePaySelected = () => {
+        modals.openConfirmModal({
+            title: 'Please confirm your payment',
+            children: (
+              <Text size="sm">
+                Are you sure you want to pay for the selected bills?
+              </Text>
+            ),
+            labels: { confirm: 'Confirm', cancel: 'Cancel' },
+            onCancel: () => console.log('Cancel'),
+            onConfirm: () => handlePaymentConfirmed(),
+          });
+    }
+
+    const { data: session, status } = useSession();
+
+    const handlePaymentConfirmed = async () => {
+        const selectedRows = table.getSelectedRowModel().rows; 
+        const bill_ids: number[] = selectedRows.map(row => row.original.bill_id);
+        console.log(bill_ids)
+        try {
+            const response = await fetch("/api/member/billing/pay", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({bill_ids})
+            });
+
+            if (response.ok) {
+                console.log("Payment submitted successfully");
+                modals.closeAll();
+            } else {
+                console.error("Error submitting data: ", response.statusText);
+            }
+        } catch (error) {
+            console.error("Network error: ", error);
+        }
+    }
 
 
     return <MantineReactTable table={table} />;

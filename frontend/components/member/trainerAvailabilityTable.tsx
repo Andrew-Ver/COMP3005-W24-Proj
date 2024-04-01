@@ -152,7 +152,7 @@ const Example = () => {
     };
 
     console.log("dataToSend: ", dataToSend);
-    
+
     try {
       const response = await fetch("/api/member/personal-training/register", {
         method: "POST",
@@ -161,7 +161,7 @@ const Example = () => {
         },
         body: JSON.stringify(dataToSend),
       });
-  
+
       if (response.ok) {
         // Handle successful response
         console.log("Data submitted successfully:", dataToSend);
@@ -175,18 +175,21 @@ const Example = () => {
       console.error("Network error:", error);
     }
   }
-  
+
   function DescriptionForm() {
     const form = useForm({
       initialValues: {
         description: '',
       },
     });
-  
+
     return (
       <Box mx="auto">
         <form onSubmit={form.onSubmit((values) => handleDescriptionSubmitted(values.description))}>
           <TextInput
+            onChange={(event) =>
+              form.setFieldValue("description", event.currentTarget.value)
+            }
             label="Description"
             placeholder="Description for this personal training session (optional)"
           />
@@ -197,7 +200,7 @@ const Example = () => {
       </Box>
     );
   }
-  
+
 
   const handleBookSelected = () => {
     modals.open({
