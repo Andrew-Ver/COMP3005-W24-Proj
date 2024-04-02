@@ -375,9 +375,10 @@ function useUpdateMetric() {
   return useMutation({
     mutationFn: async (metric: Metric) => {
       //send api update request here
-      const response = await fetch("/api/trainer/availability/update", {
+      const response = await fetch("/api/group-class/update", {
         method: "POST",
         body: JSON.stringify({
+          class_id: metric.class_id,
           availability_id: metric.availability_id,
           room_id: metric.room_id,
           description: metric.description,

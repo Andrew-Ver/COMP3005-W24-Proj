@@ -1,8 +1,8 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import pool, { TimeSlot } from "@/db";
+import pool from "@/db";
 
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse<TimeSlot[]>) {
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { room_id, description } = req.body;
 
   // Update a specific timestamp'd metric from the DB
