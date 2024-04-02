@@ -19,10 +19,11 @@ export default async function handler(
 
         const result = await pool.query(createAccountQuery, [username, name, password, role]);
 
-        const createMemberQuery = `
-                        INSERT INTO member (member_username, age, gender)
-                        VALUES ($1, $2, $3);`;
-        const createMemberResult = await pool.query(createMemberQuery, [username, 20, "male"]);
+        // This part is moved under api/member/register
+        // const createMemberQuery = `
+        //                 INSERT INTO member (member_username, age, gender)
+        //                 VALUES ($1, $2, $3);`;
+        // const createMemberResult = await pool.query(createMemberQuery, [username, 20, "male"]);
 
         //return newly created user
         res.status(201).json({ user: result.rows[0] });

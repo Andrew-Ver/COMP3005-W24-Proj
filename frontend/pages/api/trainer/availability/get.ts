@@ -16,7 +16,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
                 ORDER BY begin_time ASC;`;
 
   const result = await pool.query(query, [username]);
-  console.log(result)
 
   // Convert datetime "2020-01-01T09:00:00.000Z" to "2020-01-01 09:00:00"
   // among a few other changes
