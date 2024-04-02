@@ -32,6 +32,7 @@ import {
 
 import MetricsTable from "@/components/profile/metricsTable";
 import { useSession } from "next-auth/react";
+import { UserInfoIcons } from "@/components/member/UserInfoIcons";
 
 type Metric = {
   id: string;
@@ -46,6 +47,7 @@ export default function Profile() {
 
   return (
     <Stack gap="sm" align="center">
+      <UserInfoIcons></UserInfoIcons>
       <Title order={1} c="rgb(73, 105, 137)" ta="center">
         Health Metrics for {session?.user?.name}
       </Title>

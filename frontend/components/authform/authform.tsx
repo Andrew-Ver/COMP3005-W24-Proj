@@ -45,7 +45,7 @@ export default function AuthForm(props: PaperProps) {
 
     validate: {
       gender: (value, values) => {
-        if (values.role === "member") {
+        if (type === "register" && values.role === "member") {
           if (!value) {
             return "Gender is required for members";
           }
@@ -53,7 +53,7 @@ export default function AuthForm(props: PaperProps) {
         return null;
       },
       age: (value, values) => {
-        if (values.role === "member") {
+        if (type === "register" && values.role === "member") {
           if (!value) {
             return "Age is required for members";
           } else if (isNaN(parseFloat(value))) {
@@ -65,7 +65,7 @@ export default function AuthForm(props: PaperProps) {
         return null;
       },
       rateperhour: (value, values) => {
-        if (values.role === "trainer") {
+        if (type === "register" && values.role === "trainer") {
           if (!value) {
             return "Rate per hour is required for trainers";
           } else if (isNaN(parseFloat(value))) {
