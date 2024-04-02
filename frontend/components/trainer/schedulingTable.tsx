@@ -35,6 +35,7 @@ import { DateTimePicker } from "@mantine/dates";
 
 type Metric = {
   id: string;
+  availability_id: string;
   username: string,
   begin_time: string;
   end_time: string;
@@ -63,13 +64,18 @@ const Example = () => {
   const columns = useMemo<MRT_ColumnDef<Metric>[]>(
     () => [
       {
+        accessorKey: "availability_id",
+        header: "Availability ID",
+        enableEditing: false,
+      },
+      {
         accessorKey: "begin_time",
         header: "Begin Time",
         minSize: 300,
         mantineEditTextInputProps: {
             type: "string",
             required: true,
-            placeholder: "YY-MM-DD HH:MM:SS",
+            placeholder: "YYYY-MM-DD HH:MM:SS",
             error: validationErrors?.end_time,
             //remove any previous validation errors when user focuses on the input
             onFocus: () =>
@@ -86,7 +92,7 @@ const Example = () => {
         mantineEditTextInputProps: {
           type: "string",
           required: true,
-          placeholder: "YY-MM-DD HH:MM:SS",
+          placeholder: "YYYY-MM-DD HH:MM:SS",
           error: validationErrors?.end_time,
           //remove any previous validation errors when user focuses on the input
           onFocus: () =>
@@ -256,7 +262,6 @@ function useCreateMetric() {
             ...prevMetrics,
             {
               ...newMetricInfo,
-              time: new Date().toISOString(),
               id: (Math.random() + 1).toString(36).substring(7),
             },
           ] as Metric[]
@@ -305,17 +310,34 @@ function useUpdateMetric() {
   return useMutation({
     mutationFn: async (metric: Metric) => {
       //send api update request here
-      await new Promise((resolve) => setTimeout(resolve, 1000)); //fake api call
-      return Promise.resolve();
+      const response = await fetch("/api/trainer/availability/update", {
+        method: "POST",
+        body: JSON.stringify({
+          availability_id: metric.availability_id,
+          begin_time: metric.begin_time,
+          end_time: metric.end_time
+        }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      const data = await response.json();
+      return data;
     },
     //client side optimistic update
-    // onMutate: (newUserInfo: Metric) => {
-    //   queryClient.setQueryData(["metrics"], (prevUsers: any) =>
-    //     prevUsers?.map((prevUser: Metric) =>
-    //       prevUser.id === newUserInfo.id ? newUserInfo : prevUser
-    //     )
-    //   );
-    // },
+    onMutate: (newMetricInfo: Metric) => {
+      queryClient.setQueryData(
+        ["metrics"],
+        (prevMetrics: any) =>
+          [
+            ...prevMetrics,
+            {
+              ...newMetricInfo,
+              id: (Math.random() + 1).toString(36).substring(7),
+            },
+          ] as Metric[]
+      );
+    },
     onSettled: () => queryClient.invalidateQueries({ queryKey: ["metrics"] }), //refetch users after mutation, disabled for demo
   });
 }
