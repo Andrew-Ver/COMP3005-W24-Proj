@@ -14,11 +14,9 @@ import {
     Button,
     TextInput,
     Box,
-    Group,
-    Text
+    Group, Text,
 } from "@mantine/core";
 import { ModalsProvider, modals } from "@mantine/modals";
-import { useRouter  } from "next/router";
 
 import {
     QueryClient,
@@ -28,20 +26,19 @@ import {
 
 import { useSession } from "next-auth/react";
 import { Form, useForm } from "@mantine/form";
+import {useForceUpdate} from "@mantine/hooks";
 import {showNotification} from "@mantine/notifications";
-import {router} from "next/client";
-import {setTimeout} from "next/dist/compiled/@edge-runtime/primitives";
 
 type Metric = {
-    bill_id: number;
-    member_username: string;
-    amount: number;
+    session_id: number;
+    name: string;
+    begin_time: string;
+    end_time: string;
     description: string;
-    bill_timestamp: string;
-    cleared: boolean;
+    is_completed: boolean;
 };
 
-export default function BillingTable() {
+export default function SessionsTable() {
     const { data: session, status } = useSession();
 
     // TODO: add code to the following block
@@ -56,46 +53,41 @@ export default function BillingTable() {
 
     return (
         <Stack gap="sm" align="center">
-            <Title order={2} c="rgb(73, 105, 137)" ta="center">
-                Billings for Member {session?.user?.name}
-            </Title>
-            <ExampleWithProviders />
-            <Divider my="sm" variant="dashed" />
+    <Title order={2} c="rgb(73, 105, 137)" ta="center">
+        Upcoming Personal Training Session
+    </Title>
+    <ExampleWithProviders />
+    <Divider my="sm" variant="dashed" />
         </Stack>
-    );
+);
 }
 
 
 const Example = () => {
-    const [, forceUpdate] = useState();
 
     const columns = useMemo<MRT_ColumnDef<Metric>[]>(
         () => [
             {
-                accessorKey: "bill_id",
-                header: "Bill ID",
+                accessorKey: "trainer_name",
+                header: "Trainer Name",
             },
             {
-                accessorKey: "member_username",
-                header: "Member Username",
+                accessorKey: "begin_time",
+                header: "Begin Time",
             },
             {
-                accessorKey: "amount",
-                header: "Amount"
+                accessorKey: "end_time",
+                header: "End Time",
             },
             {
                 accessorKey: "description",
                 header: "Description",
             },
             {
-                accessorKey: "bill_timestamp",
-                header: "Bill Timestamp",
+                accessorKey: "is_completed",
+                header: "Is Completed",
+                accessorFn: (row) => { return row.is_completed ? 'Completed' : 'Not complete' }
             },
-            {
-                accessorKey: "cleared",
-                header: "Cleared?",
-                accessorFn: (row) => { return row.cleared ? 'Paid' : 'Not paid' }
-            }
         ],
         []
     );
@@ -113,8 +105,8 @@ const Example = () => {
         data: fetchedMetrics,
         createDisplayMode: "row", // ('modal', and 'custom' are also available)
         enableEditing: false,
-        enableRowSelection: (row) => row.original.cleared == false,
-        enableMultiRowSelection: true, //shows radio buttons instead of checkboxes
+        enableRowSelection: true,
+        enableMultiRowSelection: false, //shows radio buttons instead of checkboxes
         // getRowId: (row) => row.availability_id.toString(),
         mantineToolbarAlertBannerProps: isLoadingMetricsError
             ? {
@@ -132,54 +124,60 @@ const Example = () => {
             showAlertBanner: isLoadingMetricsError,
             showProgressBars: isFetchingMetrics,
         },
-        renderTopToolbarCustomActions: ({ table }) => (
-            <Button onClick={handlePaySelected}>
-                Pay Selected Bills
+        renderTopToolbarCustomActions: ({ table }) => {
+            // Check if any rows are selected
+            const isRowSelected = table.getSelectedRowModel().rows.length > 0;
+
+            return (
+                <Button
+                    onClick={handleMarkAsCompleted}
+            // Disable the button if no rows are selected
+            disabled={!isRowSelected}
+        >
+            Mark as completed
             </Button>
-        ),
+        );
+        },
     });
 
-
-    const handlePaySelected = () => {
+    const handleMarkAsCompleted = () => {
         modals.openConfirmModal({
             title: 'Please confirm your payment',
             children: (
-              <Text size="sm">
-                Are you sure you want to pay for the selected bills?
-              </Text>
+                <Text size="sm">
+                    Are you sure you want to mark the selected sessions as completed?
+                </Text>
             ),
             labels: { confirm: 'Confirm', cancel: 'Cancel' },
             onCancel: () => console.log('Cancel'),
-            onConfirm: () => handlePaymentConfirmed(),
-          });
-    }
+            onConfirm: () => handleCompletionConfirmed(),
+        });
+    };
 
-    const handlePaymentConfirmed = async () => {
-        const selectedRows = table.getSelectedRowModel().rows; 
-        const bill_ids: number[] = selectedRows.map(row => row.original.bill_id);
-        console.log(bill_ids)
+    const handleCompletionConfirmed = async () => {
+        const selectedRows = table.getSelectedRowModel().rows;
+        const session_ids: number[] = selectedRows.map(row => row.original.session_id);
         try {
-            const response = await fetch("/api/member/billing/pay", {
+            const response = await fetch("/api/member/personal-training/complete", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify({bill_ids})
+                body: JSON.stringify({session_ids})
             });
 
             if (response.ok) {
-                console.log("Payment submitted successfully");
                 modals.closeAll();
 
                 // Show success notification
                 showNotification({
                     title: 'Success',
-                    message: 'Payment successful!',
+                    message: 'Thanks for using our service!',
                     color: 'green',
                 });
 
-                await queryClient.invalidateQueries();
                 table.toggleAllRowsSelected(false);
+                await queryClient.invalidateQueries();
             } else {
                 console.error("Error submitting data: ", response.statusText);
             }
@@ -188,9 +186,14 @@ const Example = () => {
         }
     }
 
+    // After press the button
+    const { data: session, status } = useSession();
+
 
     return <MantineReactTable table={table} />;
 };
+
+
 
 //READ hook (get users from api)
 function useGetMetrics() {
@@ -200,9 +203,9 @@ function useGetMetrics() {
         queryKey: ["metrics"],
         queryFn: async () => {
             //send api request here
-            const response = await fetch("/api/member/billing/get", {
+            const response = await fetch("/api/member/personal-training/getUpcoming", {
                 method: "POST",
-                body: JSON.stringify({ member_username: session?.user?.username }),
+                body: JSON.stringify({member_username: session?.user?.username}),
                 headers: {
                     "Content-Type": "application/json",
                 },
@@ -215,16 +218,7 @@ function useGetMetrics() {
     });
 }
 
-const queryClient = new QueryClient(
-    {
-        defaultOptions: {
-            queries: {
-                refetchOnReconnect: "always",
-                refetchOnWindowFocus: "always",
-            },
-        },
-    }
-);
+const queryClient = new QueryClient();
 
 const ExampleWithProviders = () => (
     //Put this with your other react-query providers near root of your app
@@ -232,5 +226,5 @@ const ExampleWithProviders = () => (
         <ModalsProvider>
             <Example />
         </ModalsProvider>
-    </QueryClientProvider>
+        </QueryClientProvider>
 );

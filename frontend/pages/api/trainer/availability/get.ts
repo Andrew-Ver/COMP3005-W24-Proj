@@ -8,12 +8,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
   //   return res.status(405);
   // }
   // Fetch user data from the DB and return object
-  const query = `SELECT trainer_username, 
+  const query = `SELECT 
+                availability_id,
+                trainer_username, 
                 begin_time AT TIME ZONE 'UTC' AT TIME ZONE 'America/New_York' AS begin_time, 
                 end_time AT TIME ZONE 'UTC' AT TIME ZONE 'America/New_York' AS end_time
                 FROM trainer_availability
-                WHERE trainer_username = $1
-                ORDER BY begin_time ASC;`;
+                WHERE trainer_username = $1;`;
 
   const result = await pool.query(query, [username]);
   console.log(result)

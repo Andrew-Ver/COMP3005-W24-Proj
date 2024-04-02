@@ -226,7 +226,7 @@ export default function AuthForm(props: PaperProps) {
                 <Group justify="center">
                   <Radio value="member" label="Member" />
                   <Radio value="trainer" label="Trainer" />
-                  <Radio value="administrator" label="Staff" />
+                  <Radio value="administrator" label="Admin" />
                 </Group>
               </RadioGroup>
             </>
