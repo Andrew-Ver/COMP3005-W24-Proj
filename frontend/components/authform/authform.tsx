@@ -13,6 +13,8 @@ import {
   Radio,
   Tooltip,
   Flex,
+  Select,
+  NativeSelect,
 } from "@mantine/core";
 
 import React from "react";
@@ -35,10 +37,45 @@ export default function AuthForm(props: PaperProps) {
       firstname: "",
       lastname: "",
       role: "member",
+      rateperhour: "",
+      age: "",
+      gender: "male"
     },
     validateInputOnChange: true,
 
     validate: {
+      gender: (value, values) => {
+        if (type === "register" && values.role === "member") {
+          if (!value) {
+            return "Gender is required for members";
+          }
+        }
+        return null;
+      },
+      age: (value, values) => {
+        if (type === "register" && values.role === "member") {
+          if (!value) {
+            return "Age is required for members";
+          } else if (isNaN(parseFloat(value))) {
+            return "Age must be a number";
+          } else if (parseFloat(value) <= 0) {
+            return "Age must be a positive number";
+          }
+        }
+        return null;
+      },
+      rateperhour: (value, values) => {
+        if (type === "register" && values.role === "trainer") {
+          if (!value) {
+            return "Rate per hour is required for trainers";
+          } else if (isNaN(parseFloat(value))) {
+            return "Rate per hour must be a number";
+          } else if (parseFloat(value) <= 0) {
+            return "Rate per hour must be a positive number";
+          }
+        }
+        return null;
+      },
       username: (value) =>
         value.length >= 3 && value.length <= 25
           ? null
@@ -63,7 +100,10 @@ export default function AuthForm(props: PaperProps) {
     password: string;
     firstname?: string;
     lastname?: string;
-    role: string;
+    role?: string;
+    rateperhour: string;
+    age: string;
+    gender?: string;
   }) => {
     if (type === "login") {
       const result: any = await signIn("credentials", {
@@ -71,6 +111,7 @@ export default function AuthForm(props: PaperProps) {
         password: values.password,
         redirect: false,
       });
+      // console.log(`result: ${JSON.stringify(result)}`);
 
       if (!result.ok) {
         console.log(result.error);
@@ -96,8 +137,8 @@ export default function AuthForm(props: PaperProps) {
         });
       }
     } else if (type === "register") {
-      // Call the API endpoint to register the user
-      const response: any = await fetch("/api/register", {
+      // Call the API endpoint to register the user in the account db
+      const accountResponse: any = await fetch("/api/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -118,19 +159,76 @@ export default function AuthForm(props: PaperProps) {
           ),
         }),
       });
-      if (!response.ok) {
+
+      if (values.role === "trainer") {
+        // Call the API endpoint to register the user in the trainer db
+        const trainerResponse: any = await fetch("/api/trainer/register", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          //body: JSON.stringify(values),
+          body: JSON.stringify({
+            username: values.username.toLowerCase(),
+            rateperhour: values.rateperhour
+          }),
+        });
+        if (!trainerResponse.ok) {
+          // Handle the error message here
+          // using (await response.json()).message), as retrieved from the API
+          notifications.show({
+            title: "Error Attempting to Register to Trainer Database",
+            icon: <IconX />,
+            message: (await trainerResponse.json()).message,
+            color: "red",
+          });
+          // Reset the form after an invalid login attempt
+          //form.reset();
+        }
+      }
+      else if (values.role === "member") {
+        // Call the API endpoint to register the user to the member db
+        const memberResponse: any = await fetch("/api/member/register", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          //body: JSON.stringify(values),
+          body: JSON.stringify({
+            username: values.username.toLowerCase(),
+            age: values.age,
+            gender: values.gender
+          }),
+        });
+
+        if (!memberResponse.ok) {
+          // Handle the error message here
+          // using (await response.json()).message), as retrieved from the API
+          notifications.show({
+            title: "Error Attempting to Register to Member Database",
+            icon: <IconX />,
+            message: (await memberResponse.json()).message,
+            color: "red",
+          });
+          // Reset the form after an invalid login attempt
+          //form.reset();
+        }
+      }
+
+      if (!accountResponse.ok) {
         // Handle the error message here
         // using (await response.json()).message), as retrieved from the API
         notifications.show({
           title: "Error Attempting to Register",
           icon: <IconX />,
-          message: (await response.json()).message,
+          message: (await accountResponse.json()).message,
           color: "red",
         });
         // Reset the form after an invalid login attempt
         //form.reset();
         form.setFieldValue("password", "");
-      } else {
+      }
+      else {
         form.reset();
         //toggle();
         notifications.show({
@@ -138,6 +236,8 @@ export default function AuthForm(props: PaperProps) {
           message: `Successfully Registered as: ${values.username}`,
           color: "green",
         });
+
+
         // Login after successfully registration
         try {
           await signIn("credentials", {
@@ -157,6 +257,7 @@ export default function AuthForm(props: PaperProps) {
       }
     }
   };
+
 
   return (
     <Paper radius="md" p="xl" withBorder {...props}>
@@ -229,6 +330,58 @@ export default function AuthForm(props: PaperProps) {
                   <Radio value="administrator" label="Staff" />
                 </Group>
               </RadioGroup>
+
+              {form.values.role === "trainer" && (
+                <TextInput
+                  required
+                  label="Rate Per Hour"
+                  placeholder="$0/h"
+                  value={form.values.rateperhour}
+                  onChange={(event) =>
+                    form.setFieldValue("rateperhour", event.currentTarget.value)
+                  }
+                  error={
+                    form.errors.rateperhour &&
+                    "Rate per hour is required for trainers"
+                  }
+                  radius="md"
+                >
+                </TextInput>
+              )}
+
+              {form.values.role === "member" && (
+                <Group>
+                  <TextInput
+                    required
+                    label="age"
+                    placeholder="0"
+                    value={form.values.age}
+                    onChange={(event) =>
+                      form.setFieldValue("age", event.currentTarget.value)
+                    }
+                    error={
+                      form.errors.age &&
+                      "Age is required for members"
+                    }
+                    radius="md"
+                  />
+                  <NativeSelect
+                    required
+                    label="gender"
+                    value={form.values.gender}
+                    data={['male', 'female', 'others']}
+                    onChange={(event) =>
+                      form.setFieldValue("gender", event.currentTarget.value)
+                    }
+                    error={
+                      form.errors.gender &&
+                      "Gender is required for members"
+                    }
+                    radius="md"
+                  />
+                </Group>
+
+              )}
             </>
           )}
 

@@ -1,7 +1,7 @@
 import "@mantine/core/styles.css";
 import "@mantine/dates/styles.css"; //if using mantine date picker features
 import "mantine-react-table/styles.css"; //make sure MRT styles were imported in your app root (once)
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   MantineReactTable,
   type MRT_ColumnDef,
@@ -30,33 +30,30 @@ import {
   useQueryClient,
 } from "@tanstack/react-query";
 
-import MetricsTable from "@/components/profile/metricsTable";
 import { useSession } from "next-auth/react";
-import { UserInfoIcons } from "@/components/member/UserInfoIcons";
+import { DateTimePicker } from "@mantine/dates";
 
 type Metric = {
   id: string;
-  metric_timestamp: string;
-  weight: string;
-  body_fat_percentage: string;
-  blood_pressure: string;
+  username: string,
+  begin_time: string;
+  end_time: string;
 };
 
-export default function Profile() {
+export default function SchedulingTable() {
   const { data: session, status } = useSession();
 
   return (
     <Stack gap="sm" align="center">
-      <UserInfoIcons></UserInfoIcons>
       <Title order={1} c="rgb(73, 105, 137)" ta="center">
-        Health Metrics for {session?.user?.name}
+        Available Time Slots for {session?.user?.name}
       </Title>
       <ExampleWithProviders />
       <Divider my="sm" variant="dashed" />
-      <MetricsTable></MetricsTable>
     </Stack>
   );
 }
+
 
 const Example = () => {
   const [validationErrors, setValidationErrors] = useState<
@@ -66,54 +63,36 @@ const Example = () => {
   const columns = useMemo<MRT_ColumnDef<Metric>[]>(
     () => [
       {
-        accessorKey: "metric_timestamp",
-        header: "Time",
-        enableEditing: false,
-        size: 80,
+        accessorKey: "begin_time",
+        header: "Begin Time",
+        minSize: 300,
+        mantineEditTextInputProps: {
+            type: "string",
+            required: true,
+            placeholder: "YY-MM-DD HH:MM:SS",
+            error: validationErrors?.end_time,
+            //remove any previous validation errors when user focuses on the input
+            onFocus: () =>
+              setValidationErrors({
+                ...validationErrors,
+                end_time: undefined,
+              }),
+          },
       },
       {
-        accessorKey: "weight",
-        header: "Weight",
+        accessorKey: "end_time",
+        header: "End Time",
+        minSize: 300,
         mantineEditTextInputProps: {
-          type: "number",
+          type: "string",
           required: true,
-          error: validationErrors?.weight,
+          placeholder: "YY-MM-DD HH:MM:SS",
+          error: validationErrors?.end_time,
           //remove any previous validation errors when user focuses on the input
           onFocus: () =>
             setValidationErrors({
               ...validationErrors,
-              weight: undefined,
-            }),
-          //optionally add validation checking for onBlur or onChange
-        },
-      },
-      {
-        accessorKey: "body_fat_percentage",
-        header: "Bodyfat (%)",
-        mantineEditTextInputProps: {
-          type: "number",
-          required: true,
-          error: validationErrors?.body_fat_percentage,
-          //remove any previous validation errors when user focuses on the input
-          onFocus: () =>
-            setValidationErrors({
-              ...validationErrors,
-              bodyfat: undefined,
-            }),
-        },
-      },
-      {
-        accessorKey: "blood_pressure",
-        header: "Blood Pressure",
-        mantineEditTextInputProps: {
-          type: "text",
-          required: true,
-          error: validationErrors?.blood_pressure,
-          //remove any previous validation errors when user focuses on the input
-          onFocus: () =>
-            setValidationErrors({
-              ...validationErrors,
-              bloodPressure: undefined,
+              end_time: undefined,
             }),
         },
       },
@@ -176,7 +155,7 @@ const Example = () => {
       ),
       labels: { confirm: "Delete", cancel: "Cancel" },
       confirmProps: { color: "red" },
-      onConfirm: () => deleteMetric(row.original.metric_timestamp),
+      onConfirm: () => deleteMetric(row.original.id),
     });
 
   const table = useMantineReactTable({
@@ -185,7 +164,7 @@ const Example = () => {
     createDisplayMode: "row", // ('modal', and 'custom' are also available)
     editDisplayMode: "row", // ('modal', 'cell', 'table', and 'custom' are also available)
     enableEditing: true,
-    getRowId: (row) => row.metric_timestamp,
+    getRowId: (row) => row.id,
     mantineToolbarAlertBannerProps: isLoadingMetricsError
       ? {
           color: "red",
@@ -228,7 +207,7 @@ const Example = () => {
         }}
       >
         <CirclePlus />
-        {"  "}Metric
+        {"  "}Time Slot
       </Button>
     ),
     state: {
@@ -250,16 +229,15 @@ function useCreateMetric() {
   return useMutation({
     mutationFn: async (metric: Metric) => {
       // Set time to current time.
-      metric.metric_timestamp = new Date().toISOString();
+    //   metric.metric_timestamp = new Date().toISOString();
       //send api request here
-      const response = await fetch("/api/user/metrics/create", {
+      const response = await fetch("/api/trainer/availability/create", {
         method: "POST",
         // In body, send session?.user?.username, weight, body_fat_percentage, and blood_pressure
         body: JSON.stringify({
           username: session?.user?.username,
-          weight: metric.weight,
-          body_fat_percentage: metric.body_fat_percentage,
-          blood_pressure: metric.blood_pressure,
+          begin_time: metric.begin_time,
+          end_time: metric.end_time,
         }),
         headers: {
           "Content-Type": "application/json",
@@ -292,11 +270,21 @@ function useCreateMetric() {
 function useGetMetrics() {
   const { data: session, status } = useSession();
 
+    // TODO: add code to the following block
+    useEffect(() => {
+    // Fetch data when the component mounts or when session changes
+    if (session) {
+      // Fetch data from the API
+      // This will automatically trigger the useGetMetrics hook
+      // and update the fetchedMetrics state
+    }
+  }, [session]);
+
   return useQuery<Metric[]>({
     queryKey: ["metrics"],
     queryFn: async () => {
       //send api request here
-      const response = await fetch("/api/user/metrics/get", {
+      const response = await fetch("/api/trainer/availability/get", {
         method: "POST",
         body: JSON.stringify({ username: session?.user?.username }),
         headers: {
@@ -316,7 +304,6 @@ function useUpdateMetric() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (metric: Metric) => {
-      console.log(metric);
       //send api update request here
       await new Promise((resolve) => setTimeout(resolve, 1000)); //fake api call
       return Promise.resolve();
@@ -357,10 +344,10 @@ function useDeleteMetric() {
       return data;
     },
     //client side optimistic update
-    onMutate: (metric_timestamp: string) => {
+    onMutate: (id: string) => {
       queryClient.setQueryData(["metrics"], (prevMetrics: any) =>
         prevMetrics?.filter(
-          (metric: Metric) => metric.metric_timestamp !== metric_timestamp
+          (metric: Metric) => metric.id !== id
         )
       );
     },
@@ -383,13 +370,9 @@ const validateRequired = (value: string) => !!value.length;
 
 function validateMetric(metric: Metric) {
   return {
-    metric_timestamp: "",
-    weight: !validateRequired(metric.weight) ? "Weight is Required" : "",
-    body_fat_percentage: !validateRequired(metric.body_fat_percentage)
-      ? "Bodyfat is Required"
-      : "",
-    blood_pressure: !validateRequired(metric.blood_pressure)
-      ? "Blood Pressure reading is required in format: 120/80"
+    begin_time: !validateRequired(metric.begin_time) ? "Begin time is Required" : "",
+    end_time: !validateRequired(metric.end_time)
+      ? "End time is Required"
       : "",
   };
 }
