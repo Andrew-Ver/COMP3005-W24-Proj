@@ -35,7 +35,6 @@ import {
 import { useSession } from "next-auth/react";
 import { UserInfoIcons } from "@/components/member/UserInfoIcons";
 import { Specialty } from "@/db";
-import SpecialtyTable from "@/components/trainer/specialtyTable";
 
 
 export default function Profile() {
@@ -136,9 +135,14 @@ const Example = () => {
     const table = useMantineReactTable({
         columns,
         data: fetchedSpecialties,
+        initialState: {
+            columnVisibility: { Actions: false }
+        },
+
+        enableColumnActions: false,
+        enableRowActions: false,
         createDisplayMode: "row", // ('modal', and 'custom' are also available)
         editDisplayMode: "row", // ('modal', 'cell', 'table', and 'custom' are also available)
-        enableEditing: true,
         getRowId: (row) => row.specialty,
         mantineToolbarAlertBannerProps: isLoadingSpecialtiesError
             ? {
@@ -155,20 +159,6 @@ const Example = () => {
         onCreatingRowSave: handleCreateSpecialty,
         onEditingRowCancel: () => setValidationErrors({}),
         onEditingRowSave: handleSaveSpecialty,
-        renderRowActions: ({ row, table }) => (
-            <Flex gap="md" justify="center">
-                <Tooltip label="Edit">
-                    <ActionIcon onClick={() => table.setEditingRow(row)}>
-                        <IconEdit />
-                    </ActionIcon>
-                </Tooltip>
-                {<Tooltip label="Delete">
-          <ActionIcon color="red" onClick={() => openDeleteConfirmModal(row)}>
-            <IconTrash />
-          </ActionIcon>
-        </Tooltip> }
-            </Flex>
-        ),
         renderTopToolbarCustomActions: ({ table }) => (
             <Button
                 onClick={() => {
@@ -187,7 +177,7 @@ const Example = () => {
         ),
         state: {
             isLoading: isLoadingSpecialties,
-            isSaving: isCreatingSpecialty || isDeletingSpecialty,
+            isSaving: isCreatingSpecialty || isUpdatingSpecialty|| isDeletingSpecialty,
             showAlertBanner: isLoadingSpecialtiesError,
             showProgressBars: isFetchingSpecialties,
         },
@@ -219,12 +209,7 @@ function useCreateSpecialty() {
             return data;
         },
         //client side optimistic update
-        onMutate: (specialty: Specialty) => {
-            queryClient.setQueryData(["specialty"], (prevSpecialties: any) => [
-                ...prevSpecialties,
-                specialty,
-            ]);
-        },
+        onMutate: (newSpecialty: Specialty) => {},
         onSettled: () => queryClient.invalidateQueries({ queryKey: ["specialty"] }), //refetch users after mutation, disabled for demo
     });
 }
@@ -337,16 +322,14 @@ const ExampleWithProviders = () => (
     </QueryClientProvider>
 );
 
-const validateRequired = (value: string) => !!value.length;
 
 function validateSpecialty(specialty: Specialty) {
-    if (!validateRequired(specialty.specialty)) {
+    if (specialty.specialty.trim() === "") {
         return {
             specialty: "Specialty is Required",
         };
     }
     else {
-        specialty.specialty = specialty.specialty.charAt(0).toUpperCase() + specialty.specialty.slice(1);
         return {};
     }
 }

@@ -18,6 +18,7 @@ import {
     Text
 } from "@mantine/core";
 import { ModalsProvider, modals } from "@mantine/modals";
+import { useRouter  } from "next/router";
 
 import {
     QueryClient,
@@ -27,6 +28,9 @@ import {
 
 import { useSession } from "next-auth/react";
 import { Form, useForm } from "@mantine/form";
+import {showNotification} from "@mantine/notifications";
+import {router} from "next/client";
+import {setTimeout} from "next/dist/compiled/@edge-runtime/primitives";
 
 type Metric = {
     bill_id: number;
@@ -63,6 +67,7 @@ export default function BillingTable() {
 
 
 const Example = () => {
+    const [, forceUpdate] = useState();
 
     const columns = useMemo<MRT_ColumnDef<Metric>[]>(
         () => [
@@ -149,8 +154,6 @@ const Example = () => {
           });
     }
 
-    const { data: session, status } = useSession();
-
     const handlePaymentConfirmed = async () => {
         const selectedRows = table.getSelectedRowModel().rows; 
         const bill_ids: number[] = selectedRows.map(row => row.original.bill_id);
@@ -167,6 +170,16 @@ const Example = () => {
             if (response.ok) {
                 console.log("Payment submitted successfully");
                 modals.closeAll();
+
+                // Show success notification
+                showNotification({
+                    title: 'Success',
+                    message: 'Payment successful!',
+                    color: 'green',
+                });
+
+                await queryClient.invalidateQueries();
+                table.toggleAllRowsSelected(false);
             } else {
                 console.error("Error submitting data: ", response.statusText);
             }
@@ -202,7 +215,16 @@ function useGetMetrics() {
     });
 }
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient(
+    {
+        defaultOptions: {
+            queries: {
+                refetchOnReconnect: "always",
+                refetchOnWindowFocus: "always",
+            },
+        },
+    }
+);
 
 const ExampleWithProviders = () => (
     //Put this with your other react-query providers near root of your app
