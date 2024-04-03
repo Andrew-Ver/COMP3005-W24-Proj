@@ -15,7 +15,7 @@ import {
   TextInput,
   Box,
   Group,
-  Text
+  Text,
 } from "@mantine/core";
 import { ModalsProvider, modals } from "@mantine/modals";
 
@@ -58,9 +58,7 @@ export default function GroupClassTable() {
   );
 }
 
-
 const Example = () => {
-
   const columns = useMemo<MRT_ColumnDef<Metric>[]>(
     () => [
       {
@@ -86,8 +84,10 @@ const Example = () => {
       {
         accessorKey: "completed",
         header: "Is Completed?",
-        accessorFn: (row) => { return row.completed ? 'Completed' : 'Not Completed' }
-      }
+        accessorFn: (row) => {
+          return row.completed ? "Completed" : "Not Completed";
+        },
+      },
     ],
     []
   );
@@ -110,9 +110,9 @@ const Example = () => {
     // getRowId: (row) => row.availability_id.toString(),
     mantineToolbarAlertBannerProps: isLoadingMetricsError
       ? {
-        color: "red",
-        children: "Error loading data",
-      }
+          color: "red",
+          children: "Error loading data",
+        }
       : undefined,
     mantineTableContainerProps: {
       style: {
@@ -124,20 +124,20 @@ const Example = () => {
       showAlertBanner: isLoadingMetricsError,
       showProgressBars: isFetchingMetrics,
     },
-    renderTopToolbarCustomActions: ({ table }) => (
-      <Button
-        onClick={handleBookSelected}
-      >
-        Book Selected Group Class
-      </Button>
-    ),
+    renderTopToolbarCustomActions: ({ table }) =>
+      table.getSelectedRowModel().rows[0] ? (
+        <Button onClick={handleBookSelected}>Book Selected Group Class</Button>
+      ) : (
+        <Button disabled onClick={handleBookSelected}>
+          Book Selected Group Class
+        </Button>
+      ),
   });
 
   // After press the button
   const { data: session, status } = useSession();
 
   const handleBookSelected = async () => {
-    console.log("Submit clicked")
     const member_username = session?.user?.username;
     const selectedRow = table.getSelectedRowModel().rows[0]; //or read entire rows
     const class_id = selectedRow.original.class_id;
@@ -150,7 +150,7 @@ const Example = () => {
       class_id,
       availability_id,
       fee,
-      description
+      description,
     };
 
     console.log("dataToSend: ", dataToSend);
@@ -168,14 +168,14 @@ const Example = () => {
         // Handle successful response
         console.log("Data submitted successfully:", dataToSend);
         modals.open({
-          title: 'Booking Confirmed',
+          title: "Booking Confirmed",
           children: (
             <>
-            <Text>Your booking for group class is successful!</Text>
-            <Button fullWidth onClick={() => modals.closeAll()} mt="md">
-              Confirm
-            </Button>
-          </>
+              <Text>Your booking for group class is successful!</Text>
+              <Button fullWidth onClick={() => modals.closeAll()} mt="md">
+                Confirm
+              </Button>
+            </>
           ),
         });
       } else {
@@ -186,17 +186,13 @@ const Example = () => {
       // Handle network error
       console.error("Network error:", error);
     }
-  }
-
-
-
+  };
 
   return <MantineReactTable table={table} />;
 };
 
 //READ hook (get users from api)
 function useGetMetrics() {
-
   return useQuery<Metric[]>({
     queryKey: ["metrics"],
     queryFn: async () => {

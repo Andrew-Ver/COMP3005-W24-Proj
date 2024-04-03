@@ -30,7 +30,6 @@ import {
   useQueryClient,
 } from "@tanstack/react-query";
 
-import MetricsTable from "@/components/profile/metricsTable";
 import { useSession } from "next-auth/react";
 import { UserInfoIcons } from "@/components/member/UserInfoIcons";
 
@@ -52,8 +51,6 @@ export default function Profile() {
         Health Metrics for {session?.user?.name}
       </Title>
       <ExampleWithProviders />
-      <Divider my="sm" variant="dashed" />
-      <MetricsTable></MetricsTable>
     </Stack>
   );
 }
@@ -194,7 +191,7 @@ const Example = () => {
       : undefined,
     mantineTableContainerProps: {
       style: {
-        minHeight: "500px",
+        minHeight: "400px",
       },
     },
     onCreatingRowCancel: () => setValidationErrors({}),
