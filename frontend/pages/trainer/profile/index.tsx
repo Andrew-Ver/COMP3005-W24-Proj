@@ -33,7 +33,7 @@ import {
 } from "@tanstack/react-query";
 
 import { useSession } from "next-auth/react";
-import { UserInfoIcons } from "@/components/member/UserInfoIcons";
+import { UserInfoIcons } from "@/components/trainer/UserInfoIcons";
 import { Specialty } from "@/db";
 
 
