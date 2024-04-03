@@ -214,6 +214,32 @@ export default function AuthForm(props: PaperProps) {
           //form.reset();
         }
       }
+      else if (values.role === "administrator") {
+        // Call the API endpoint to register the user to the member db
+        const adminResponse: any = await fetch("/api/admin/register", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          //body: JSON.stringify(values),
+          body: JSON.stringify({
+            username: values.username.toLowerCase()
+          }),
+        });
+
+        if (!adminResponse.ok) {
+          // Handle the error message here
+          // using (await response.json()).message), as retrieved from the API
+          notifications.show({
+            title: "Error Attempting to Register to Admin Database",
+            icon: <IconX />,
+            message: (await adminResponse.json()).message,
+            color: "red",
+          });
+          // Reset the form after an invalid login attempt
+          //form.reset();
+        }
+      }
 
       if (!accountResponse.ok) {
         // Handle the error message here
@@ -327,7 +353,7 @@ export default function AuthForm(props: PaperProps) {
                 <Group justify="center">
                   <Radio value="member" label="Member" />
                   <Radio value="trainer" label="Trainer" />
-                  <Radio value="administrator" label="Staff" />
+                  <Radio value="administrator" label="Admin" />
                 </Group>
               </RadioGroup>
 

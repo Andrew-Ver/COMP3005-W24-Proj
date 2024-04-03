@@ -29,14 +29,15 @@ import { useSession } from "next-auth/react";
 import { Form, useForm } from "@mantine/form";
 
 type Metric = {
+  class_id: number;
   availability_id: number;
-  trainer_username: string;
-  is_booked: boolean;
-  begin_time: string;
-  end_time: string;
+  room_id: number;
+  description: string;
+  fee: number;
+  completed: boolean;
 };
 
-export default function TrainersAvailabilityTable() {
+export default function GroupClassTable() {
   const { data: session, status } = useSession();
 
   // TODO: add code to the following block
@@ -51,9 +52,6 @@ export default function TrainersAvailabilityTable() {
 
   return (
     <Stack gap="sm" align="center">
-      <Title order={2} c="rgb(73, 105, 137)" ta="center">
-        Time Slots for All Trainers
-      </Title>
       <ExampleWithProviders />
       <Divider my="sm" variant="dashed" />
     </Stack>
@@ -66,26 +64,30 @@ const Example = () => {
   const columns = useMemo<MRT_ColumnDef<Metric>[]>(
     () => [
       {
+        accessorKey: "class_id",
+        header: "Class ID",
+      },
+      {
         accessorKey: "availability_id",
         header: "Availability ID",
       },
       {
-        accessorKey: "trainer_username",
-        header: "Trainer",
+        accessorKey: "room_id",
+        header: "Room ID",
       },
       {
-        accessorKey: "is_booked",
-        header: "Is Booked",
-        accessorFn: (row) => { return !row.is_booked ? 'Available' : 'Not available' }
+        accessorKey: "description",
+        header: "Description",
       },
       {
-        accessorKey: "begin_time",
-        header: "Begin Time",
+        accessorKey: "fee",
+        header: "Fee",
       },
       {
-        accessorKey: "end_time",
-        header: "End Time",
-      },
+        accessorKey: "completed",
+        header: "Is Completed?",
+        accessorFn: (row) => { return row.completed ? 'Completed' : 'Not Completed' }
+      }
     ],
     []
   );
@@ -103,7 +105,7 @@ const Example = () => {
     data: fetchedMetrics,
     createDisplayMode: "row", // ('modal', and 'custom' are also available)
     enableEditing: false,
-    enableRowSelection: (row) => row.original.is_booked == false,
+    enableRowSelection: (row) => row.original.completed == false,
     enableMultiRowSelection: false, //shows radio buttons instead of checkboxes
     // getRowId: (row) => row.availability_id.toString(),
     mantineToolbarAlertBannerProps: isLoadingMetricsError
@@ -126,7 +128,7 @@ const Example = () => {
       <Button
         onClick={handleBookSelected}
       >
-        Book Selected Time Slot
+        Book Selected Group Class
       </Button>
     ),
   });
@@ -134,28 +136,27 @@ const Example = () => {
   // After press the button
   const { data: session, status } = useSession();
 
-  const handleDescriptionSubmitted = async (description: string) => {
+  const handleBookSelected = async () => {
     console.log("Submit clicked")
     const member_username = session?.user?.username;
     const selectedRow = table.getSelectedRowModel().rows[0]; //or read entire rows
+    const class_id = selectedRow.original.class_id;
     const availability_id = selectedRow.original.availability_id;
-    const trainer_username = selectedRow.original.trainer_username;
-    const begin_time = selectedRow.original.begin_time;
-    const end_time = selectedRow.original.end_time;
+    const fee = selectedRow.original.fee;
+    const description = selectedRow.original.description;
 
     const dataToSend = {
       member_username,
+      class_id,
       availability_id,
-      description,
-      trainer_username,
-      begin_time,
-      end_time
+      fee,
+      description
     };
 
     console.log("dataToSend: ", dataToSend);
 
     try {
-      const response = await fetch("/api/member/personal-training/register", {
+      const response = await fetch("/api/member/group-class/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -170,7 +171,7 @@ const Example = () => {
           title: 'Booking Confirmed',
           children: (
             <>
-            <Text>Your booking for personal training session is successful!</Text>
+            <Text>Your booking for group class is successful!</Text>
             <Button fullWidth onClick={() => modals.closeAll()} mt="md">
               Confirm
             </Button>
@@ -187,40 +188,6 @@ const Example = () => {
     }
   }
 
-  function DescriptionForm() {
-    const form = useForm({
-      initialValues: {
-        description: '',
-      },
-    });
-
-    return (
-      <Box mx="auto">
-        <form onSubmit={form.onSubmit((values) => handleDescriptionSubmitted(values.description))}>
-          <TextInput
-            onChange={(event) =>
-              form.setFieldValue("description", event.currentTarget.value)
-            }
-            label="Description"
-            placeholder="Description for this personal training session (optional)"
-          />
-          <Group justify="flex-end" mt="md">
-            <Button type="submit" fullWidth>Submit</Button>
-          </Group>
-        </form>
-      </Box>
-    );
-  }
-
-
-  const handleBookSelected = () => {
-    modals.open({
-      title: 'Add Description',
-      children: (
-        <DescriptionForm></DescriptionForm>
-      ),
-    });
-  }
 
 
 
@@ -234,7 +201,7 @@ function useGetMetrics() {
     queryKey: ["metrics"],
     queryFn: async () => {
       //send api request here
-      const response = await fetch("/api/member/trainer-availability/get", {
+      const response = await fetch("/api/group-class/get", {
         method: "POST",
         body: JSON.stringify({}),
         headers: {
