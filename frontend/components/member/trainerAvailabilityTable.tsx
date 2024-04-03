@@ -15,6 +15,7 @@ import {
   TextInput,
   Box,
   Group,
+  Text
 } from "@mantine/core";
 import { ModalsProvider, modals } from "@mantine/modals";
 
@@ -165,7 +166,17 @@ const Example = () => {
       if (response.ok) {
         // Handle successful response
         console.log("Data submitted successfully:", dataToSend);
-        modals.closeAll();
+        modals.open({
+          title: 'Booking Confirmed',
+          children: (
+            <>
+            <Text>Your booking for personal training session is successful!</Text>
+            <Button fullWidth onClick={() => modals.closeAll()} mt="md">
+              Confirm
+            </Button>
+          </>
+          ),
+        });
       } else {
         // Handle error response
         console.error("Error submitting data:", response.statusText);
