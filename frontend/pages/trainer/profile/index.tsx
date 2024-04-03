@@ -324,6 +324,7 @@ const ExampleWithProviders = () => (
 
 
 function validateSpecialty(specialty: Specialty) {
+    console.log(specialty);
     if (specialty.specialty.trim() === "") {
         return {
             specialty: "Specialty is Required",
