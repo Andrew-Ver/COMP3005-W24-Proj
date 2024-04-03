@@ -31,24 +31,18 @@ import {
 } from "@tanstack/react-query";
 
 import { useSession } from "next-auth/react";
-import { DateTimePicker } from "@mantine/dates";
 
 type Metric = {
   id: string;
-  availability_id: string;
-  username: string,
-  begin_time: string;
-  end_time: string;
+  room_id: string;
+  description: string;
 };
 
-export default function SchedulingTable() {
+export default function RoomTable() {
   const { data: session, status } = useSession();
 
   return (
     <Stack gap="sm" align="center">
-      <Title order={1} c="rgb(73, 105, 137)" ta="center">
-        Available Time Slots for {session?.user?.name}
-      </Title>
       <ExampleWithProviders />
       <Divider my="sm" variant="dashed" />
     </Stack>
@@ -64,41 +58,23 @@ const Example = () => {
   const columns = useMemo<MRT_ColumnDef<Metric>[]>(
     () => [
       {
-        accessorKey: "availability_id",
-        header: "Availability ID",
+        accessorKey: "room_id",
+        header: "Room ID",
         enableEditing: false,
       },
       {
-        accessorKey: "begin_time",
-        header: "Begin Time",
-        minSize: 300,
-        mantineEditTextInputProps: {
-            type: "string",
-            required: true,
-            placeholder: "YYYY-MM-DD HH:MM:SS",
-            error: validationErrors?.end_time,
-            //remove any previous validation errors when user focuses on the input
-            onFocus: () =>
-              setValidationErrors({
-                ...validationErrors,
-                end_time: undefined,
-              }),
-          },
-      },
-      {
-        accessorKey: "end_time",
-        header: "End Time",
+        accessorKey: "description",
+        header: "Description",
         minSize: 300,
         mantineEditTextInputProps: {
           type: "string",
           required: true,
-          placeholder: "YYYY-MM-DD HH:MM:SS",
-          error: validationErrors?.end_time,
+          error: validationErrors?.description,
           //remove any previous validation errors when user focuses on the input
           onFocus: () =>
             setValidationErrors({
               ...validationErrors,
-              end_time: undefined,
+              description: undefined,
             }),
         },
       },
@@ -213,7 +189,7 @@ const Example = () => {
         }}
       >
         <CirclePlus />
-        {"  "}Time Slot
+        {"  "}New Room
       </Button>
     ),
     state: {
@@ -237,13 +213,11 @@ function useCreateMetric() {
       // Set time to current time.
     //   metric.metric_timestamp = new Date().toISOString();
       //send api request here
-      const response = await fetch("/api/trainer/availability/create", {
+      const response = await fetch("/api/room/create", {
         method: "POST",
         // In body, send session?.user?.username, weight, body_fat_percentage, and blood_pressure
         body: JSON.stringify({
-          username: session?.user?.username,
-          begin_time: metric.begin_time,
-          end_time: metric.end_time,
+          description: metric.description,
         }),
         headers: {
           "Content-Type": "application/json",
@@ -262,6 +236,7 @@ function useCreateMetric() {
             ...prevMetrics,
             {
               ...newMetricInfo,
+              time: new Date().toISOString(),
               id: (Math.random() + 1).toString(36).substring(7),
             },
           ] as Metric[]
@@ -289,9 +264,9 @@ function useGetMetrics() {
     queryKey: ["metrics"],
     queryFn: async () => {
       //send api request here
-      const response = await fetch("/api/trainer/availability/get", {
+      const response = await fetch("/api/room/get", {
         method: "POST",
-        body: JSON.stringify({ username: session?.user?.username }),
+        body: JSON.stringify({ }),
         headers: {
           "Content-Type": "application/json",
         },
@@ -310,12 +285,11 @@ function useUpdateMetric() {
   return useMutation({
     mutationFn: async (metric: Metric) => {
       //send api update request here
-      const response = await fetch("/api/trainer/availability/update", {
+      const response = await fetch("/api/room/update", {
         method: "POST",
         body: JSON.stringify({
-          availability_id: metric.availability_id,
-          begin_time: metric.begin_time,
-          end_time: metric.end_time
+          room_id: metric.room_id,
+          description: metric.description,
         }),
         headers: {
           "Content-Type": "application/json",
@@ -392,9 +366,8 @@ const validateRequired = (value: string) => !!value.length;
 
 function validateMetric(metric: Metric) {
   return {
-    begin_time: !validateRequired(metric.begin_time) ? "Begin time is Required" : "",
-    end_time: !validateRequired(metric.end_time)
-      ? "End time is Required"
+    description: !validateRequired(metric.description)
+      ? "Description is Required"
       : "",
   };
 }

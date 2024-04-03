@@ -35,28 +35,77 @@ import { DateTimePicker } from "@mantine/dates";
 
 type Metric = {
   id: string;
+  class_id: string;
+  room_id: string;
   availability_id: string;
-  username: string,
-  begin_time: string;
-  end_time: string;
+  description: string,
+  fee: string
 };
 
-export default function SchedulingTable() {
+interface Room {
+  room_id: string;
+  description: string;
+};
+
+interface Availability {
+  availability_id: string;
+};
+
+interface ExampleProps {
+  roomIds: string[];
+  availabilityIds: string[];
+}
+
+
+export default function GroupSchedulingTable() {
   const { data: session, status } = useSession();
+  const [roomIds, setRoomIds] = useState<string[]>([]);
+  const [availabilityIds, setAvailabilityIds] = useState<string[]>([]);
+
+  useEffect(() => {
+    fetchRoomIds();
+    fetchAvailabilityIds();
+  }, []);
+
+  const fetchRoomIds = async () => {
+    try {
+      const response = await fetch(`/api/room/get`, {
+        method: 'POST', // Use POST for sending data
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({}), // Include username in request body
+      });
+      const data: Room[] = await response.json();
+      const ids = data.map((room: Room) => room.room_id.toString());
+      setRoomIds(ids);
+    } catch (error) {
+      console.error("Error fetching class ids:", error);
+    }
+  };
+
+  const fetchAvailabilityIds = async () => {
+    try {
+      const response = await fetch(`/api/group-class/get-availability`, {
+        method: 'POST', // Use POST for sending data
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({}), // Include username in request body
+      });
+      const data: Availability[] = await response.json();
+      const ids = data.map((availability: Availability) => availability.availability_id.toString());
+      setAvailabilityIds(ids);
+    } catch (error) {
+      console.error("Error fetching class ids:", error);
+    }
+  };
 
   return (
     <Stack gap="sm" align="center">
-      <Title order={1} c="rgb(73, 105, 137)" ta="center">
-        Available Time Slots for {session?.user?.name}
-      </Title>
-      <ExampleWithProviders />
+      <ExampleWithProviders roomIds={roomIds} availabilityIds={availabilityIds} />
       <Divider my="sm" variant="dashed" />
     </Stack>
   );
 }
 
-
-const Example = () => {
+const Example = ({ roomIds, availabilityIds }: ExampleProps) => {
   const [validationErrors, setValidationErrors] = useState<
     Record<string, string | undefined>
   >({});
@@ -64,41 +113,56 @@ const Example = () => {
   const columns = useMemo<MRT_ColumnDef<Metric>[]>(
     () => [
       {
+        accessorKey: "class_id",
+        header: "Class ID",
+        enableEditing: false
+      },
+      {
+        accessorKey: "room_id",
+        header: "Room ID",
+        editVariant: 'select',
+        mantineEditSelectProps: {
+          data: roomIds,
+          error: validationErrors?.room_id,
+        },
+      },
+      {
         accessorKey: "availability_id",
         header: "Availability ID",
-        enableEditing: false,
+        editVariant: 'select',
+        mantineEditSelectProps: {
+          data: availabilityIds,
+          error: validationErrors?.availability_id,
+        },
       },
       {
-        accessorKey: "begin_time",
-        header: "Begin Time",
-        minSize: 300,
-        mantineEditTextInputProps: {
-            type: "string",
-            required: true,
-            placeholder: "YYYY-MM-DD HH:MM:SS",
-            error: validationErrors?.end_time,
-            //remove any previous validation errors when user focuses on the input
-            onFocus: () =>
-              setValidationErrors({
-                ...validationErrors,
-                end_time: undefined,
-              }),
-          },
-      },
-      {
-        accessorKey: "end_time",
-        header: "End Time",
+        accessorKey: "description",
+        header: "Description",
         minSize: 300,
         mantineEditTextInputProps: {
           type: "string",
           required: true,
-          placeholder: "YYYY-MM-DD HH:MM:SS",
-          error: validationErrors?.end_time,
+          error: validationErrors?.description,
           //remove any previous validation errors when user focuses on the input
           onFocus: () =>
             setValidationErrors({
               ...validationErrors,
-              end_time: undefined,
+              description: undefined,
+            }),
+        },
+      },
+      {
+        accessorKey: "fee",
+        header: "Fee",
+        mantineEditTextInputProps: {
+          type: "string",
+          required: true,
+          error: validationErrors?.fee,
+          //remove any previous validation errors when user focuses on the input
+          onFocus: () =>
+            setValidationErrors({
+              ...validationErrors,
+              fee: undefined,
             }),
         },
       },
@@ -173,9 +237,9 @@ const Example = () => {
     getRowId: (row) => row.id,
     mantineToolbarAlertBannerProps: isLoadingMetricsError
       ? {
-          color: "red",
-          children: "Error loading data",
-        }
+        color: "red",
+        children: "Error loading data",
+      }
       : undefined,
     mantineTableContainerProps: {
       style: {
@@ -213,7 +277,7 @@ const Example = () => {
         }}
       >
         <CirclePlus />
-        {"  "}Time Slot
+        {"  "}New Group Class
       </Button>
     ),
     state: {
@@ -235,15 +299,16 @@ function useCreateMetric() {
   return useMutation({
     mutationFn: async (metric: Metric) => {
       // Set time to current time.
-    //   metric.metric_timestamp = new Date().toISOString();
+      //   metric.metric_timestamp = new Date().toISOString();
       //send api request here
-      const response = await fetch("/api/trainer/availability/create", {
+      const response = await fetch("/api/group-class/create", {
         method: "POST",
         // In body, send session?.user?.username, weight, body_fat_percentage, and blood_pressure
         body: JSON.stringify({
-          username: session?.user?.username,
-          begin_time: metric.begin_time,
-          end_time: metric.end_time,
+          availability_id: metric.availability_id,
+          room_id: metric.room_id,
+          description: metric.description,
+          fee: metric.fee
         }),
         headers: {
           "Content-Type": "application/json",
@@ -275,8 +340,8 @@ function useCreateMetric() {
 function useGetMetrics() {
   const { data: session, status } = useSession();
 
-    // TODO: add code to the following block
-    useEffect(() => {
+  // TODO: add code to the following block
+  useEffect(() => {
     // Fetch data when the component mounts or when session changes
     if (session) {
       // Fetch data from the API
@@ -289,9 +354,9 @@ function useGetMetrics() {
     queryKey: ["metrics"],
     queryFn: async () => {
       //send api request here
-      const response = await fetch("/api/trainer/availability/get", {
+      const response = await fetch("/api/group-class/get", {
         method: "POST",
-        body: JSON.stringify({ username: session?.user?.username }),
+        body: JSON.stringify({}),
         headers: {
           "Content-Type": "application/json",
         },
@@ -310,12 +375,14 @@ function useUpdateMetric() {
   return useMutation({
     mutationFn: async (metric: Metric) => {
       //send api update request here
-      const response = await fetch("/api/trainer/availability/update", {
+      const response = await fetch("/api/group-class/update", {
         method: "POST",
         body: JSON.stringify({
+          class_id: metric.class_id,
           availability_id: metric.availability_id,
-          begin_time: metric.begin_time,
-          end_time: metric.end_time
+          room_id: metric.room_id,
+          description: metric.description,
+          fee: metric.fee
         }),
         headers: {
           "Content-Type": "application/json",
@@ -379,11 +446,11 @@ function useDeleteMetric() {
 
 const queryClient = new QueryClient();
 
-const ExampleWithProviders = () => (
+const ExampleWithProviders = ({ roomIds, availabilityIds }: ExampleProps) => (
   //Put this with your other react-query providers near root of your app
   <QueryClientProvider client={queryClient}>
     <ModalsProvider>
-      <Example />
+      <Example roomIds={roomIds} availabilityIds={availabilityIds} />
     </ModalsProvider>
   </QueryClientProvider>
 );
@@ -392,9 +459,15 @@ const validateRequired = (value: string) => !!value.length;
 
 function validateMetric(metric: Metric) {
   return {
-    begin_time: !validateRequired(metric.begin_time) ? "Begin time is Required" : "",
-    end_time: !validateRequired(metric.end_time)
+    room_id: !validateRequired(metric.room_id) ? "Room ID is Required" : "",
+    availability_id: !validateRequired(metric.availability_id)
       ? "End time is Required"
+      : "",
+    description: !validateRequired(metric.description)
+      ? "End time is Required"
+      : "",
+    fee: !validateRequired(metric.fee)
+      ? "Fee is Required"
       : "",
   };
 }

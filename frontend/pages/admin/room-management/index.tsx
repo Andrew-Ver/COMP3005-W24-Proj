@@ -1,6 +1,7 @@
 import { Center, Title, Container, Space } from "@mantine/core";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
+import RoomTable from "@/components/admin/roomTable";
 
 export default function RoomBooking() {
     const { data: session, status }: any = useSession();
@@ -20,9 +21,7 @@ export default function RoomBooking() {
 
     return (
         <Container px="1.7rem">
-            <Title order={1} c="rgb(73, 105, 137)" ta="center">
-                Manage Room Booking here.
-            </Title>
+            <RoomTable/>
         </Container>
     );
 }
