@@ -160,7 +160,7 @@ export default function AuthForm(props: PaperProps) {
         }),
       });
 
-      if (values.role === "trainer") {
+      if (type === "register" && values.role === "trainer") {
         // Call the API endpoint to register the user in the trainer db
         const trainerResponse: any = await fetch("/api/trainer/register", {
           method: "POST",
@@ -186,7 +186,7 @@ export default function AuthForm(props: PaperProps) {
           //form.reset();
         }
       }
-      else if (values.role === "member") {
+      else if (type === "register" && values.role === "member") {
         // Call the API endpoint to register the user to the member db
         const memberResponse: any = await fetch("/api/member/register", {
           method: "POST",
@@ -214,7 +214,7 @@ export default function AuthForm(props: PaperProps) {
           //form.reset();
         }
       }
-      else if (values.role === "administrator") {
+      else if (type === "register" && values.role === "administrator") {
         // Call the API endpoint to register the user to the member db
         const adminResponse: any = await fetch("/api/admin/register", {
           method: "POST",
