@@ -18,30 +18,27 @@ import {
   Text,
 } from "@mantine/core";
 import { ModalsProvider, modals } from "@mantine/modals";
-import { useRouter } from "next/router";
 
 import {
   QueryClient,
   QueryClientProvider,
   useQuery,
 } from "@tanstack/react-query";
+import { showNotification } from "@mantine/notifications";
 
 import { useSession } from "next-auth/react";
 import { Form, useForm } from "@mantine/form";
-import { showNotification } from "@mantine/notifications";
-import { router } from "next/client";
-import { setTimeout } from "next/dist/compiled/@edge-runtime/primitives";
 
 type Metric = {
-  bill_id: number;
-  member_username: string;
-  amount: number;
+  class_id: number;
+  availability_id: number;
+  room_id: number;
   description: string;
-  bill_timestamp: string;
-  cleared: boolean;
+  fee: number;
+  completed: boolean;
 };
 
-export default function BillingTable() {
+export default function GroupClassTable() {
   const { data: session, status } = useSession();
 
   // TODO: add code to the following block
@@ -56,9 +53,6 @@ export default function BillingTable() {
 
   return (
     <Stack gap="sm" align="center">
-      <Title order={2} c="rgb(73, 105, 137)" ta="center">
-        Billings for Member {session?.user?.name}
-      </Title>
       <ExampleWithProviders />
       <Divider my="sm" variant="dashed" />
     </Stack>
@@ -66,35 +60,33 @@ export default function BillingTable() {
 }
 
 const Example = () => {
-  const [, forceUpdate] = useState();
-
   const columns = useMemo<MRT_ColumnDef<Metric>[]>(
     () => [
       {
-        accessorKey: "bill_id",
-        header: "Bill ID",
+        accessorKey: "class_id",
+        header: "Class ID",
       },
       {
-        accessorKey: "member_username",
-        header: "Member Username",
+        accessorKey: "availability_id",
+        header: "Availability ID",
       },
       {
-        accessorKey: "amount",
-        header: "Amount",
+        accessorKey: "room_id",
+        header: "Room ID",
       },
       {
         accessorKey: "description",
         header: "Description",
       },
       {
-        accessorKey: "bill_timestamp",
-        header: "Bill Timestamp",
+        accessorKey: "fee",
+        header: "Fee",
       },
       {
-        accessorKey: "cleared",
-        header: "Cleared?",
+        accessorKey: "completed",
+        header: "Is Completed?",
         accessorFn: (row) => {
-          return row.cleared ? "Paid" : "Not paid";
+          return row.completed ? "Completed" : "Not Completed";
         },
       },
     ],
@@ -114,14 +106,14 @@ const Example = () => {
     data: fetchedMetrics,
     createDisplayMode: "row", // ('modal', and 'custom' are also available)
     enableEditing: false,
-    enableRowSelection: (row) => row.original.cleared == false,
-    enableMultiRowSelection: true, //shows radio buttons instead of checkboxes
+    enableRowSelection: (row) => row.original.completed == false,
+    enableMultiRowSelection: false, //shows radio buttons instead of checkboxes
     // getRowId: (row) => row.availability_id.toString(),
     mantineToolbarAlertBannerProps: isLoadingMetricsError
       ? {
-          color: "red",
-          children: "Error loading data",
-        }
+        color: "red",
+        children: "Error loading data",
+      }
       : undefined,
     mantineTableContainerProps: {
       style: {
@@ -134,60 +126,69 @@ const Example = () => {
       showProgressBars: isFetchingMetrics,
     },
     renderTopToolbarCustomActions: ({ table }) =>
-      table.getSelectedRowModel().rows.length > 0 ? (
-        <Button onClick={handlePaySelected}>Pay Selected Bills</Button>
+      table.getSelectedRowModel().rows[0] ? (
+        <Button onClick={handleBookSelected}>Book Selected Group Class</Button>
       ) : (
-        <Button disabled onClick={handlePaySelected}>
-          Pay Selected Bills
+        <Button disabled onClick={handleBookSelected}>
+          Book Selected Group Class
         </Button>
       ),
   });
 
-  const handlePaySelected = () => {
-    modals.openConfirmModal({
-      title: "Please confirm your payment",
-      children: (
-        <Text size="sm">
-          Are you sure you want to pay for the selected bills?
-        </Text>
-      ),
-      labels: { confirm: "Confirm", cancel: "Cancel" },
-      onCancel: () => console.log("Cancel"),
-      onConfirm: () => handlePaymentConfirmed(),
-    });
-  };
+  // After press the button
+  const { data: session, status } = useSession();
 
-  const handlePaymentConfirmed = async () => {
-    const selectedRows = table.getSelectedRowModel().rows;
-    const bill_ids: number[] = selectedRows.map((row) => row.original.bill_id);
-    console.log(bill_ids);
+  const handleBookSelected = async () => {
+    const member_username = session?.user?.username;
+    const selectedRow = table.getSelectedRowModel().rows[0]; //or read entire rows
+    const class_id = selectedRow.original.class_id;
+    const availability_id = selectedRow.original.availability_id;
+    const fee = selectedRow.original.fee;
+    const description = selectedRow.original.description;
+
+    const dataToSend = {
+      member_username,
+      class_id,
+      availability_id,
+      fee,
+      description,
+    };
+
+    console.log("dataToSend: ", dataToSend);
+
     try {
-      const response = await fetch("/api/member/billing/pay", {
+      const response = await fetch("/api/member/group-class/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ bill_ids }),
+        body: JSON.stringify(dataToSend),
       });
 
       if (response.ok) {
-        console.log("Payment submitted successfully");
+        // Handle successful response
+        console.log("Data submitted successfully:", dataToSend);
         modals.closeAll();
 
         // Show success notification
         showNotification({
-          title: "Success",
-          message: "Payment successful!",
-          color: "green",
+          title: 'Success',
+          message: 'Booking successful!',
+          color: 'green',
         });
-
-        await queryClient.invalidateQueries();
-        table.toggleAllRowsSelected(false);
       } else {
-        console.error("Error submitting data: ", response.statusText);
+        // Handle error response
+        console.error("Error submitting data:", response.statusText);
+        // Show success notification
+        showNotification({
+          title: 'Error',
+          message: 'You have already booked this group class',
+          color: 'red',
+        });
       }
     } catch (error) {
-      console.error("Network error: ", error);
+      // Handle network error
+      console.error("Network error:", error);
     }
   };
 
@@ -196,15 +197,13 @@ const Example = () => {
 
 //READ hook (get users from api)
 function useGetMetrics() {
-  const { data: session, status } = useSession();
-
   return useQuery<Metric[]>({
     queryKey: ["metrics"],
     queryFn: async () => {
       //send api request here
-      const response = await fetch("/api/member/billing/get", {
+      const response = await fetch("/api/group-class/get", {
         method: "POST",
-        body: JSON.stringify({ member_username: session?.user?.username }),
+        body: JSON.stringify({}),
         headers: {
           "Content-Type": "application/json",
         },
@@ -217,14 +216,7 @@ function useGetMetrics() {
   });
 }
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      refetchOnReconnect: "always",
-      refetchOnWindowFocus: "always",
-    },
-  },
-});
+const queryClient = new QueryClient();
 
 const ExampleWithProviders = () => (
   //Put this with your other react-query providers near root of your app
