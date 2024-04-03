@@ -24,6 +24,7 @@ import {
   QueryClientProvider,
   useQuery,
 } from "@tanstack/react-query";
+import { showNotification } from "@mantine/notifications";
 
 import { useSession } from "next-auth/react";
 import { Form, useForm } from "@mantine/form";
@@ -110,9 +111,9 @@ const Example = () => {
     // getRowId: (row) => row.availability_id.toString(),
     mantineToolbarAlertBannerProps: isLoadingMetricsError
       ? {
-          color: "red",
-          children: "Error loading data",
-        }
+        color: "red",
+        children: "Error loading data",
+      }
       : undefined,
     mantineTableContainerProps: {
       style: {
@@ -167,20 +168,23 @@ const Example = () => {
       if (response.ok) {
         // Handle successful response
         console.log("Data submitted successfully:", dataToSend);
-        modals.open({
-          title: "Booking Confirmed",
-          children: (
-            <>
-              <Text>Your booking for group class is successful!</Text>
-              <Button fullWidth onClick={() => modals.closeAll()} mt="md">
-                Confirm
-              </Button>
-            </>
-          ),
+        modals.closeAll();
+
+        // Show success notification
+        showNotification({
+          title: 'Success',
+          message: 'Booking successful!',
+          color: 'green',
         });
       } else {
         // Handle error response
         console.error("Error submitting data:", response.statusText);
+        // Show success notification
+        showNotification({
+          title: 'Error',
+          message: 'You have already booked this group class',
+          color: 'red',
+        });
       }
     } catch (error) {
       // Handle network error
