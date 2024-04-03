@@ -15,6 +15,7 @@ import {
   TextInput,
   Box,
   Group,
+  Text,
 } from "@mantine/core";
 import { ModalsProvider, modals } from "@mantine/modals";
 
@@ -26,8 +27,8 @@ import {
 
 import { useSession } from "next-auth/react";
 import { Form, useForm } from "@mantine/form";
-import {useForceUpdate} from "@mantine/hooks";
-import {showNotification} from "@mantine/notifications";
+import { useForceUpdate } from "@mantine/hooks";
+import { showNotification } from "@mantine/notifications";
 
 type Metric = {
   availability_id: number;
@@ -61,9 +62,7 @@ export default function TrainersAvailabilityTable() {
   );
 }
 
-
 const Example = () => {
-
   const columns = useMemo<MRT_ColumnDef<Metric>[]>(
     () => [
       {
@@ -77,7 +76,9 @@ const Example = () => {
       {
         accessorKey: "is_booked",
         header: "Is Booked",
-        accessorFn: (row) => { return !row.is_booked ? 'Available' : 'Not available' }
+        accessorFn: (row) => {
+          return !row.is_booked ? "Available" : "Not available";
+        },
       },
       {
         accessorKey: "begin_time",
@@ -109,9 +110,9 @@ const Example = () => {
     // getRowId: (row) => row.availability_id.toString(),
     mantineToolbarAlertBannerProps: isLoadingMetricsError
       ? {
-        color: "red",
-        children: "Error loading data",
-      }
+          color: "red",
+          children: "Error loading data",
+        }
       : undefined,
     mantineTableContainerProps: {
       style: {
@@ -128,13 +129,13 @@ const Example = () => {
       const isRowSelected = table.getSelectedRowModel().rows.length > 0;
 
       return (
-          <Button
-              onClick={handleBookSelected}
-              // Disable the button if no rows are selected
-              disabled={!isRowSelected}
-          >
-            Book Selected Time Slot
-          </Button>
+        <Button
+          onClick={handleBookSelected}
+          // Disable the button if no rows are selected
+          disabled={!isRowSelected}
+        >
+          Book Selected Time Slot
+        </Button>
       );
     },
   });
@@ -177,44 +178,47 @@ const Example = () => {
 
         // Show success notification
         showNotification({
-          title: 'Success',
-          message: 'Booking successful!',
-          color: 'green',
+          title: "Success",
+          message: "Booking successful!",
+          color: "green",
         });
 
         await queryClient.invalidateQueries();
         table.toggleAllRowsSelected(false);
-
       } else {
         console.error("Error submitting data:", response.statusText);
         // Show error notification
         showNotification({
-          title: 'Error',
-          message: 'Failed to book. Please try again.',
-          color: 'red',
+          title: "Error",
+          message: "Failed to book. Please try again.",
+          color: "red",
         });
       }
     } catch (error) {
       console.error("Network error:", error);
       // Show error notification
       showNotification({
-        title: 'Network Error',
-        message: 'Please check your connection and try again.',
-        color: 'red',
+        title: "Network Error",
+        message: "Please check your connection and try again.",
+        color: "red",
       });
     }
-  }
+  };
 
   function DescriptionForm() {
     const form = useForm({
       initialValues: {
-        description: '',
+        description: "",
       },
     });
 
     return (
       <Box mx="auto">
-        <form onSubmit={form.onSubmit((values) => handleDescriptionSubmitted(values.description))}>
+        <form
+          onSubmit={form.onSubmit((values) =>
+            handleDescriptionSubmitted(values.description)
+          )}
+        >
           <TextInput
             onChange={(event) =>
               form.setFieldValue("description", event.currentTarget.value)
@@ -223,31 +227,27 @@ const Example = () => {
             placeholder="Description for this personal training session (optional)"
           />
           <Group justify="flex-end" mt="md">
-            <Button type="submit" fullWidth>Submit</Button>
+            <Button type="submit" fullWidth>
+              Submit
+            </Button>
           </Group>
         </form>
       </Box>
     );
   }
 
-
   const handleBookSelected = () => {
     modals.open({
-      title: 'Add Description',
-      children: (
-        <DescriptionForm></DescriptionForm>
-      ),
+      title: "Add Description",
+      children: <DescriptionForm></DescriptionForm>,
     });
-  }
-
-
+  };
 
   return <MantineReactTable table={table} />;
 };
 
 //READ hook (get users from api)
 function useGetMetrics() {
-
   return useQuery<Metric[]>({
     queryKey: ["metrics"],
     queryFn: async () => {
