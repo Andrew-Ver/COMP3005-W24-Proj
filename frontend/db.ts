@@ -34,3 +34,8 @@ export type TimeSlot = {
     begin_time: string;
     end_time: string;
 }
+
+export type Specialty = {
+    trainer_username: string;
+    specialty: string;
+}

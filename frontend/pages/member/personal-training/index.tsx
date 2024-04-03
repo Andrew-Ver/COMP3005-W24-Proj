@@ -1,5 +1,6 @@
 import { Center, Title, Container, Space } from "@mantine/core";
 import TrainersAvailabilityTable from "@/components/member/trainerAvailabilityTable"
+import SessionsTable from "@/components/member/sessionsTable";
 
 export default function Schedule() {
     return (
@@ -8,6 +9,7 @@ export default function Schedule() {
                 Schedule a Personal Training Session Here
             </Title>
             <TrainersAvailabilityTable></TrainersAvailabilityTable>
+            <SessionsTable></SessionsTable>
         </Container>
     );
 }

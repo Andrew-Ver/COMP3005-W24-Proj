@@ -27,6 +27,8 @@ import {
 
 import { useSession } from "next-auth/react";
 import { Form, useForm } from "@mantine/form";
+import {useForceUpdate} from "@mantine/hooks";
+import {showNotification} from "@mantine/notifications";
 
 type Metric = {
   availability_id: number;
@@ -122,20 +124,27 @@ const Example = () => {
       showAlertBanner: isLoadingMetricsError,
       showProgressBars: isFetchingMetrics,
     },
-    renderTopToolbarCustomActions: ({ table }) => (
-      <Button
-        onClick={handleBookSelected}
-      >
-        Book Selected Time Slot
-      </Button>
-    ),
+    renderTopToolbarCustomActions: ({ table }) => {
+      // Check if any rows are selected
+      const isRowSelected = table.getSelectedRowModel().rows.length > 0;
+
+      return (
+          <Button
+              onClick={handleBookSelected}
+              // Disable the button if no rows are selected
+              disabled={!isRowSelected}
+          >
+            Book Selected Time Slot
+          </Button>
+      );
+    },
   });
 
   // After press the button
   const { data: session, status } = useSession();
 
   const handleDescriptionSubmitted = async (description: string) => {
-    console.log("Submit clicked")
+    console.log("Submit clicked");
     const member_username = session?.user?.username;
     const selectedRow = table.getSelectedRowModel().rows[0]; //or read entire rows
     const availability_id = selectedRow.original.availability_id;
@@ -149,7 +158,7 @@ const Example = () => {
       description,
       trainer_username,
       begin_time,
-      end_time
+      end_time,
     };
 
     console.log("dataToSend: ", dataToSend);
@@ -164,26 +173,36 @@ const Example = () => {
       });
 
       if (response.ok) {
-        // Handle successful response
         console.log("Data submitted successfully:", dataToSend);
-        modals.open({
-          title: 'Booking Confirmed',
-          children: (
-            <>
-            <Text>Your booking for personal training session is successful!</Text>
-            <Button fullWidth onClick={() => modals.closeAll()} mt="md">
-              Confirm
-            </Button>
-          </>
-          ),
+        modals.closeAll();
+
+        // Show success notification
+        showNotification({
+          title: 'Success',
+          message: 'Booking successful!',
+          color: 'green',
         });
+
+        await queryClient.invalidateQueries();
+        table.toggleAllRowsSelected(false);
+
       } else {
-        // Handle error response
         console.error("Error submitting data:", response.statusText);
+        // Show error notification
+        showNotification({
+          title: 'Error',
+          message: 'Failed to book. Please try again.',
+          color: 'red',
+        });
       }
     } catch (error) {
-      // Handle network error
       console.error("Network error:", error);
+      // Show error notification
+      showNotification({
+        title: 'Network Error',
+        message: 'Please check your connection and try again.',
+        color: 'red',
+      });
     }
   }
 
