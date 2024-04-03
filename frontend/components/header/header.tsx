@@ -34,6 +34,7 @@ const membersLinks = [
   { href: "/", title: "Home" },
   { href: "/member/profile", title: "Profile" },
   { href: "/member/personal-training", title: "Personal Training" },
+  { href: "/member/group-class", title: "Group Class" },
   { href: "/member/dashboard", title: "Dashboard" },
   { href: "/member/billing", title: "Billing" },
 ];
@@ -48,8 +49,8 @@ const trainerLinks = [
 const adminLinks = [
   { href: "/", title: "Home" },
   { href: "/admin/equipment", title: "Maintenance" },
-  { href: "/admin/room-booking", title: "Room Booking" },
-  { href: "/admin/schedule", title: "Class Schedule" },
+  { href: "/admin/room-booking", title: "Room Management" },
+  { href: "/admin/schedule", title: "Group Class Schedule" },
   { href: "/admin/search", title: "Member Search" },
 ];
 

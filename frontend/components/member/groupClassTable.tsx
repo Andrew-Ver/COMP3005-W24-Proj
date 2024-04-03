@@ -27,18 +27,17 @@ import {
 
 import { useSession } from "next-auth/react";
 import { Form, useForm } from "@mantine/form";
-import {useForceUpdate} from "@mantine/hooks";
-import {showNotification} from "@mantine/notifications";
 
 type Metric = {
+  class_id: number;
   availability_id: number;
-  trainer_username: string;
-  is_booked: boolean;
-  begin_time: string;
-  end_time: string;
+  room_id: number;
+  description: string;
+  fee: number;
+  completed: boolean;
 };
 
-export default function TrainersAvailabilityTable() {
+export default function GroupClassTable() {
   const { data: session, status } = useSession();
 
   // TODO: add code to the following block
@@ -53,9 +52,6 @@ export default function TrainersAvailabilityTable() {
 
   return (
     <Stack gap="sm" align="center">
-      <Title order={2} c="rgb(73, 105, 137)" ta="center">
-        Time Slots for All Trainers
-      </Title>
       <ExampleWithProviders />
       <Divider my="sm" variant="dashed" />
     </Stack>
@@ -68,26 +64,30 @@ const Example = () => {
   const columns = useMemo<MRT_ColumnDef<Metric>[]>(
     () => [
       {
+        accessorKey: "class_id",
+        header: "Class ID",
+      },
+      {
         accessorKey: "availability_id",
         header: "Availability ID",
       },
       {
-        accessorKey: "trainer_username",
-        header: "Trainer",
+        accessorKey: "room_id",
+        header: "Room ID",
       },
       {
-        accessorKey: "is_booked",
-        header: "Is Booked",
-        accessorFn: (row) => { return !row.is_booked ? 'Available' : 'Not available' }
+        accessorKey: "description",
+        header: "Description",
       },
       {
-        accessorKey: "begin_time",
-        header: "Begin Time",
+        accessorKey: "fee",
+        header: "Fee",
       },
       {
-        accessorKey: "end_time",
-        header: "End Time",
-      },
+        accessorKey: "completed",
+        header: "Is Completed?",
+        accessorFn: (row) => { return row.completed ? 'Completed' : 'Not Completed' }
+      }
     ],
     []
   );
@@ -105,7 +105,7 @@ const Example = () => {
     data: fetchedMetrics,
     createDisplayMode: "row", // ('modal', and 'custom' are also available)
     enableEditing: false,
-    enableRowSelection: (row) => row.original.is_booked == false,
+    enableRowSelection: (row) => row.original.completed == false,
     enableMultiRowSelection: false, //shows radio buttons instead of checkboxes
     // getRowId: (row) => row.availability_id.toString(),
     mantineToolbarAlertBannerProps: isLoadingMetricsError
@@ -124,47 +124,39 @@ const Example = () => {
       showAlertBanner: isLoadingMetricsError,
       showProgressBars: isFetchingMetrics,
     },
-    renderTopToolbarCustomActions: ({ table }) => {
-      // Check if any rows are selected
-      const isRowSelected = table.getSelectedRowModel().rows.length > 0;
-
-      return (
-          <Button
-              onClick={handleBookSelected}
-              // Disable the button if no rows are selected
-              disabled={!isRowSelected}
-          >
-            Book Selected Time Slot
-          </Button>
-      );
-    },
+    renderTopToolbarCustomActions: ({ table }) => (
+      <Button
+        onClick={handleBookSelected}
+      >
+        Book Selected Group Class
+      </Button>
+    ),
   });
 
   // After press the button
   const { data: session, status } = useSession();
 
-  const handleDescriptionSubmitted = async (description: string) => {
-    console.log("Submit clicked");
+  const handleBookSelected = async () => {
+    console.log("Submit clicked")
     const member_username = session?.user?.username;
     const selectedRow = table.getSelectedRowModel().rows[0]; //or read entire rows
+    const class_id = selectedRow.original.class_id;
     const availability_id = selectedRow.original.availability_id;
-    const trainer_username = selectedRow.original.trainer_username;
-    const begin_time = selectedRow.original.begin_time;
-    const end_time = selectedRow.original.end_time;
+    const fee = selectedRow.original.fee;
+    const description = selectedRow.original.description;
 
     const dataToSend = {
       member_username,
+      class_id,
       availability_id,
-      description,
-      trainer_username,
-      begin_time,
-      end_time,
+      fee,
+      description
     };
 
     console.log("dataToSend: ", dataToSend);
 
     try {
-      const response = await fetch("/api/member/personal-training/register", {
+      const response = await fetch("/api/member/group-class/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -173,73 +165,29 @@ const Example = () => {
       });
 
       if (response.ok) {
+        // Handle successful response
         console.log("Data submitted successfully:", dataToSend);
-        modals.closeAll();
-
-        // Show success notification
-        showNotification({
-          title: 'Success',
-          message: 'Booking successful!',
-          color: 'green',
+        modals.open({
+          title: 'Booking Confirmed',
+          children: (
+            <>
+            <Text>Your booking for group class is successful!</Text>
+            <Button fullWidth onClick={() => modals.closeAll()} mt="md">
+              Confirm
+            </Button>
+          </>
+          ),
         });
-
-        await queryClient.invalidateQueries();
-        table.toggleAllRowsSelected(false);
-
       } else {
+        // Handle error response
         console.error("Error submitting data:", response.statusText);
-        // Show error notification
-        showNotification({
-          title: 'Error',
-          message: 'Failed to book. Please try again.',
-          color: 'red',
-        });
       }
     } catch (error) {
+      // Handle network error
       console.error("Network error:", error);
-      // Show error notification
-      showNotification({
-        title: 'Network Error',
-        message: 'Please check your connection and try again.',
-        color: 'red',
-      });
     }
   }
 
-  function DescriptionForm() {
-    const form = useForm({
-      initialValues: {
-        description: '',
-      },
-    });
-
-    return (
-      <Box mx="auto">
-        <form onSubmit={form.onSubmit((values) => handleDescriptionSubmitted(values.description))}>
-          <TextInput
-            onChange={(event) =>
-              form.setFieldValue("description", event.currentTarget.value)
-            }
-            label="Description"
-            placeholder="Description for this personal training session (optional)"
-          />
-          <Group justify="flex-end" mt="md">
-            <Button type="submit" fullWidth>Submit</Button>
-          </Group>
-        </form>
-      </Box>
-    );
-  }
-
-
-  const handleBookSelected = () => {
-    modals.open({
-      title: 'Add Description',
-      children: (
-        <DescriptionForm></DescriptionForm>
-      ),
-    });
-  }
 
 
 
@@ -253,7 +201,7 @@ function useGetMetrics() {
     queryKey: ["metrics"],
     queryFn: async () => {
       //send api request here
-      const response = await fetch("/api/member/trainer-availability/get", {
+      const response = await fetch("/api/group-class/get", {
         method: "POST",
         body: JSON.stringify({}),
         headers: {
