@@ -34,6 +34,7 @@ const membersLinks = [
   { href: "/", title: "Home" },
   { href: "/member/profile", title: "Profile" },
   { href: "/member/personal-training", title: "Personal Training" },
+  { href: "/member/group-class", title: "Group Class" },
   { href: "/member/dashboard", title: "Dashboard" },
   { href: "/member/billing", title: "Billing" },
 ];
