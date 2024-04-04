@@ -68,16 +68,16 @@ export default function Header() {
 
   const pathname = usePathname();
 
-  const currentUser: Record<string, string> = {
-    role: session?.user?.role,
-    name: session?.user?.name,
-  };
-
   const { setColorScheme } = useMantineColorScheme();
 
   const computedColorScheme = useComputedColorScheme("light", {
     getInitialValueInEffect: true,
   });
+
+  const currentUser: Record<string, string> = {
+    role: session?.user?.role,
+    name: session?.user?.name,
+  };
 
   let links: Array<Record<string, string>> = [];
 
@@ -238,7 +238,9 @@ export default function Header() {
                     variant="outline"
                     size="xs"
                     radius="lg"
-                    onClick={() => signOut()}
+                    onClick={() => {
+                      signOut();
+                    }}
                   >
                     Log Out
                   </Button>

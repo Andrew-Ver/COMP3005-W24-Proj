@@ -40,9 +40,9 @@ export default function AuthForm(props: PaperProps) {
 
     validate: {
       username: (value) =>
-        value.length >= 3 && value.length <= 25
+        value.length >= 2 && value.length <= 25
           ? null
-          : "Username must be between 3-25 characters",
+          : "Username must be between 2-25 characters",
       password: (value) =>
         value.length >= 5 && value.length <= 30
           ? null
@@ -50,11 +50,11 @@ export default function AuthForm(props: PaperProps) {
       firstname: (value) =>
         (value.length >= 3 && value.length <= 25) || type === "login"
           ? null
-          : "Must be between 3 and 25 characters",
+          : "Must be between 1-25 characters",
       lastname: (value) =>
         (value.length >= 3 && value.length <= 25) || type === "login"
           ? null
-          : "Must be between 3 and 25 characters",
+          : "Must be between 1-25 characters",
     },
   });
 
@@ -73,7 +73,6 @@ export default function AuthForm(props: PaperProps) {
       });
 
       if (!result.ok) {
-        console.log(result.error);
         // Handle the error here
         notifications.show({
           title: "Error Attempting to Log In",
@@ -88,16 +87,17 @@ export default function AuthForm(props: PaperProps) {
         //form.reset();
         form.setFieldValue("password", "");
       } else {
+        // User logged in successfully
         notifications.show({
           title: "User Logged In",
           icon: <IconCheck />,
-          message: "Logged in successfully",
+          message: `Logged in successfully as ${values?.username}`,
           color: "green",
         });
       }
     } else if (type === "register") {
-      // Call the API endpoint to register the user
-      const response: any = await fetch("/api/register", {
+      // Call the API endpoint to register the user in the account db
+      const response: any = await fetch("/api/auth/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -109,7 +109,6 @@ export default function AuthForm(props: PaperProps) {
           // But instead we are converting the username to lowercase at registration
           username: values.username.toLowerCase(),
           password: values.password,
-          // disregard type-error,
           role: values.role,
           // Titlecase the name
           name: `${values.firstname} ${values.lastname}`.replace(
@@ -118,6 +117,7 @@ export default function AuthForm(props: PaperProps) {
           ),
         }),
       });
+
       if (!response.ok) {
         // Handle the error message here
         // using (await response.json()).message), as retrieved from the API
@@ -132,10 +132,10 @@ export default function AuthForm(props: PaperProps) {
         form.setFieldValue("password", "");
       } else {
         form.reset();
-        //toggle();
+        toggle();
         notifications.show({
           title: "User Registered",
-          message: `Successfully Registered as: ${values.username}`,
+          message: `Successfully Registered as: ${values?.username}`,
           color: "green",
         });
         // Login after successfully registration
@@ -226,7 +226,7 @@ export default function AuthForm(props: PaperProps) {
                 <Group justify="center">
                   <Radio value="member" label="Member" />
                   <Radio value="trainer" label="Trainer" />
-                  <Radio value="administrator" label="Admin" />
+                  <Radio value="administrator" label="Staff" />
                 </Group>
               </RadioGroup>
             </>

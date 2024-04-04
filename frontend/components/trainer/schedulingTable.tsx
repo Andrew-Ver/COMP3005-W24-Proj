@@ -36,7 +36,7 @@ import { DateTimePicker } from "@mantine/dates";
 type Metric = {
   id: string;
   availability_id: string;
-  username: string,
+  username: string;
   begin_time: string;
   end_time: string;
 };
@@ -55,7 +55,6 @@ export default function SchedulingTable() {
   );
 }
 
-
 const Example = () => {
   const [validationErrors, setValidationErrors] = useState<
     Record<string, string | undefined>
@@ -73,17 +72,17 @@ const Example = () => {
         header: "Begin Time",
         minSize: 300,
         mantineEditTextInputProps: {
-            type: "string",
-            required: true,
-            placeholder: "YYYY-MM-DD HH:MM:SS",
-            error: validationErrors?.end_time,
-            //remove any previous validation errors when user focuses on the input
-            onFocus: () =>
-              setValidationErrors({
-                ...validationErrors,
-                end_time: undefined,
-              }),
-          },
+          type: "string",
+          required: true,
+          placeholder: "YYYY-MM-DD HH:MM:SS",
+          error: validationErrors?.end_time,
+          //remove any previous validation errors when user focuses on the input
+          onFocus: () =>
+            setValidationErrors({
+              ...validationErrors,
+              end_time: undefined,
+            }),
+        },
       },
       {
         accessorKey: "end_time",
@@ -182,6 +181,10 @@ const Example = () => {
         minHeight: "500px",
       },
     },
+    mantineTableHeadRowProps: {
+      style: { display: "flex", justifyContent: "center" },
+    },
+
     onCreatingRowCancel: () => setValidationErrors({}),
     onCreatingRowSave: handleCreateMetric,
     onEditingRowCancel: () => setValidationErrors({}),
@@ -235,7 +238,7 @@ function useCreateMetric() {
   return useMutation({
     mutationFn: async (metric: Metric) => {
       // Set time to current time.
-    //   metric.metric_timestamp = new Date().toISOString();
+      //   metric.metric_timestamp = new Date().toISOString();
       //send api request here
       const response = await fetch("/api/trainer/availability/create", {
         method: "POST",
@@ -275,8 +278,8 @@ function useCreateMetric() {
 function useGetMetrics() {
   const { data: session, status } = useSession();
 
-    // TODO: add code to the following block
-    useEffect(() => {
+  // TODO: add code to the following block
+  useEffect(() => {
     // Fetch data when the component mounts or when session changes
     if (session) {
       // Fetch data from the API
@@ -315,7 +318,7 @@ function useUpdateMetric() {
         body: JSON.stringify({
           availability_id: metric.availability_id,
           begin_time: metric.begin_time,
-          end_time: metric.end_time
+          end_time: metric.end_time,
         }),
         headers: {
           "Content-Type": "application/json",
@@ -368,9 +371,7 @@ function useDeleteMetric() {
     //client side optimistic update
     onMutate: (id: string) => {
       queryClient.setQueryData(["metrics"], (prevMetrics: any) =>
-        prevMetrics?.filter(
-          (metric: Metric) => metric.id !== id
-        )
+        prevMetrics?.filter((metric: Metric) => metric.id !== id)
       );
     },
     onSettled: () => queryClient.invalidateQueries({ queryKey: ["metrics"] }), //refetch users after mutation, disabled for demo
@@ -392,9 +393,9 @@ const validateRequired = (value: string) => !!value.length;
 
 function validateMetric(metric: Metric) {
   return {
-    begin_time: !validateRequired(metric.begin_time) ? "Begin time is Required" : "",
-    end_time: !validateRequired(metric.end_time)
-      ? "End time is Required"
+    begin_time: !validateRequired(metric.begin_time)
+      ? "Begin time is Required"
       : "",
+    end_time: !validateRequired(metric.end_time) ? "End time is Required" : "",
   };
 }

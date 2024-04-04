@@ -33,16 +33,14 @@ import {
 } from "@tanstack/react-query";
 
 import { useSession } from "next-auth/react";
-import { UserInfoIcons } from "@/components/member/UserInfoIcons";
+import { UserInfoIcons } from "@/components/trainer/UserInfoIcons";
 import { Specialty } from "@/db";
-import SpecialtyTable from "@/components/trainer/specialtyTable";
-
 
 export default function Profile() {
   const { data: session, status }: any = useSession();
 
   return (
-    <Container px="1.7rem">
+    <Stack gap="sm" align="center">
       <Title order={1} style={{ marginBottom: 20 }}>
         Trainer Profile
       </Title>
@@ -50,8 +48,7 @@ export default function Profile() {
         <UserInfoIcons></UserInfoIcons>
       </Box>
       <ExampleWithProviders />
-      <Divider my="sm" variant="dashed" />
-    </Container>
+    </Stack>
   );
 }
 
@@ -66,7 +63,11 @@ const Example = () => {
         accessorKey: "specialty",
         header: "Specialty",
         enableEditing: true,
-        size: 80,
+        mantineEditTextInputProps: {
+          type: "text",
+          required: true,
+          error: validationErrors?.specialty,
+        },
       },
     ],
     [validationErrors]
@@ -133,9 +134,14 @@ const Example = () => {
   const table = useMantineReactTable({
     columns,
     data: fetchedSpecialties,
+    initialState: {
+      columnVisibility: { Actions: false },
+    },
+
+    enableColumnActions: false,
+    enableRowActions: false,
     createDisplayMode: "row", // ('modal', and 'custom' are also available)
     editDisplayMode: "row", // ('modal', 'cell', 'table', and 'custom' are also available)
-    enableEditing: true,
     getRowId: (row) => row.specialty,
     mantineToolbarAlertBannerProps: isLoadingSpecialtiesError
       ? {
@@ -146,28 +152,22 @@ const Example = () => {
     mantineTableContainerProps: {
       style: {
         minHeight: "500px",
+        striped: "even",
+        minWidth: "500px",
       },
     },
+    mantineTableHeadRowProps: {
+      style: { display: "flex", justifyContent: "center" },
+    },
+
+    mantineTableHeadCellProps: {
+      style: { display: "flex", justifyContent: "center" },
+    },
+
     onCreatingRowCancel: () => setValidationErrors({}),
     onCreatingRowSave: handleCreateSpecialty,
     onEditingRowCancel: () => setValidationErrors({}),
     onEditingRowSave: handleSaveSpecialty,
-    renderRowActions: ({ row, table }) => (
-      <Flex gap="md" justify="center">
-        <Tooltip label="Edit">
-          <ActionIcon onClick={() => table.setEditingRow(row)}>
-            <IconEdit />
-          </ActionIcon>
-        </Tooltip>
-        {
-          <Tooltip label="Delete">
-            <ActionIcon color="red" onClick={() => openDeleteConfirmModal(row)}>
-              <IconTrash />
-            </ActionIcon>
-          </Tooltip>
-        }
-      </Flex>
-    ),
     renderTopToolbarCustomActions: ({ table }) => (
       <Button
         onClick={() => {
@@ -186,61 +186,12 @@ const Example = () => {
     ),
     state: {
       isLoading: isLoadingSpecialties,
-      isSaving: isCreatingSpecialty || isDeletingSpecialty,
+      isSaving:
+        isCreatingSpecialty || isUpdatingSpecialty || isDeletingSpecialty,
       showAlertBanner: isLoadingSpecialtiesError,
       showProgressBars: isFetchingSpecialties,
     },
   });
-    const table = useMantineReactTable({
-        columns,
-        data: fetchedSpecialties,
-        initialState: {
-            columnVisibility: { Actions: false }
-        },
-
-        enableColumnActions: false,
-        enableRowActions: false,
-        createDisplayMode: "row", // ('modal', and 'custom' are also available)
-        editDisplayMode: "row", // ('modal', 'cell', 'table', and 'custom' are also available)
-        getRowId: (row) => row.specialty,
-        mantineToolbarAlertBannerProps: isLoadingSpecialtiesError
-            ? {
-                color: "red",
-                children: "Error loading data",
-            }
-            : undefined,
-        mantineTableContainerProps: {
-            style: {
-                minHeight: "500px",
-            },
-        },
-        onCreatingRowCancel: () => setValidationErrors({}),
-        onCreatingRowSave: handleCreateSpecialty,
-        onEditingRowCancel: () => setValidationErrors({}),
-        onEditingRowSave: handleSaveSpecialty,
-        renderTopToolbarCustomActions: ({ table }) => (
-            <Button
-                onClick={() => {
-                    table.setCreatingRow(true); //simplest way to open the create row modal with no default values
-                    //or you can pass in a row object to set default values with the `createRow` helper function
-                    // table.setCreatingRow(
-                    //   createRow(table, {
-                    //     //optionally pass in default values for the new row, useful for nested data or other complex scenarios
-                    //   }),
-                    // );
-                }}
-            >
-                <CirclePlus />
-                {"  "}Specialty
-            </Button>
-        ),
-        state: {
-            isLoading: isLoadingSpecialties,
-            isSaving: isCreatingSpecialty || isUpdatingSpecialty|| isDeletingSpecialty,
-            showAlertBanner: isLoadingSpecialtiesError,
-            showProgressBars: isFetchingSpecialties,
-        },
-    });
 
   return <MantineReactTable table={table} />;
 };
@@ -268,20 +219,9 @@ function useCreateSpecialty() {
       return data;
     },
     //client side optimistic update
-    onMutate: (specialty: Specialty) => {
-      queryClient.setQueryData(["specialty"], (prevSpecialties: any) => [
-        ...prevSpecialties,
-        specialty,
-      ]);
-    },
+    onMutate: (newSpecialty: Specialty) => {},
     onSettled: () => queryClient.invalidateQueries({ queryKey: ["specialty"] }), //refetch users after mutation, disabled for demo
   });
-            return data;
-        },
-        //client side optimistic update
-        onMutate: (newSpecialty: Specialty) => {},
-        onSettled: () => queryClient.invalidateQueries({ queryKey: ["specialty"] }), //refetch users after mutation, disabled for demo
-    });
 }
 
 //READ hook (get users from api)
@@ -388,15 +328,13 @@ const ExampleWithProviders = () => (
   </QueryClientProvider>
 );
 
+const validateRequired = (value: string) =>
+  !!value?.trim().length && value.length >= 5 && value.length <= 25;
 
 function validateSpecialty(specialty: Specialty) {
-
-    if (specialty.specialty.trim() === "") {
-        return {
-            specialty: "Specialty is Required",
-        };
-    }
-    else {
-        return {};
-    }
+  return {
+    specialty: !validateRequired(specialty.specialty)
+      ? "Speciality must be 5-25 characters"
+      : "",
+  };
 }

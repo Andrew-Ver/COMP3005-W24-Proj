@@ -1,8 +1,8 @@
-import { Avatar, Text, Group } from '@mantine/core';
-import { IconCurrencyDollar } from '@tabler/icons-react';
-import classes from './UserInfoIcons.module.css';
-import { useSession } from 'next-auth/react';
-import { useEffect, useState } from 'react';
+import { Avatar, Text, Group, Flex } from "@mantine/core";
+import { IconCurrencyDollar } from "@tabler/icons-react";
+import classes from "./UserInfoIcons.module.css";
+import { useSession } from "next-auth/react";
+import { useEffect, useState } from "react";
 
 export function UserInfoIcons() {
   const { data: session, status }: any = useSession();
@@ -17,8 +17,8 @@ export function UserInfoIcons() {
   const fetchRatePerHour = async () => {
     try {
       const response = await fetch(`/api/trainer/get-rateperhour`, {
-        method: 'POST', // Use POST for sending data
-        headers: { 'Content-Type': 'application/json' },
+        method: "POST", // Use POST for sending data
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username: username }), // Include username in request body
       });
       const data = await response.json();
@@ -45,12 +45,16 @@ export function UserInfoIcons() {
             {name}
           </Text>
 
-          <Group wrap="nowrap" gap={10} mt={3}>
-            <IconCurrencyDollar stroke={1.5} size="1rem" className={classes.icon} />
+          <Flex direction="row">
+            <IconCurrencyDollar
+              stroke={1.5}
+              size="1rem"
+              className={classes.icon}
+            />
             <Text fz="xs" c="dimmed">
               Rate per hour: {ratePerHour}/h
             </Text>
-          </Group>
+          </Flex>
         </div>
       </Group>
     </div>
