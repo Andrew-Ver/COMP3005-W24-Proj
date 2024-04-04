@@ -1,6 +1,7 @@
 import { Center, Title, Container, Space } from "@mantine/core";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
+import EquipmentTable from "@/components/admin/equipmentTable";
 
 export default function EquipmentMaintenance() {
     const { data: session, status }: any = useSession();
@@ -23,6 +24,7 @@ export default function EquipmentMaintenance() {
             <Title order={1} c="rgb(73, 105, 137)" ta="center">
                 Manage Gym Equipment Here.
             </Title>
+            <EquipmentTable/>
         </Container>
     );
 }
