@@ -8,7 +8,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
   //   return res.status(405);
   // }
   // Fetch user data from the DB and return object
-  const query = `SELECT member_username, metric_timestamp, weight, body_fat_percentage, systolic_pressure, diastolic_pressure
+  const query = `SELECT member_username, metric_timestamp AT TIME ZONE 'UTC' AT TIME ZONE 'America/New_York' AS metric_timestamp, weight, body_fat_percentage, systolic_pressure, diastolic_pressure
                 FROM health_metric
                 WHERE member_username = $1
                 ORDER BY metric_timestamp DESC;`;
@@ -31,6 +31,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     row.blood_pressure = `${row.systolic_pressure}/${row.diastolic_pressure}`;
     delete row.systolic_pressure;
     delete row.diastolic_pressure;
+    row.metric_timestamp = row.metric_timestamp = new Date(row.metric_timestamp).toISOString().replace("T", " ").slice(0, -5);
     // row.metric_timestamp = new Intl.DateTimeFormat('en-US', options).format(new Date(row.metric_timestamp));
     row.weight = row.weight + " kg";
     row.body_fat_percentage = row.body_fat_percentage + "%";

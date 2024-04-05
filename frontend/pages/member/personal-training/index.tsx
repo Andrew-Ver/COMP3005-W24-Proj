@@ -9,7 +9,6 @@ export default function Schedule() {
                 Schedule a Personal Training Session Here
             </Title>
             <TrainersAvailabilityTable></TrainersAvailabilityTable>
-            <SessionsTable></SessionsTable>
         </Container>
     );
 }

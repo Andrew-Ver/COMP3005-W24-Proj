@@ -54,7 +54,7 @@ export default function TrainersAvailabilityTable() {
   return (
     <Stack gap="sm" align="center">
       <Title order={2} c="rgb(73, 105, 137)" ta="center">
-        Time Slots for All Trainers
+        Available Time Slots for All Trainers
       </Title>
       <ExampleWithProviders />
       <Divider my="sm" variant="dashed" />
@@ -72,13 +72,6 @@ const Example = () => {
       {
         accessorKey: "trainer_username",
         header: "Trainer",
-      },
-      {
-        accessorKey: "is_booked",
-        header: "Is Booked",
-        accessorFn: (row) => {
-          return !row.is_booked ? "Available" : "Not available";
-        },
       },
       {
         accessorKey: "begin_time",

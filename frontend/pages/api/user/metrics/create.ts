@@ -18,9 +18,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     // Fetch user data from the DB and return object
     const query = `
                                 INSERT INTO health_metric(metric_timestamp, member_username, weight, body_fat_percentage, systolic_pressure, diastolic_pressure)
-                                VALUES ($1, $2, $3, $4, $5, $6);`;
+                                VALUES (NOW(), $1, $2, $3, $4, $5);`;
 
-    const result = await pool.query(query, [formatted_time, username, weight, body_fat_percentage, systolic_pressure, diastolic_pressure]);
+    const result = await pool.query(query, [username, weight, body_fat_percentage, systolic_pressure, diastolic_pressure]);
 
     res.status(200).json(result.rows);
 }

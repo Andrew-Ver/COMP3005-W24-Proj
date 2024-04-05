@@ -181,7 +181,7 @@ const Example = () => {
     data: fetchedMetrics,
     createDisplayMode: "row", // ('modal', and 'custom' are also available)
     editDisplayMode: "row", // ('modal', 'cell', 'table', and 'custom' are also available)
-    enableEditing: true,
+    enableRowActions: false,
     getRowId: (row) => row.metric_timestamp,
     mantineToolbarAlertBannerProps: isLoadingMetricsError
       ? {
@@ -198,20 +198,20 @@ const Example = () => {
     onCreatingRowSave: handleCreateMetric,
     onEditingRowCancel: () => setValidationErrors({}),
     onEditingRowSave: handleSaveMetric,
-    renderRowActions: ({ row, table }) => (
+    /* renderRowActions: ({ row, table }) => (
       <Flex gap="md" justify="center">
         <Tooltip label="Edit">
           <ActionIcon onClick={() => table.setEditingRow(row)}>
             <IconEdit />
           </ActionIcon>
         </Tooltip>
-        {/* <Tooltip label="Delete">
+        {<Tooltip label="Delete">
           <ActionIcon color="red" onClick={() => openDeleteConfirmModal(row)}>
             <IconTrash />
           </ActionIcon>
-        </Tooltip> */}
+        </Tooltip> }
       </Flex>
-    ),
+    ),*/
     renderTopToolbarCustomActions: ({ table }) => (
       <Button
         onClick={() => {

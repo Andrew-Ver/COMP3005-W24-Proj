@@ -10,6 +10,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
                 begin_time AT TIME ZONE 'UTC' AT TIME ZONE 'America/New_York' AS begin_time, 
                 end_time AT TIME ZONE 'UTC' AT TIME ZONE 'America/New_York' AS end_time
                 FROM trainer_availability
+                WHERE is_booked = FALSE
                 ORDER BY begin_time ASC;`;
 
   const result = await pool.query(query);

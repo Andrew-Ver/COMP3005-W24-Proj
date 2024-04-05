@@ -17,10 +17,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   const result = await pool.query(query, [member_username]);
 
-  // among a few other changes
-  // result.rows.forEach((row: any) => {
-  //   row.bill_timestamp = new Date(row.begin_time).toISOString().replace("T", " ").slice(0, -5);
-  // });
+  const metrics = result.rows.map(row => ({
+    bill_id: row.bill_id,
+    member_username: row.member_username,
+    amount: row.amount,
+    description: row.description,
+    bill_timestamp: row.bill_timestamp = new Date(row.bill_timestamp).toISOString().replace("T", " ").slice(0, -5),
+    cleared: row.cleared
+  }));
 
-  res.status(200).json(result.rows);
+  res.status(200).json(metrics);
 }
