@@ -182,7 +182,7 @@ const Example = () => {
       },
     },
     mantineTableHeadRowProps: {
-      style: { display: "flex", justifyContent: "center" },
+      style: { justifyContent: "center" },
     },
 
     onCreatingRowCancel: () => setValidationErrors({}),
