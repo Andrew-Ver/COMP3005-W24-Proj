@@ -32,6 +32,7 @@ import {
 
 import { useSession } from "next-auth/react";
 import { UserInfoIcons } from "@/components/member/UserInfoIcons";
+import GoalsTable from "@/components/member/goals";
 
 type Metric = {
   id: string;
@@ -42,18 +43,19 @@ type Metric = {
 };
 
 export default function Profile() {
-  const { data: session, status } = useSession();
+    const { data: session, status } = useSession();
 
-  return (
-    <Stack gap="sm" align="center">
-      <UserInfoIcons></UserInfoIcons>
-      <Title order={1} c="rgb(73, 105, 137)" ta="center">
-        Health Metrics for {session?.user?.name}
-      </Title>
-      <ExampleWithProviders />
-    </Stack>
-  );
+    return (
+        <Stack gap="sm" align="center">
+            <UserInfoIcons></UserInfoIcons>
+            <div style={{ display: 'flex', justifyContent: 'space-around', width: '100%' }}>
+                <ExampleWithProviders />
+                <GoalsTable />
+            </div>
+        </Stack>
+    );
 }
+
 
 const Example = () => {
   const [validationErrors, setValidationErrors] = useState<
@@ -367,14 +369,24 @@ function useDeleteMetric() {
 
 const queryClient = new QueryClient();
 
-const ExampleWithProviders = () => (
-  //Put this with your other react-query providers near root of your app
-  <QueryClientProvider client={queryClient}>
-    <ModalsProvider>
-      <Example />
-    </ModalsProvider>
-  </QueryClientProvider>
-);
+const ExampleWithProviders = () => {
+    // Correct placement of the useSession hook
+    const { data: session, status } = useSession();
+
+    return (
+        <QueryClientProvider client={queryClient}>
+            <Stack gap="sm" align="center">
+                <Title order={2} c="rgb(73, 105, 137)">
+                    Health Metrics for {session?.user?.name}
+                </Title>
+                <ModalsProvider>
+                    <Example />
+                </ModalsProvider>
+                <Divider my="sm" variant="dashed" />
+            </Stack>
+        </QueryClientProvider>
+    );
+};
 
 const validateRequired = (value: string) => !!value.length;
 
