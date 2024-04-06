@@ -8,7 +8,7 @@ export default async function handler(
     if (req.method !== "POST") {
         return res.status(405).json({ message: "Method Not Allowed" });
     }
-    const { member_username, class_id, availability_id, fee, description } = req.body;
+    const { member_username, class_id, fee, description } = req.body;
 
     try {
         // add member to class_member
@@ -17,14 +17,6 @@ export default async function handler(
         RETURNING *;`;
 
         const result = await pool.query(query, [member_username, class_id]);
-
-        // set is_booked in trainer_availability to true
-        const isBookedQuery = `
-        UPDATE trainer_availability
-        SET is_booked = TRUE
-        WHERE availability_id = $1;
-        `
-        await pool.query(isBookedQuery, [availability_id]);
 
         // add the bill
         const insertBillQuery = `

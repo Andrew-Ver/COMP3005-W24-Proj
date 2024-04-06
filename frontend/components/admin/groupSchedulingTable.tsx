@@ -354,7 +354,7 @@ function useGetMetrics() {
     queryKey: ["metrics"],
     queryFn: async () => {
       //send api request here
-      const response = await fetch("/api/group-class/get", {
+      const response = await fetch("/api/group-class/getall", {
         method: "POST",
         body: JSON.stringify({}),
         headers: {

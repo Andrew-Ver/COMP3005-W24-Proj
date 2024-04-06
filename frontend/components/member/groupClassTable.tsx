@@ -31,12 +31,16 @@ import { Form, useForm } from "@mantine/form";
 
 type Metric = {
   class_id: number;
-  availability_id: number;
+  begin_time: string;
+  end_time: string;
   room_id: number;
   description: string;
   fee: number;
   completed: boolean;
+  signed_up: boolean;
 };
+
+
 
 export default function GroupClassTable() {
   const { data: session, status } = useSession();
@@ -63,16 +67,16 @@ const Example = () => {
   const columns = useMemo<MRT_ColumnDef<Metric>[]>(
     () => [
       {
-        accessorKey: "class_id",
-        header: "Class ID",
+          accessorKey: "begin_time",
+          header: "Begin Time",
       },
       {
-        accessorKey: "availability_id",
-        header: "Availability ID",
+          accessorKey: "end_time",
+          header: "End Time",
       },
       {
         accessorKey: "room_id",
-        header: "Room ID",
+        header: "Room",
       },
       {
         accessorKey: "description",
@@ -81,10 +85,16 @@ const Example = () => {
       {
         accessorKey: "fee",
         header: "Fee",
+      }, {
+        accessorKey: "signed_up",
+        header: "Registration status",
+        accessorFn: (row) => {
+          return row.signed_up ? "Signed Up" : "Not Signed Up";
+        },
       },
       {
         accessorKey: "completed",
-        header: "Is Completed?",
+        header: "Completion status",
         accessorFn: (row) => {
           return row.completed ? "Completed" : "Not Completed";
         },
@@ -142,14 +152,12 @@ const Example = () => {
     const member_username = session?.user?.username;
     const selectedRow = table.getSelectedRowModel().rows[0]; //or read entire rows
     const class_id = selectedRow.original.class_id;
-    const availability_id = selectedRow.original.availability_id;
     const fee = selectedRow.original.fee;
     const description = selectedRow.original.description;
 
     const dataToSend = {
       member_username,
       class_id,
-      availability_id,
       fee,
       description,
     };
@@ -197,13 +205,15 @@ const Example = () => {
 
 //READ hook (get users from api)
 function useGetMetrics() {
+  const { data: session, status } = useSession();
+  const member_username = session?.user?.username;
   return useQuery<Metric[]>({
     queryKey: ["metrics"],
     queryFn: async () => {
       //send api request here
       const response = await fetch("/api/group-class/get", {
         method: "POST",
-        body: JSON.stringify({}),
+        body: JSON.stringify({member_username}),
         headers: {
           "Content-Type": "application/json",
         },
