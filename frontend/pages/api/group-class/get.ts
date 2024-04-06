@@ -18,7 +18,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     INNER JOIN trainer_availability ta ON gc.availability_id = ta.availability_id
     LEFT JOIN class_member cm ON gc.class_id = cm.class_id AND cm.member_username = $1
     LEFT JOIN room r ON gc.room_id = r.room_id
-    WHERE gc.completed = FALSE AND ta.begin_time > NOW();
+    WHERE gc.completed = FALSE AND ta.end_time > NOW();
   `;
 
 

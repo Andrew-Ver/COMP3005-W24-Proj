@@ -36,6 +36,7 @@ type Metric = {
   is_booked: boolean;
   begin_time: string;
   end_time: string;
+  fee: number;
 };
 
 export default function TrainersAvailabilityTable() {
@@ -66,10 +67,6 @@ const Example = () => {
   const columns = useMemo<MRT_ColumnDef<Metric>[]>(
     () => [
       {
-        accessorKey: "availability_id",
-        header: "Availability ID",
-      },
-      {
         accessorKey: "trainer_username",
         header: "Trainer",
       },
@@ -80,6 +77,10 @@ const Example = () => {
       {
         accessorKey: "end_time",
         header: "End Time",
+      },
+      {
+          accessorKey: "fee",
+          header: "Booking Fee",
       },
     ],
     []

@@ -92,13 +92,6 @@ const Example = () => {
           return row.signed_up ? "Signed Up" : "Not Signed Up";
         },
       },
-      {
-        accessorKey: "completed",
-        header: "Completion status",
-        accessorFn: (row) => {
-          return row.completed ? "Completed" : "Not Completed";
-        },
-      },
     ],
     []
   );
@@ -116,8 +109,9 @@ const Example = () => {
     data: fetchedMetrics,
     createDisplayMode: "row", // ('modal', and 'custom' are also available)
     enableEditing: false,
-    enableRowSelection: (row) => row.original.completed == false,
+    enableRowSelection: (row) => row.original.signed_up == false,
     enableMultiRowSelection: false, //shows radio buttons instead of checkboxes
+
     // getRowId: (row) => row.availability_id.toString(),
     mantineToolbarAlertBannerProps: isLoadingMetricsError
       ? {
@@ -184,6 +178,8 @@ const Example = () => {
           message: 'Booking successful!',
           color: 'green',
         });
+        await queryClient.invalidateQueries();
+        table.toggleAllRowsSelected(false);
       } else {
         // Handle error response
         console.error("Error submitting data:", response.statusText);

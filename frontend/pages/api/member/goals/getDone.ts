@@ -19,7 +19,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
         res.status(200).json(achievedGoals);
     } catch (error) {
-        console.error('Error querying unachieved goals:', error);
-        res.status(500).json({ error: "Failed to retrieve unachieved goals" });
+        console.error('Error querying achieved goals:', error);
+        res.status(500).json({ error: "Failed to retrieve achieved goals" });
     }
 }

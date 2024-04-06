@@ -82,12 +82,7 @@ const Example = () => {
             {
                 accessorKey: "description",
                 header: "Description",
-            },
-            {
-                accessorKey: "is_completed",
-                header: "Is Completed",
-                accessorFn: (row) => { return row.is_completed ? 'Completed' : 'Not complete' }
-            },
+            }
         ],
         []
     );
