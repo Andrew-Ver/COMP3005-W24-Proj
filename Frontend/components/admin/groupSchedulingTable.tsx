@@ -45,13 +45,21 @@ interface ExampleProps {
 }
 
 export default function GroupSchedulingTable() {
+  return (
+    <Stack gap="sm" align="center">
+      <Example/>
+    </Stack>
+  );
+}
+
+const Example = () => {
+  const [validationErrors, setValidationErrors] = useState<
+    Record<string, string | undefined>
+  >({});
+
   const [roomIds, setRoomIds] = useState<string[]>([]);
   const [availabilityIds, setAvailabilityIds] = useState<string[]>([]);
-
-  useEffect(() => {
-    fetchRoomIds();
-    fetchAvailabilityIds();
-  }, []);
+  const [columns, setColumns] = useState<MRT_ColumnDef<Metric>[]>([]);
 
   const fetchRoomIds = async () => {
     try {
@@ -85,27 +93,17 @@ export default function GroupSchedulingTable() {
     }
   };
 
-  fetchAvailabilityIds();
+  useEffect(() => {
+    fetchRoomIds();
+    fetchAvailabilityIds();
+  }, []);
 
-  return (
-    <Stack gap="sm" align="center">
-      <Example roomIds={roomIds} availabilityIds={availabilityIds} />
-    </Stack>
-  );
-}
-
-const Example = ({ roomIds, availabilityIds }: ExampleProps) => {
-  const [validationErrors, setValidationErrors] = useState<
-    Record<string, string | undefined>
-  >({});
-
-  const columns = useMemo<MRT_ColumnDef<Metric>[]>(
-    () => [
+  useEffect(() => {
+    setColumns([
       {
         accessorKey: "class_id",
         header: "Class ID",
         enableEditing: false,
-        size: 30,
       },
       {
         accessorKey: "room_id",
@@ -115,13 +113,11 @@ const Example = ({ roomIds, availabilityIds }: ExampleProps) => {
           data: roomIds,
           error: validationErrors?.room_id,
         },
-        size: 30,
       },
       {
         accessorKey: "room_name",
         header: "Room",
         enableEditing: false,
-        size: 80,
       },
       {
         accessorKey: "availability_id",
@@ -131,7 +127,6 @@ const Example = ({ roomIds, availabilityIds }: ExampleProps) => {
           data: availabilityIds,
           error: validationErrors?.availability_id,
         },
-        size: 30,
       },
       {
         accessorKey: "trainer_name",
@@ -151,12 +146,10 @@ const Example = ({ roomIds, availabilityIds }: ExampleProps) => {
       {
         accessorKey: "description",
         header: "Description",
-        minSize: 250,
         mantineEditTextInputProps: {
           type: "string",
           required: true,
           error: validationErrors?.description,
-          //remove any previous validation errors when user focuses on the input
           onFocus: () =>
             setValidationErrors({
               ...validationErrors,
@@ -171,18 +164,16 @@ const Example = ({ roomIds, availabilityIds }: ExampleProps) => {
           type: "string",
           required: true,
           error: validationErrors?.fee,
-          //remove any previous validation errors when user focuses on the input
           onFocus: () =>
             setValidationErrors({
               ...validationErrors,
               fee: undefined,
             }),
         },
-        size: 30,
       },
-    ],
-    [validationErrors]
-  );
+    ]);
+  }, [roomIds, availabilityIds, validationErrors]);
+
 
   //call CREATE hook
   const { mutateAsync: createMetric, isPending: isCreatingMetric } =
@@ -258,6 +249,7 @@ const Example = ({ roomIds, availabilityIds }: ExampleProps) => {
     mantineTableContainerProps: {
       style: {
         minHeight: "500px",
+        ml: "auto"
       },
     },
     onCreatingRowCancel: () => setValidationErrors({}),
