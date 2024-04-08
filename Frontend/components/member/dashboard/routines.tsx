@@ -19,7 +19,6 @@ import {
   Title,
   Divider,
 } from "@mantine/core";
-import { ModalsProvider, modals } from "@mantine/modals";
 import { IconEdit, IconTrash } from "@tabler/icons-react";
 import { CirclePlus } from "tabler-icons-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -88,8 +87,6 @@ const Example = () => {
     exitCreatingMode();
   };
 
-
-
   const table = useMantineReactTable({
     columns,
     data: fetchedRooms,
@@ -114,7 +111,10 @@ const Example = () => {
     renderRowActions: ({ row, table }) => (
       <Flex gap="md" justify="center">
         <Tooltip label="Delete">
-          <ActionIcon color="red" onClick={() => deleteRoom(row.original.description)}>
+          <ActionIcon
+            color="red"
+            onClick={() => deleteRoom(row.original.description)}
+          >
             <IconTrash />
           </ActionIcon>
         </Tooltip>
@@ -173,8 +173,7 @@ function useCreateRoom() {
       return data;
     },
     //client side optimistic update
-    onMutate: (newRoomInfo: Room) => {
-    },
+    onMutate: (newRoomInfo: Room) => {},
     onSettled: () => queryClient.invalidateQueries({ queryKey: ["Rooms"] }), //refetch users after mutation, disabled for demo
   });
 }
@@ -200,7 +199,7 @@ function useGetRooms() {
       const response = await fetch("/api/member/routine/get", {
         method: "POST",
         body: JSON.stringify({
-            member_username: session?.user?.username,
+          member_username: session?.user?.username,
         }),
         headers: {
           "Content-Type": "application/json",
@@ -217,7 +216,7 @@ function useGetRooms() {
 //DELETE hook (delete user in api)
 function useDeleteRoom() {
   const queryClient = useQueryClient();
-    const { data: session, status } = useSession();
+  const { data: session, status } = useSession();
   return useMutation({
     mutationFn: async (RoomID: string) => {
       //send api request here
@@ -226,7 +225,7 @@ function useDeleteRoom() {
         // Send timestamp and username
         body: JSON.stringify({
           member_username: session?.user?.username,
-            description: RoomID,
+          description: RoomID,
         }),
         headers: {
           "Content-Type": "application/json",
@@ -237,8 +236,7 @@ function useDeleteRoom() {
       return data;
     },
     //client side optimistic update
-    onMutate: (id: string) => {
-    },
+    onMutate: (id: string) => {},
     onSettled: () => queryClient.invalidateQueries({ queryKey: ["Rooms"] }), //refetch users after mutation, disabled for demo
   });
 }
