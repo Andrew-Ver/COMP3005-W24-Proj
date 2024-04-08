@@ -27,27 +27,17 @@ type GroupClass = {
 };
 
 export default function GroupClassTable() {
-  const { data: session } = useSession();
-
-  // TODO: add code to the following block
-  useEffect(() => {
-    // Fetch data when the component mounts or when session changes
-    if (session) {
-      // Fetch data from the API
-      // This will automatically trigger the useGetGroupClasses hook
-      // and update the fetchedGroupClasses state
-    }
-  }, [session]);
-
   return (
     <Stack gap="sm" align="center">
-      <Example />
+      <Table />
       <Divider my="sm" variant="dashed" />
     </Stack>
   );
 }
 
-const Example = () => {
+const Table = () => {
+  const queryClient = new QueryClient();
+
   const columns = useMemo<MRT_ColumnDef<GroupClass>[]>(
     () => [
       {
@@ -81,15 +71,22 @@ const Example = () => {
     []
   );
 
-  const queryClient = new QueryClient();
-
   //call READ hook
   const {
     data: fetchedGroupClasses = [],
     isError: isLoadingGroupClassesError,
     isFetching: isFetchingGroupClasses,
     isLoading: isLoadingGroupClasses,
+    refetch: refetchGroupClasses,
   } = useGetGroupClasses();
+
+  const { isLoading, error, data } = useGetGroupClasses();
+
+  useEffect(() => {
+    if (!isLoading && !error && data) {
+      refetchGroupClasses();
+    }
+  }, [isLoading, error, data, refetchGroupClasses]);
 
   const table = useMantineReactTable({
     columns,
@@ -187,9 +184,10 @@ const Example = () => {
 //READ hook (get users from api)
 function useGetGroupClasses() {
   const { data: session } = useSession();
+
   const member_username = session?.user?.username;
   return useQuery<GroupClass[]>({
-    queryKey: ["metrics"],
+    queryKey: ["classes"],
     queryFn: async () => {
       //send api request here
       const response = await fetch("/api/group-class/get", {

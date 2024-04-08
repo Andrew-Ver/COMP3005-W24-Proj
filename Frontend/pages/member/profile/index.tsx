@@ -1,7 +1,7 @@
 import "@mantine/core/styles.css";
 import "@mantine/dates/styles.css"; //if using mantine date picker features
 import "mantine-react-table/styles.css"; //make sure MRT styles were imported in your app root (once)
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import {
   MantineReactTable,
   type MRT_ColumnDef,
@@ -9,29 +9,14 @@ import {
   type MRT_TableOptions,
   useMantineReactTable,
 } from "mantine-react-table";
-import {
-  Button,
-  Text,
-  Stack,
-  Title,
-  Divider,
-  Tabs,
-  Center,
-  Box,
-  NumberInput,
-  Flex,
-  TextInput,
-  Select,
-} from "@mantine/core";
-import { ModalsProvider, modals } from "@mantine/modals";
+import { Button, Text, Stack, Title, Tabs, Center, Flex } from "@mantine/core";
 import { CirclePlus } from "tabler-icons-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { useSession } from "next-auth/react";
 import { UserInfoIcons } from "@/components/member/UserInfoIcons";
 import GoalsTable from "@/components/member/goals";
-import { notifications } from "@mantine/notifications";
-import { useForm } from "@mantine/form";
+import MemberProfile from "@/components/member/memberProfile";
 
 type Metric = {
   id: string;
@@ -40,109 +25,6 @@ type Metric = {
   body_fat_percentage: string;
   blood_pressure: string;
 };
-
-function MemberProfile() {
-  const { data: session } = useSession();
-
-  async function handleFormSubmit(values: { rate: number }) {
-    /*
-      Make a post request to /api/trainer/profile/set with the form values
-    */
-    const result = await fetch("/api/member/profile/set", {
-      method: "POST",
-      body: JSON.stringify({
-        username: session?.user?.username,
-        ...values,
-      }),
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-    if (result.ok) {
-      // Show a success notification
-      notifications.show({
-        title: "Profile Updated",
-        message: `Your profile has been updated successfully.`,
-        color: "green",
-      });
-    } else {
-      // Show an error notification
-      notifications.show({
-        title: "Error Updating Profile",
-        message: "An error occurred while updating the profile.",
-        color: "red",
-      });
-    }
-  }
-
-  const form = useForm({
-    initialValues: {
-      gender: "",
-      name: session?.user?.name,
-      age: 18,
-    },
-  });
-  const [isButtonDisabled, setIsButtonDisabled] = useState(false);
-
-  const handleButtonClick = async () => {
-    setIsButtonDisabled(true);
-    await handleFormSubmit(form.values);
-    form.reset();
-    setTimeout(() => {
-      setIsButtonDisabled(false);
-    }, 1500);
-  };
-
-  return (
-    <Box maw={250} mx="auto" my="auto">
-      <form
-        onSubmit={(event) => {
-          event.preventDefault();
-          handleButtonClick();
-        }}
-      >
-        <Stack gap="md" my="auto">
-          <Flex gap="md" justify="center">
-            <UserInfoIcons />
-          </Flex>
-          <Stack gap="md">
-            <Text>Name</Text>
-            <TextInput disabled {...form.getInputProps("name")} />
-            <Flex direction="row" gap="md">
-              <NumberInput
-                label="Age"
-                value={form.values.age}
-                withAsterisk
-                placeholder="20"
-                onChange={(event) => {
-                  form.setFieldValue("age", event as number);
-                }}
-                min={18}
-                max={100}
-              />
-              <Select
-                label="Gender"
-                placeholder="Select Gender"
-                required
-                data={["male", "female", "other"]}
-                onChange={(event) => {
-                  form.setFieldValue("gender", event as string);
-                }}
-              />
-            </Flex>
-          </Stack>
-          <Button
-            type="submit"
-            onClick={handleButtonClick}
-            disabled={isButtonDisabled}
-          >
-            Save
-          </Button>
-        </Stack>
-      </form>
-    </Box>
-  );
-}
 
 export default function Profile() {
   return (
@@ -175,7 +57,7 @@ export default function Profile() {
             <Flex gap="md" justify="center">
               <UserInfoIcons />
             </Flex>
-            <Example />
+            <MetricTable />
           </Stack>
         </Tabs.Panel>
 
@@ -196,10 +78,12 @@ export default function Profile() {
   );
 }
 
-const Example = () => {
+function MetricTable() {
   const [validationErrors, setValidationErrors] = useState<
     Record<string, string | undefined>
   >({});
+
+  const queryClient = useQueryClient();
 
   const columns = useMemo<MRT_ColumnDef<Metric>[]>(
     () => [
@@ -262,21 +146,24 @@ const Example = () => {
   //call CREATE hook
   const { mutateAsync: createMetric, isPending: isCreatingMetric } =
     useCreateMetric();
+
   //call READ hook
   const {
     data: fetchedMetrics = [],
     isError: isLoadingMetricsError,
     isFetching: isFetchingMetrics,
     isLoading: isLoadingMetrics,
+    refetch: refetchMetrics,
   } = useGetMetrics();
-  //call UPDATE hook
-  const { mutateAsync: updateMetric, isPending: isUpdatingMetric } =
-    useUpdateMetric();
-  //call DELETE hook
-  const { mutateAsync: deleteMetric, isPending: isDeletingMetric } =
-    useDeleteMetric();
 
-  //CREATE action
+  const { isLoading, error, data } = useGetMetrics();
+
+  useEffect(() => {
+    if (!isLoading && !error && data) {
+      refetchMetrics();
+    }
+  }, [isLoading, error, data, refetchMetrics]);
+
   const handleCreateMetric: MRT_TableOptions<Metric>["onCreatingRowSave"] =
     async ({ values, exitCreatingMode }) => {
       const newValidationErrors = validateMetric(values);
@@ -287,35 +174,8 @@ const Example = () => {
       setValidationErrors({});
       await createMetric(values);
       exitCreatingMode();
+      refetchMetrics();
     };
-
-  //UPDATE action
-  const handleSaveMetric: MRT_TableOptions<Metric>["onEditingRowSave"] =
-    async ({ values, table }) => {
-      const newValidationErrors = validateMetric(values);
-      if (Object.values(newValidationErrors).some((error) => error)) {
-        setValidationErrors(newValidationErrors);
-        return;
-      }
-      setValidationErrors({});
-      await updateMetric(values);
-      table.setEditingRow(null); //exit editing mode
-    };
-
-  //DELETE action
-  const openDeleteConfirmModal = (row: MRT_Row<Metric>) =>
-    modals.openConfirmModal({
-      title: "Confirm Metric Deletion?",
-      children: (
-        <Text>
-          Are you sure you want to delete this record? This action cannot be
-          undone.
-        </Text>
-      ),
-      labels: { confirm: "Delete", cancel: "Cancel" },
-      confirmProps: { color: "red" },
-      onConfirm: () => deleteMetric(row.original.metric_timestamp),
-    });
 
   const table = useMantineReactTable({
     columns,
@@ -332,27 +192,19 @@ const Example = () => {
       : undefined,
     mantineTableContainerProps: {
       style: {
-        minHeight: "400px",
+        minHeight: "500px",
+        minWidth: "800px",
       },
+    },
+    state: {
+      isLoading: isLoadingMetrics,
+      showAlertBanner: isLoadingMetricsError,
+      showProgressBars: isFetchingMetrics,
     },
     onCreatingRowCancel: () => setValidationErrors({}),
     onCreatingRowSave: handleCreateMetric,
     onEditingRowCancel: () => setValidationErrors({}),
-    onEditingRowSave: handleSaveMetric,
-    /* renderRowActions: ({ row, table }) => (
-      <Flex gap="md" justify="center">
-        <Tooltip label="Edit">
-          <ActionIcon onClick={() => table.setEditingRow(row)}>
-            <IconEdit />
-          </ActionIcon>
-        </Tooltip>
-        {<Tooltip label="Delete">
-          <ActionIcon color="red" onClick={() => openDeleteConfirmModal(row)}>
-            <IconTrash />
-          </ActionIcon>
-        </Tooltip> }
-      </Flex>
-    ),*/
+
     renderTopToolbarCustomActions: ({ table }) => (
       <Button
         onClick={() => {
@@ -369,26 +221,18 @@ const Example = () => {
         {"  "}Metric
       </Button>
     ),
-    state: {
-      isLoading: isLoadingMetrics,
-      isSaving: isCreatingMetric || isUpdatingMetric || isDeletingMetric,
-      showAlertBanner: isLoadingMetricsError,
-      showProgressBars: isFetchingMetrics,
-    },
   });
 
   return <MantineReactTable table={table} />;
-};
+}
 
-//CREATE hook (post new user to api)
+//CREATE hook (post new metric to api)
 function useCreateMetric() {
   const { data: session } = useSession();
 
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (metric: Metric) => {
-      // Set time to current time.
-      metric.metric_timestamp = new Date().toISOString();
       //send api request here
       const response = await fetch("/api/user/metrics/create", {
         method: "POST",
@@ -407,19 +251,11 @@ function useCreateMetric() {
 
       return data;
     },
-    //client side optimistic update
+
     onMutate: (newMetricInfo: Metric) => {
       queryClient.setQueryData(
         ["metrics"],
-        (prevMetrics: any) =>
-          [
-            ...prevMetrics,
-            {
-              ...newMetricInfo,
-              time: new Date().toISOString(),
-              id: (Math.random() + 1).toString(36).substring(7),
-            },
-          ] as Metric[]
+        (prevMetrics: any) => [] as Metric[]
       );
     },
     onSettled: () => queryClient.invalidateQueries({ queryKey: ["metrics"] }), //refetch users after mutation, disabled for demo
@@ -448,79 +284,6 @@ function useGetMetrics() {
     refetchOnWindowFocus: true,
   });
 }
-
-//UPDATE hook (put user in api)
-function useUpdateMetric() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: async (metric: Metric) => {
-      console.log(metric);
-      //send api update request here
-      await new Promise((resolve) => setTimeout(resolve, 1000)); //fake api call
-      return Promise.resolve();
-    },
-    //client side optimistic update
-    // onMutate: (newUserInfo: Metric) => {
-    //   queryClient.setQueryData(["metrics"], (prevUsers: any) =>
-    //     prevUsers?.map((prevUser: Metric) =>
-    //       prevUser.id === newUserInfo.id ? newUserInfo : prevUser
-    //     )
-    //   );
-    // },
-    onSettled: () => queryClient.invalidateQueries({ queryKey: ["metrics"] }), //refetch users after mutation, disabled for demo
-  });
-}
-
-//DELETE hook (delete user in api)
-function useDeleteMetric() {
-  const { data: session } = useSession();
-
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: async (metricID: string) => {
-      //send api request here
-      const response = await fetch("/api/user/metrics/delete", {
-        method: "POST",
-        // Send timestamp and username
-        body: JSON.stringify({
-          metric_timestamp: metricID,
-          username: session?.user?.username,
-        }),
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-      const data = await response.json();
-
-      return data;
-    },
-    //client side optimistic update
-    onMutate: (metric_timestamp: string) => {
-      queryClient.setQueryData(["metrics"], (prevMetrics: any) =>
-        prevMetrics?.filter(
-          (metric: Metric) => metric.metric_timestamp !== metric_timestamp
-        )
-      );
-    },
-    onSettled: () => queryClient.invalidateQueries({ queryKey: ["metrics"] }), //refetch users after mutation, disabled for demo
-  });
-}
-
-const ExampleWithProviders = () => {
-  const { data: session } = useSession();
-
-  return (
-    <Stack gap="sm" align="center">
-      <Title order={2} c="rgb(73, 105, 137)">
-        Health Metrics for {session?.user?.name}
-      </Title>
-      <ModalsProvider>
-        <Example />
-      </ModalsProvider>
-      <Divider my="sm" variant="dashed" />
-    </Stack>
-  );
-};
 
 const validateRequired = (value: string) => !!value.length;
 

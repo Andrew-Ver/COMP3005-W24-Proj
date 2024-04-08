@@ -1,7 +1,7 @@
 import "@mantine/core/styles.css";
 import "@mantine/dates/styles.css"; //if using mantine date picker features
 import "mantine-react-table/styles.css"; //make sure MRT styles were imported in your app root (once)
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import {
   MantineReactTable,
   type MRT_ColumnDef,
@@ -26,12 +26,12 @@ type Goal = {
 export default function GoalsTable() {
   return (
     <Stack gap="sm" align="center">
-      <Example />
+      <GoalTable />
     </Stack>
   );
 }
 
-const Example = () => {
+const GoalTable = () => {
   const [validationErrors, setValidationErrors] = useState<
     Record<string, string | undefined>
   >({});
@@ -56,19 +56,31 @@ const Example = () => {
     isError: isLoadingGoalsError,
     isFetching: isFetchingGoals,
     isLoading: isLoadingGoals,
+    refetch: refetchGoals,
   } = useGetGoals();
 
-  const handleCreateEquipment: MRT_TableOptions<Goal>["onCreatingRowSave"] =
-    async ({ values, exitCreatingMode }) => {
-      const newValidationErrors = validateMetric(values);
-      if (Object.values(newValidationErrors).some((error) => error)) {
-        setValidationErrors(newValidationErrors);
-        return;
-      }
-      setValidationErrors({});
-      await createGoal(values);
-      exitCreatingMode();
-    };
+  const { isLoading, error, data } = useGetGoals();
+
+  useEffect(() => {
+    if (!isLoading && !error && data) {
+      refetchGoals();
+    }
+  }, [isLoading, error, data, refetchGoals]);
+
+  const handleCreateGoal: MRT_TableOptions<Goal>["onCreatingRowSave"] = async ({
+    values,
+    exitCreatingMode,
+  }) => {
+    const newValidationErrors = validGoal(values);
+    if (Object.values(newValidationErrors).some((error) => error)) {
+      setValidationErrors(newValidationErrors);
+      return;
+    }
+    setValidationErrors({});
+    await createGoal(values);
+    exitCreatingMode();
+    refetchGoals();
+  };
 
   const table = useMantineReactTable({
     columns,
@@ -96,7 +108,7 @@ const Example = () => {
       showProgressBars: isFetchingGoals,
     },
     onCreatingRowCancel: () => setValidationErrors({}),
-    onCreatingRowSave: handleCreateEquipment,
+    onCreatingRowSave: handleCreateGoal,
     renderTopToolbarCustomActions: ({ table }) => {
       // Check if any rows are selected
       const isRowSelected = table.getSelectedRowModel().rows.length > 0;
@@ -172,7 +184,7 @@ function useGetGoals() {
   const { data: session } = useSession();
 
   return useQuery<Goal[]>({
-    queryKey: ["metrics"],
+    queryKey: ["goals"],
     queryFn: async () => {
       //send api request here
       const response = await fetch("/api/member/goals/getOngoing", {
@@ -191,7 +203,7 @@ function useGetGoals() {
 }
 
 const validateRequired = (value: string) => !!value.length;
-function validateMetric(goal: Goal) {
+function validGoal(goal: Goal) {
   return {
     description: !validateRequired(goal.goal_type)
       ? "Description is Required"
@@ -224,8 +236,8 @@ function useCreateGoal() {
       return data;
     },
     //client side optimistic update
-    onMutate: (newMetricInfo: Goal) => {
-      queryClient.setQueryData(["goals"], (prevMetrics: any) => [] as Goal[]);
+    onMutate: (newGoalInfo: Goal) => {
+      queryClient.setQueryData(["goals"], (prevGoals: any) => [] as Goal[]);
     },
     onSettled: () => queryClient.invalidateQueries({ queryKey: ["goals"] }), //refetch users after mutation, disabled for demo
   });

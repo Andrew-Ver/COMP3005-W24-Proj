@@ -1,36 +1,22 @@
 import "@mantine/core/styles.css";
 import "@mantine/dates/styles.css"; //if using mantine date picker features
 import "mantine-react-table/styles.css"; //make sure MRT styles were imported in your app root (once)
-import { useEffect, useMemo, useState } from "react";
+import { use, useEffect, useMemo, useState } from "react";
 import {
   MantineReactTable,
   type MRT_ColumnDef,
   useMantineReactTable,
 } from "mantine-react-table";
-import {
-  Stack,
-  Title,
-  Divider,
-  Button,
-  TextInput,
-  Box,
-  Group,
-  Text,
-} from "@mantine/core";
-import { ModalsProvider, modals } from "@mantine/modals";
+import { Stack, Title, Button, TextInput, Box, Group } from "@mantine/core";
+import { modals } from "@mantine/modals";
 
-import {
-  QueryClient,
-  QueryClientProvider,
-  useQuery,
-} from "@tanstack/react-query";
+import { useQueryClient, useQuery } from "@tanstack/react-query";
 
 import { useSession } from "next-auth/react";
-import { Form, useForm } from "@mantine/form";
-import { useForceUpdate } from "@mantine/hooks";
+import { useForm } from "@mantine/form";
 import { showNotification } from "@mantine/notifications";
 
-type Metric = {
+type TimeSlot = {
   availability_id: number;
   trainer_username: string;
   is_booked: boolean;
@@ -40,31 +26,18 @@ type Metric = {
 };
 
 export default function TrainersAvailabilityTable() {
-  const { data: session, status } = useSession();
-
-  // TODO: add code to the following block
-  useEffect(() => {
-    // Fetch data when the component mounts or when session changes
-    if (session) {
-      // Fetch data from the API
-      // This will automatically trigger the useGetMetrics hook
-      // and update the fetchedMetrics state
-    }
-  }, [session]);
-
   return (
     <Stack gap="sm" align="center">
       <Title order={2} c="rgb(73, 105, 137)" ta="center">
         Available Time Slots for All Trainers
       </Title>
-      <ExampleWithProviders />
-      <Divider my="sm" variant="dashed" />
+      <AvailabilityTable />
     </Stack>
   );
 }
 
-const Example = () => {
-  const columns = useMemo<MRT_ColumnDef<Metric>[]>(
+const AvailabilityTable = () => {
+  const columns = useMemo<MRT_ColumnDef<TimeSlot>[]>(
     () => [
       {
         accessorKey: "trainer_username",
@@ -79,30 +52,32 @@ const Example = () => {
         header: "End Time",
       },
       {
-          accessorKey: "fee",
-          header: "Booking Fee",
+        accessorKey: "fee",
+        header: "Booking Fee",
       },
     ],
     []
   );
 
+  const queryClient = useQueryClient();
+
   //call READ hook
   const {
-    data: fetchedMetrics = [],
-    isError: isLoadingMetricsError,
-    isFetching: isFetchingMetrics,
-    isLoading: isLoadingMetrics,
-  } = useGetMetrics();
+    data: fetchedTimeSlots = [],
+    isError: isLoadingTimeSlotsError,
+    isFetching: isFetchingTimeSlots,
+    isLoading: isLoadingTimeSlots,
+  } = useGetTimeSlots();
 
   const table = useMantineReactTable({
     columns,
-    data: fetchedMetrics,
+    data: fetchedTimeSlots,
     createDisplayMode: "row", // ('modal', and 'custom' are also available)
     enableEditing: false,
     enableRowSelection: (row) => row.original.is_booked == false,
     enableMultiRowSelection: false, //shows radio buttons instead of checkboxes
     // getRowId: (row) => row.availability_id.toString(),
-    mantineToolbarAlertBannerProps: isLoadingMetricsError
+    mantineToolbarAlertBannerProps: isLoadingTimeSlotsError
       ? {
           color: "red",
           children: "Error loading data",
@@ -114,9 +89,9 @@ const Example = () => {
       },
     },
     state: {
-      isLoading: isLoadingMetrics,
-      showAlertBanner: isLoadingMetricsError,
-      showProgressBars: isFetchingMetrics,
+      isLoading: isLoadingTimeSlots,
+      showAlertBanner: isLoadingTimeSlotsError,
+      showProgressBars: isFetchingTimeSlots,
     },
     renderTopToolbarCustomActions: ({ table }) => {
       // Check if any rows are selected
@@ -135,10 +110,9 @@ const Example = () => {
   });
 
   // After press the button
-  const { data: session, status } = useSession();
+  const { data: session } = useSession();
 
   const handleDescriptionSubmitted = async (description: string) => {
-    console.log("Submit clicked");
     const member_username = session?.user?.username;
     const selectedRow = table.getSelectedRowModel().rows[0]; //or read entire rows
     const availability_id = selectedRow.original.availability_id;
@@ -155,8 +129,6 @@ const Example = () => {
       end_time,
     };
 
-    console.log("dataToSend: ", dataToSend);
-
     try {
       const response = await fetch("/api/member/personal-training/register", {
         method: "POST",
@@ -167,7 +139,6 @@ const Example = () => {
       });
 
       if (response.ok) {
-        console.log("Data submitted successfully:", dataToSend);
         modals.closeAll();
 
         // Show success notification
@@ -241,9 +212,9 @@ const Example = () => {
 };
 
 //READ hook (get users from api)
-function useGetMetrics() {
-  return useQuery<Metric[]>({
-    queryKey: ["metrics"],
+function useGetTimeSlots() {
+  return useQuery<TimeSlot[]>({
+    queryKey: ["TimeSlots"],
     queryFn: async () => {
       //send api request here
       const response = await fetch("/api/member/trainer-availability/get", {
@@ -260,14 +231,3 @@ function useGetMetrics() {
     refetchOnWindowFocus: true,
   });
 }
-
-const queryClient = new QueryClient();
-
-const ExampleWithProviders = () => (
-  //Put this with your other react-query providers near root of your app
-  <QueryClientProvider client={queryClient}>
-    <ModalsProvider>
-      <Example />
-    </ModalsProvider>
-  </QueryClientProvider>
-);

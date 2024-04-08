@@ -1,36 +1,21 @@
 import "@mantine/core/styles.css";
 import "@mantine/dates/styles.css"; //if using mantine date picker features
 import "mantine-react-table/styles.css"; //make sure MRT styles were imported in your app root (once)
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
 import {
   MantineReactTable,
   type MRT_ColumnDef,
   useMantineReactTable,
 } from "mantine-react-table";
-import {
-  Stack,
-  Title,
-  Divider,
-  Button,
-  TextInput,
-  Box,
-  Group,
-  Text,
-} from "@mantine/core";
-import { ModalsProvider, modals } from "@mantine/modals";
+import { Stack, Title, Divider, Button, Text } from "@mantine/core";
+import { modals } from "@mantine/modals";
 
-import {
-  QueryClient,
-  QueryClientProvider,
-  useQuery,
-} from "@tanstack/react-query";
+import { QueryClient, useQuery } from "@tanstack/react-query";
 
 import { useSession } from "next-auth/react";
-import { Form, useForm } from "@mantine/form";
-import { useForceUpdate } from "@mantine/hooks";
 import { showNotification } from "@mantine/notifications";
 
-type Metric = {
+type Session = {
   session_id: number;
   name: string;
   begin_time: string;
@@ -40,31 +25,18 @@ type Metric = {
 };
 
 export default function SessionsTable() {
-  const { data: session, status } = useSession();
-
-  // TODO: add code to the following block
-  useEffect(() => {
-    // Fetch data when the component mounts or when session changes
-    if (session) {
-      // Fetch data from the API
-      // This will automatically trigger the useGetMetrics hook
-      // and update the fetchedMetrics state
-    }
-  }, [session]);
-
   return (
     <Stack gap="sm" align="center">
       <Title order={2} c="rgb(73, 105, 137)" ta="center">
         Upcoming Personal Training Session
       </Title>
-      <Example />
-      <Divider my="sm" variant="dashed" />
+      <Table />
     </Stack>
   );
 }
 
-const Example = () => {
-  const columns = useMemo<MRT_ColumnDef<Metric>[]>(
+const Table = () => {
+  const columns = useMemo<MRT_ColumnDef<Session>[]>(
     () => [
       {
         accessorKey: "trainer_name",
@@ -90,21 +62,21 @@ const Example = () => {
 
   //call READ hook
   const {
-    data: fetchedMetrics = [],
-    isError: isLoadingMetricsError,
-    isFetching: isFetchingMetrics,
-    isLoading: isLoadingMetrics,
-  } = useGetMetrics();
+    data: fetchedSessions = [],
+    isError: isLoadingSessionsError,
+    isFetching: isFetchingSessions,
+    isLoading: isLoadingSessions,
+  } = useGetSessions();
 
   const table = useMantineReactTable({
     columns,
-    data: fetchedMetrics,
+    data: fetchedSessions,
     createDisplayMode: "row", // ('modal', and 'custom' are also available)
     enableEditing: false,
     enableRowSelection: true,
     enableMultiRowSelection: false, //shows radio buttons instead of checkboxes
     // getRowId: (row) => row.availability_id.toString(),
-    mantineToolbarAlertBannerProps: isLoadingMetricsError
+    mantineToolbarAlertBannerProps: isLoadingSessionsError
       ? {
           color: "red",
           children: "Error loading data",
@@ -116,9 +88,9 @@ const Example = () => {
       },
     },
     state: {
-      isLoading: isLoadingMetrics,
-      showAlertBanner: isLoadingMetricsError,
-      showProgressBars: isFetchingMetrics,
+      isLoading: isLoadingSessions,
+      showAlertBanner: isLoadingSessionsError,
+      showProgressBars: isFetchingSessions,
     },
     renderTopToolbarCustomActions: ({ table }) => {
       // Check if any rows are selected
@@ -188,11 +160,11 @@ const Example = () => {
 };
 
 //READ hook (get users from api)
-function useGetMetrics() {
+function useGetSessions() {
   const { data: session } = useSession();
 
-  return useQuery<Metric[]>({
-    queryKey: ["metrics"],
+  return useQuery<Session[]>({
+    queryKey: ["Sessions"],
     queryFn: async () => {
       //send api request here
       const response = await fetch(
