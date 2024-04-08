@@ -1,7 +1,7 @@
 import "@mantine/core/styles.css";
 import "@mantine/dates/styles.css"; //if using mantine date picker features
 import "mantine-react-table/styles.css"; //make sure MRT styles were imported in your app root (once)
-import { useEffect, useMemo, useState } from "react";
+import {useEffect, useLayoutEffect, useMemo, useState} from "react";
 import {
   MantineReactTable,
   type MRT_ColumnDef,
@@ -11,16 +11,20 @@ import {
 } from "mantine-react-table";
 import { ActionIcon, Button, Flex, Text, Tooltip, Stack } from "@mantine/core";
 import { ModalsProvider, modals } from "@mantine/modals";
-import { IconEdit, IconTrash } from "@tabler/icons-react";
+import {IconCheckbox, IconEdit, IconTrash} from "@tabler/icons-react";
 import { CirclePlus } from "tabler-icons-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { useSession } from "next-auth/react";
 
 type Metric = {
-  id: string;
   class_id: string;
+  id: string;
+  trainer_name: string;
   room_id: string;
+  begin_time: string;
+  end_time: string;
+  room_name: string;
   availability_id: string;
   description: string;
   fee: string;
@@ -101,6 +105,7 @@ const Example = ({ roomIds, availabilityIds }: ExampleProps) => {
         accessorKey: "class_id",
         header: "Class ID",
         enableEditing: false,
+        size: 30,
       },
       {
         accessorKey: "room_id",
@@ -110,6 +115,13 @@ const Example = ({ roomIds, availabilityIds }: ExampleProps) => {
           data: roomIds,
           error: validationErrors?.room_id,
         },
+        size: 30,
+      },
+      {
+        accessorKey: "room_name",
+        header: "Room",
+        enableEditing: false,
+        size: 80,
       },
       {
         accessorKey: "availability_id",
@@ -119,11 +131,27 @@ const Example = ({ roomIds, availabilityIds }: ExampleProps) => {
           data: availabilityIds,
           error: validationErrors?.availability_id,
         },
+        size: 30,
+      },
+      {
+        accessorKey: "trainer_name",
+        header: "Trainer Name",
+        enableEditing: false
+      },
+      {
+        accessorKey: "begin_time",
+        header: "Begin Time",
+        enableEditing: false
+      },
+      {
+        accessorKey: "end_time",
+        header: "End Time",
+        enableEditing: false
       },
       {
         accessorKey: "description",
         header: "Description",
-        minSize: 300,
+        minSize: 250,
         mantineEditTextInputProps: {
           type: "string",
           required: true,
@@ -150,6 +178,7 @@ const Example = ({ roomIds, availabilityIds }: ExampleProps) => {
               fee: undefined,
             }),
         },
+        size: 30,
       },
     ],
     [validationErrors]
@@ -201,16 +230,16 @@ const Example = ({ roomIds, availabilityIds }: ExampleProps) => {
   //DELETE action
   const openDeleteConfirmModal = (row: MRT_Row<Metric>) =>
     modals.openConfirmModal({
-      title: "Confirm Metric Deletion?",
+      title: "Confirm class completion?",
       children: (
         <Text>
-          Are you sure you want to delete this record? This action cannot be
+          Are you sure you want to mark this class as complete? This action cannot be
           undone.
         </Text>
       ),
-      labels: { confirm: "Delete", cancel: "Cancel" },
+      labels: { confirm: "Confirm", cancel: "Cancel" },
       confirmProps: { color: "red" },
-      onConfirm: () => deleteMetric(row.original.id),
+      onConfirm: () => deleteMetric(row.original.class_id),
     });
 
   const table = useMantineReactTable({
@@ -242,11 +271,11 @@ const Example = ({ roomIds, availabilityIds }: ExampleProps) => {
             <IconEdit />
           </ActionIcon>
         </Tooltip>
-        {/* <Tooltip label="Delete">
-          <ActionIcon color="red" onClick={() => openDeleteConfirmModal(row)}>
-            <IconTrash />
+        <Tooltip label="Mark as complete">
+          <ActionIcon color="green" onClick={() => openDeleteConfirmModal(row)}>
+            <IconCheckbox />
           </ActionIcon>
-        </Tooltip> */}
+        </Tooltip>
       </Flex>
     ),
     renderTopToolbarCustomActions: ({ table }) => (
@@ -357,6 +386,7 @@ function useGetMetrics() {
 //UPDATE hook (put user in api)
 function useUpdateMetric() {
   const queryClient = useQueryClient();
+  console.log("update");
   return useMutation({
     mutationFn: async (metric: Metric) => {
       //send api update request here
@@ -377,19 +407,7 @@ function useUpdateMetric() {
       return data;
     },
     //client side optimistic update
-    onMutate: (newMetricInfo: Metric) => {
-      queryClient.setQueryData(
-        ["metrics"],
-        (prevMetrics: any) =>
-          [
-            ...prevMetrics,
-            {
-              ...newMetricInfo,
-              id: (Math.random() + 1).toString(36).substring(7),
-            },
-          ] as Metric[]
-      );
-    },
+    onMutate: () => queryClient.invalidateQueries({ queryKey: ["metrics"] }),
     onSettled: () => queryClient.invalidateQueries({ queryKey: ["metrics"] }), //refetch users after mutation, disabled for demo
   });
 }
@@ -400,14 +418,13 @@ function useDeleteMetric() {
 
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (metricID: string) => {
+    mutationFn: async (class_id: string) => {
       //send api request here
-      const response = await fetch("/api/user/metrics/delete", {
+      const response = await fetch("/api/group-class/complete", {
         method: "POST",
         // Send timestamp and username
         body: JSON.stringify({
-          metric_timestamp: metricID,
-          username: session?.user?.username,
+            class_id: class_id,
         }),
         headers: {
           "Content-Type": "application/json",
@@ -419,9 +436,6 @@ function useDeleteMetric() {
     },
     //client side optimistic update
     onMutate: (id: string) => {
-      queryClient.setQueryData(["metrics"], (prevMetrics: any) =>
-        prevMetrics?.filter((metric: Metric) => metric.id !== id)
-      );
     },
     onSettled: () => queryClient.invalidateQueries({ queryKey: ["metrics"] }), //refetch users after mutation, disabled for demo
   });
@@ -433,10 +447,10 @@ function validateMetric(metric: Metric) {
   return {
     room_id: !validateRequired(metric.room_id) ? "Room ID is Required" : "",
     availability_id: !validateRequired(metric.availability_id)
-      ? "End time is Required"
+      ? "Availability ID is Required"
       : "",
     description: !validateRequired(metric.description)
-      ? "End time is Required"
+      ? "Description is Required"
       : "",
     fee: !validateRequired(metric.fee) ? "Fee is Required" : "",
   };

@@ -1,29 +1,29 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import pool from "@/db";
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+export default async function getUpcomingSessions(req: NextApiRequest, res: NextApiResponse) {
+    const { member_username } = req.body;
+
     const query = `
         SELECT 
-          gc.class_id,
+          pts.session_id,
           a.name AS trainer_name,
           ta.begin_time AT TIME ZONE 'UTC' AT TIME ZONE 'America/New_York' AS begin_time,
           ta.end_time AT TIME ZONE 'UTC' AT TIME ZONE 'America/New_York' AS end_time,
-          r.description AS room_name,
-          gc.fee,
-          gc.availability_id,
-          gc.room_id,
-          gc.description
-        FROM group_class gc
-        INNER JOIN trainer_availability ta ON gc.availability_id = ta.availability_id
+          pts.description,
+          pts.completed
+        FROM personal_training_session pts
+        INNER JOIN trainer_availability ta ON pts.availability_id = ta.availability_id
         INNER JOIN trainer t ON ta.trainer_username = t.trainer_username
         INNER JOIN account a ON t.trainer_username = a.username
-        LEFT JOIN room r ON gc.room_id = r.room_id
-        WHERE gc.completed = FALSE
+        WHERE 
+          pts.member_username = $1 
+          AND pts.completed = TRUE
         ORDER BY ta.begin_time ASC;
-    `;
+  `;
 
     try {
-        const result = await pool.query(query);
+        const result = await pool.query(query, [member_username]);
         result.rows.forEach((row: any) => {
             row.begin_time = new Date(row.begin_time).toISOString().replace("T", " ").slice(0, -5);
             row.end_time = new Date(row.end_time).toISOString().replace("T", " ").slice(0, -5);
