@@ -1,16 +1,19 @@
 # COMP3005 Final Project
 
-COMP3005 Database Management Systems at Carleton University Winter 2024 - :weight_lifting_man: Gym Management System :weight_lifting_woman:
+This Project is for COMP3005 Database Management Systems Winter 2024, Option 2.
 
-**Team Members:** [Andrew Verbovsky](https://github.com/Andrew-Ver), [Zhenxuan Ding](https://github.com/InvalidPathException), and [Jiayu Hu](https://github.com/JennyHo5)
+**Team Members: Andrew Verbovsky, Zhenxuan Ding, Jiyayu Hu**
 
-## :writing_hand: Description :writing_hand:
+## Description
 
 This is a Full-Stack web application designed to mimick a Health and Fitness Club Management System for COMP3005 for the Winter 2024 semester at Carleton University.
 
-## :hammer: Built With :hammer:
+The project incorporates a PostgreSQL DB interfaced with using the [pg](https://node-postgres.com/) client.
 
-* [Next.js](https://nextjs.org/) - React-based Web Framework
+
+## Built With
+
+* [Next.js](https://nextjs.org/) - Web Framework
 * [NextAuth.js](https://next-auth.js.org/) - Authentication
 * [PostgreSQL](https://www.postgresql.org/) - Relational Database
 * [Node-Postgres](https://node-postgres.com/) - Node.js PostgreSQL client
@@ -18,7 +21,7 @@ This is a Full-Stack web application designed to mimick a Health and Fitness Clu
 * [Mantine React Table v2](https://v2.mantine-react-table.com/) - Table components
 
 
-## :computer: Getting Started :computer: 
+## Getting Started
 
 ### Dependencies
 
@@ -26,18 +29,18 @@ This is a Full-Stack web application designed to mimick a Health and Fitness Clu
 * **A local or remote PostgreSQL server**
 * A Desktop Web Browser
 
-### :file_folder: File/Folder Structure :file_folder:
+### File/Folder Structure
 
 <details>
-<summary>Structure :computer_mouse:</summary>
+<summary>Structure</summary>
 <br>
 
 ```
-├── Documentation - (Diagrams and Justifications for Database Design folder)
+├── Documentation - (Diagrams and Justifications for Database Design)
 │   ├── Diagrams.drawio
 │   ├── ER Diagram.png
 │   └── Schema.png
-├── Frontend - (Next JS Webapp Frontend folder)
+├── Frontend - (Directory for Next JS Webapp Frontend)
 │   ├── .env.local - (PLACE YOUR DATABASE CONNECTION INFO HERE)
 │   ├── db.ts - (A file defining some types and DB connection read from environment variables)
 │   ├── ... (...Many other files and folders related to the frontend...)
@@ -56,7 +59,7 @@ This is a Full-Stack web application designed to mimick a Health and Fitness Clu
 ---
 
 
-### :running: Running the Application :running:
+### Running the Application Front End
 
 * #### Ensure a local (or remote) PostgreSQL server is running
 * #### Navigate to the [Frontend/](./Frontend/) directory
@@ -71,15 +74,15 @@ This is a Full-Stack web application designed to mimick a Health and Fitness Clu
 * #### Run the following commands in your terminal:
   * ```npm install```
   * ```npm run dev```
-* :sparkles: **Proceed to [localhost:3000/](http://localhost:3000/) in your web browser and navigate the Web Application** :sparkles:
-* :shrug: **Optional**: Play around with it, or something like that.
+  * :sparkles: **Proceed to [localhost:3000/](http://localhost:3000/) in your web browser and navigate the Web Application** :sparkles:
+  * **Optional**: Play around with it, or something like that.
 
 
-## :trophy: Authors :trophy:
+## Authors
 
 * [Andrew Verbovsky](https://github.com/Andrew-Ver)
 * [Zhenxuan Ding](https://github.com/InvalidPathException)
-* [Jiayu Hu](https://github.com/JennyHo5)
+* [Jiyayu Hu](https://github.com/JennyHo5)
 
 ## Acknowledgements
 
