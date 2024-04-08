@@ -64,7 +64,6 @@ const Example = () => {
       {
         accessorKey: "begin_time",
         header: "Begin Time",
-        minSize: 300,
         mantineEditTextInputProps: {
           type: "string",
           required: true,
@@ -81,7 +80,6 @@ const Example = () => {
       {
         accessorKey: "end_time",
         header: "End Time",
-        minSize: 300,
         mantineEditTextInputProps: {
           type: "string",
           required: true,
