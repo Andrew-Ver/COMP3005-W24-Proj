@@ -99,6 +99,7 @@ const Example = () => {
         mantineTableContainerProps: {
             style: {
                 minHeight: "500px",
+                minWidth: "500px",
             },
         },
         state: {

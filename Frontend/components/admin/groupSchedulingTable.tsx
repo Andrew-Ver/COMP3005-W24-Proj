@@ -386,7 +386,6 @@ function useGetMetrics() {
 //UPDATE hook (put user in api)
 function useUpdateMetric() {
   const queryClient = useQueryClient();
-  console.log("update");
   return useMutation({
     mutationFn: async (metric: Metric) => {
       //send api update request here
