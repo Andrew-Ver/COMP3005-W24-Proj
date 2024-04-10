@@ -126,7 +126,7 @@ const Example = () => {
       title: "Confirm Equipment Room Deletion?",
       children: (
         <Text>
-          Are you sure you want to delete this Room? This action cannot be
+          Are you sure you want to delete this Room? All equipment will be deleted as well. This action cannot be
           undone.
         </Text>
       ),

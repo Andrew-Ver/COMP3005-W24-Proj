@@ -104,6 +104,7 @@ const Example = () => {
         accessorKey: "class_id",
         header: "Class ID",
         enableEditing: false,
+        size: 40,
       },
       {
         accessorKey: "room_id",
@@ -113,6 +114,7 @@ const Example = () => {
           data: roomIds,
           error: validationErrors?.room_id,
         },
+        size: 40,
       },
       {
         accessorKey: "room_name",
@@ -127,6 +129,7 @@ const Example = () => {
           data: availabilityIds,
           error: validationErrors?.availability_id,
         },
+        size: 40,
       },
       {
         accessorKey: "trainer_name",
@@ -170,6 +173,7 @@ const Example = () => {
               fee: undefined,
             }),
         },
+        size: 40,
       },
     ]);
   }, [roomIds, availabilityIds, validationErrors]);

@@ -58,6 +58,10 @@ const Example = () => {
         header: "Bill ID",
       },
       {
+        accessorKey: "member_username",
+        header: "Member Username",
+      },
+      {
         accessorKey: "amount",
         header: "Amount",
       },
@@ -81,7 +85,13 @@ const Example = () => {
   );
 
   //call READ hook
-  const { data: fetchedBills = [], isError: isLoadingBillsError, isFetching: isFetchingBills, isLoading: isLoadingBills, refetch } = useGetBills();
+  const {
+    data: fetchedBills = [],
+    isError: isLoadingBillsError,
+    isFetching: isFetchingBills,
+    isLoading: isLoadingBills,
+      refetch
+  } = useGetBills();
 
   const table = useMantineReactTable({
     columns,
@@ -155,6 +165,7 @@ const Example = () => {
       } else {
         console.error("Error submitting data: ", response.statusText);
       }
+
     } catch (error) {
       console.error("Network error: ", error);
     } finally {
@@ -173,9 +184,9 @@ function useGetBills() {
     queryKey: ["bills"],
     queryFn: async () => {
       //send api request here
-      const response = await fetch("/api/member/billing/get", {
+      const response = await fetch("/api/member/billing/getall", {
         method: "POST",
-        body: JSON.stringify({ member_username: session?.user?.username }),
+        body: JSON.stringify({}),
         headers: {
           "Content-Type": "application/json",
         },

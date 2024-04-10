@@ -7,7 +7,7 @@ export default function Search() {
 
   const [tableData, setTableData] = useState({
     caption: "Member Search Results",
-    head: ["Username", "Age", "Gender"],
+    head: ["Username", "Name", "Age", "Gender", "Goals"],
     body: [] as any[],
   });
 
@@ -37,8 +37,10 @@ export default function Search() {
   useEffect(() => {
     const newBody = searchResults.map((member: any) => [
       member.member_username,
+      member.name,
       member.age,
       member.gender,
+      member.goals,
     ]);
 
     setTableData((prevData) => ({

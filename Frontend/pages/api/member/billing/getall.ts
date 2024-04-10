@@ -3,7 +3,6 @@ import pool from "@/db";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
 
-  const { member_username } = req.body;
   const query = `SELECT  
                 bill_id,
                 member_username,
@@ -12,10 +11,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 bill_timestamp AT TIME ZONE 'UTC' AT TIME ZONE 'America/New_York' AS bill_timestamp,
                 cleared
                 FROM bill
-                WHERE member_username = $1
                 ORDER BY bill_id DESC;`;
 
-  const result = await pool.query(query, [member_username]);
+  const result = await pool.query(query);
 
   const metrics = result.rows.map(row => ({
     bill_id: row.bill_id,

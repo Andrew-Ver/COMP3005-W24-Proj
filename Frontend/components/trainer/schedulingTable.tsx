@@ -33,6 +33,7 @@ type Metric = {
   username: string;
   begin_time: string;
   end_time: string;
+  is_booked: boolean;
 };
 
 export default function SchedulingTable() {
@@ -91,6 +92,14 @@ const Example = () => {
               ...validationErrors,
               end_time: undefined,
             }),
+        },
+      },
+      {
+        accessorKey: "is_booked",
+        header: "Booked",
+        enableEditing: false,
+        accessorFn: (row) => {
+          return row.is_booked ? "Yes" : "No";
         },
       },
     ],
@@ -181,20 +190,21 @@ const Example = () => {
     onCreatingRowSave: handleCreateMetric,
     onEditingRowCancel: () => setValidationErrors({}),
     onEditingRowSave: handleSaveMetric,
-    renderRowActions: ({ row, table }) => (
-      <Flex gap="md" justify="center">
-        <Tooltip label="Edit">
-          <ActionIcon onClick={() => table.setEditingRow(row)}>
-            <IconEdit />
-          </ActionIcon>
-        </Tooltip>
-        {/* <Tooltip label="Delete">
-          <ActionIcon color="red" onClick={() => openDeleteConfirmModal(row)}>
-            <IconTrash />
-          </ActionIcon>
-        </Tooltip> */}
-      </Flex>
-    ),
+    renderRowActions: ({ row, table }) => {
+      if (row.original.is_booked === false) {
+        return (
+            <Flex gap="md" justify="center">
+              <Tooltip label="Edit">
+                <ActionIcon onClick={() => table.setEditingRow(row)}>
+                  <IconEdit />
+                </ActionIcon>
+              </Tooltip>
+            </Flex>
+        );
+      }
+      return null;
+    },
+
     renderTopToolbarCustomActions: ({ table }) => (
       <Button
         onClick={() => {

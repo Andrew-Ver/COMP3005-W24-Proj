@@ -52,7 +52,8 @@ const adminLinks = [
   { href: "/admin/equipment", title: "Maintenance" },
   { href: "/admin/room-booking", title: "Room Management" },
   { href: "/admin/schedule", title: "Group Class Schedule" },
-  { href: "/admin/search", title: "Member Search" },
+  { href: "/admin/billing", title: "Billing" },
+  { href: "/admin/payment-processing", title: "Payment Processing" },
 ];
 
 const unauthenticatedLinks = [

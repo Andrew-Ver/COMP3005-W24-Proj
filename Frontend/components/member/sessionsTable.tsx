@@ -40,7 +40,7 @@ const Table = () => {
     () => [
       {
         accessorKey: "trainer_name",
-        header: "Trainer Name",
+        header: "Trainer",
       },
       {
         accessorKey: "begin_time",
