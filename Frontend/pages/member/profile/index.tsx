@@ -43,7 +43,7 @@ export default function Profile() {
         </Tabs.List>
 
         <Tabs.Panel value="profile" my="15px">
-          <Title order={3} c="rgb(73, 105, 137)" ta="center">
+          <Title order={3} c="rgb(73, 105, 137)" ta="center" mb="md">
             Change Profile Info
           </Title>
           <MemberProfile />
@@ -54,9 +54,6 @@ export default function Profile() {
             Member Stats
           </Title>
           <Stack gap="md" my="auto">
-            <Flex gap="md" justify="center">
-              <UserInfoIcons />
-            </Flex>
             <MetricTable />
           </Stack>
         </Tabs.Panel>
@@ -67,9 +64,6 @@ export default function Profile() {
           </Title>
 
           <Stack gap="md" my="auto">
-            <Flex gap="md" justify="center">
-              <UserInfoIcons />
-            </Flex>
             <GoalsTable />
           </Stack>
         </Tabs.Panel>

@@ -9,6 +9,7 @@ import {
   TextInput,
   NumberInput,
   Flex,
+  Paper
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { useState } from "react";
@@ -16,6 +17,8 @@ import { UserInfoIcons } from "./UserInfoIcons";
 
 export default function MemberProfile() {
   const { data: session } = useSession();
+  const [age, setAge] = useState<string | null>(null);
+  const [gender, setGender] = useState<string | null>(null);
 
   async function handleFormSubmit(values: { age: number; gender: string }) {
     /*
@@ -67,53 +70,8 @@ export default function MemberProfile() {
   };
 
   return (
-    <Box maw={250} mx="auto" my="auto">
-      <form
-        onSubmit={(event) => {
-          event.preventDefault();
-          handleButtonClick();
-        }}
-      >
-        <Stack gap="md" my="auto">
-          <Flex gap="md" justify="center">
-            <UserInfoIcons />
-          </Flex>
-          <Stack gap="md">
-            <Text>Name</Text>
-            <TextInput disabled {...form.getInputProps("name")} />
-            <Flex direction="row" gap="md">
-              <NumberInput
-                label="Age"
-                value={form.values.age}
-                withAsterisk
-                placeholder="20"
-                onChange={(event) => {
-                  form.setFieldValue("age", event as number);
-                }}
-                min={18}
-                max={100}
-              />
-              <Select
-                label="Gender"
-                value={form.values.gender}
-                placeholder="Select Gender"
-                required
-                data={["male", "female", "other"]}
-                onChange={(event) => {
-                  form.setFieldValue("gender", event as string);
-                }}
-              />
-            </Flex>
-          </Stack>
-          <Button
-            type="submit"
-            onClick={handleButtonClick}
-            disabled={isButtonDisabled}
-          >
-            Save
-          </Button>
-        </Stack>
-      </form>
-    </Box>
+    <Paper maw={250} mx="auto" my="auto" shadow="lg" radius="lg" p="xl" withBorder>
+      <UserInfoIcons></UserInfoIcons>
+    </Paper>
   );
 }
