@@ -6,7 +6,7 @@ type LoginFn = (username: string, password: string) => Promise<User | null>;
 export const login: LoginFn = async (username, password) => {
 
     try {
-        const query = `SELECT * FROM account WHERE username = $1`;
+        const query = `SELECT * FROM account WHERE username = $1 AND is_deleted = FALSE`;
 
         const result = await pool.query(query, [username]);
 

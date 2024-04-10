@@ -19,6 +19,7 @@ import { showNotification } from "@mantine/notifications";
 type TimeSlot = {
   availability_id: number;
   trainer_username: string;
+  trainer_name: string;
   is_booked: boolean;
   begin_time: string;
   end_time: string;
@@ -40,8 +41,8 @@ const AvailabilityTable = () => {
   const columns = useMemo<MRT_ColumnDef<TimeSlot>[]>(
     () => [
       {
-        accessorKey: "trainer_username",
-        header: "Trainer",
+        accessorKey: "trainer_name",
+        header: "Trainer Name",
       },
       {
         accessorKey: "begin_time",
@@ -67,6 +68,7 @@ const AvailabilityTable = () => {
     isError: isLoadingTimeSlotsError,
     isFetching: isFetchingTimeSlots,
     isLoading: isLoadingTimeSlots,
+      refetch
   } = useGetTimeSlots();
 
   const table = useMantineReactTable({
@@ -148,8 +150,8 @@ const AvailabilityTable = () => {
           color: "green",
         });
 
-        await queryClient.invalidateQueries();
         table.toggleAllRowsSelected(false);
+        await refetch()
       } else {
         console.error("Error submitting data:", response.statusText);
         // Show error notification

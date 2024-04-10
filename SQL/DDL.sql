@@ -86,28 +86,32 @@ CREATE TABLE health_metric (
     member_username VARCHAR(50) NOT NULL,
     metric_timestamp TIMESTAMP NOT NULL DEFAULT NOW(),
     weight DECIMAL NOT NULL, --In lbs
-    body_fat_percentage DECIMAL NOT NULL,
+    body_fat_percentage DECIMAL NOT NULL CHECK (
+        body_fat_percentage > 0
+        AND body_fat_percentage < 100
+    ),
     systolic_pressure INT NOT NULL,
     diastolic_pressure INT NOT NULL,
     PRIMARY KEY (member_username, metric_timestamp),
-    FOREIGN KEY (member_username) REFERENCES member(member_username) ON DELETE CASCADE
+    FOREIGN KEY (member_username) REFERENCES member(member_username) ON DELETE CASCADE,
+    CHECK (systolic_pressure > diastolic_pressure)
 );
 
 CREATE TABLE bill (
     bill_id SERIAL PRIMARY KEY,
     member_username VARCHAR(50) NOT NULL,
     amount DECIMAL NOT NULL,  -- Can be negative (refund)
-    description VARCHAR(255),
+    description VARCHAR(255) NOT NULL,
     bill_timestamp TIMESTAMP NOT NULL DEFAULT NOW(),
     cleared BOOLEAN DEFAULT FALSE,
-    FOREIGN KEY (member_username) REFERENCES member(member_username)  --Keep bill record even if the user is deleted
+    FOREIGN KEY (member_username) REFERENCES member(member_username) ON DELETE CASCADE
 );
 
 CREATE TABLE personal_training_session (
     session_id SERIAL PRIMARY KEY,
     member_username VARCHAR(50) NOT NULL,
     availability_id INT NOT NULL,
-    description VARCHAR(255),
+    description VARCHAR(255) NOT NULL,
     completed BOOLEAN NOT NULL DEFAULT FALSE,
     FOREIGN KEY (member_username) REFERENCES member(member_username) ON DELETE CASCADE,
     FOREIGN KEY (availability_id) REFERENCES trainer_availability(availability_id) ON DELETE CASCADE
@@ -115,16 +119,16 @@ CREATE TABLE personal_training_session (
 
 CREATE TABLE room (
     room_id SERIAL PRIMARY KEY,
-    description VARCHAR(255),
+    description VARCHAR(255) NOT NULL,
     is_deleted BOOLEAN DEFAULT FALSE
 );
 
 CREATE TABLE group_class (
     class_id SERIAL PRIMARY KEY,
     availability_id INT NOT NULL,
-    description VARCHAR(255),
+    description VARCHAR(255) NOT NULL,
     fee DECIMAL NOT NULL CHECK (fee > 0),
-    room_id INT,
+    room_id INT NOT NULL,
     completed BOOLEAN NOT NULL DEFAULT FALSE,
     FOREIGN KEY (availability_id) REFERENCES trainer_availability(availability_id) ON DELETE CASCADE,
     FOREIGN KEY (room_id) REFERENCES room(room_id) ON DELETE CASCADE

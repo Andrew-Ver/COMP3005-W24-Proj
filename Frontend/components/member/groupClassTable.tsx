@@ -160,8 +160,8 @@ const Table = () => {
           message: "Booking successful!",
           color: "green",
         });
-        await queryClient.invalidateQueries();
         table.toggleAllRowsSelected(false);
+        await refetchGroupClasses();
       } else {
         // Handle error response
         console.error("Error submitting data:", response.statusText);

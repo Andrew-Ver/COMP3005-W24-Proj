@@ -14,17 +14,17 @@ INSERT INTO account (username, name, password, user_type) VALUES ('mark', 'Hitor
 INSERT INTO trainer (trainer_username, rate_per_hour) VALUES ('mark', 37.50);
 INSERT INTO trainer_specialty (trainer_username, specialty) VALUES ('mark', 'crawling'), ('mark', 'dooming');
 
-INSERT INTO account (username, name, password, user_type) VALUES ('JY', 'JY', 'password', 'trainer');
-INSERT INTO trainer (trainer_username, rate_per_hour) VALUES ('JY', 50.00);
+INSERT INTO account (username, name, password, user_type) VALUES ('jy', 'Jiayu', 'password', 'trainer');
+INSERT INTO trainer (trainer_username, rate_per_hour) VALUES ('jy', 50.00);
 
 -- Adding Trainer Availability
 INSERT INTO trainer_availability (trainer_username, begin_time, end_time) VALUES
 ('andrew', '2024-04-23 09:00', '2024-04-23 11:00'),  -- availability_id = 1
 ('mark', '2024-04-23 12:00', '2024-04-23 14:00'),  -- availability_id = 2
-('JY', '2024-04-23 15:00', '2024-04-23 17:00'),  -- availability_id = 3
+('jy', '2024-04-23 15:00', '2024-04-23 17:00'),  -- availability_id = 3
 ('andrew', '2024-04-24 09:00', '2024-04-24 11:00'),  -- availability_id = 4
 ('mark', '2024-04-24 12:00', '2024-04-24 14:00'),  -- availability_id = 5
-('JY', '2024-04-24 15:00', '2024-04-24 17:00');  -- availability_id = 6
+('jy', '2024-04-24 15:00', '2024-04-24 17:00');  -- availability_id = 6
 
 -- Adding Members
 INSERT INTO account (username, name, password, user_type) VALUES ('robert', 'Robert Prolog', 'password', 'member');
@@ -50,9 +50,26 @@ INSERT INTO exercise_routine (member_username, description) VALUES
 ('vojislav', 'Cardio: Long-distance running, gradually increasing distance'),
 ('patrick', 'Cardio: Cycling 20 minutes, 3 times a week');
 
+-- Creating rooms and equipment pieces
+INSERT INTO room (description) VALUES
+('Cardio Zone'),  -- room_id = 1
+('Weight Training Area'),  -- room_id = 2
+('Yoga Studio'),  -- room_id = 3
+('Cycling Room');  -- room_id = 4
+
+INSERT INTO equipment (description, room_id, needs_maintenance) VALUES
+('Treadmill', 1, FALSE),
+('Elliptical', 1, TRUE),
+('Dumbbell Set', 2, FALSE),
+('Adjustable Bench', 2, TRUE),
+('Yoga Mat', 3, FALSE),
+('Yoga Block', 3, FALSE),
+('Spin Bike (Nokia brand)', 4, FALSE),
+('Spin Bike (Ford brand)', 4, TRUE);
+
 -- Creating group classes
-INSERT INTO group_class (availability_id, description, fee) VALUES
-(3, 'Cardio Session with JY', 50.00);  -- class_id = 1
+INSERT INTO group_class (availability_id, description, fee, room_id) VALUES
+(3, 'Cardio Session with Jiayu', 50.00, 1);  -- class_id = 1
 UPDATE trainer_availability
 SET is_booked = TRUE
 WHERE availability_id = 3;
@@ -76,34 +93,13 @@ WHERE availability_id IN (1, 2);
 -- Payments
 INSERT INTO bill (member_username, amount, description, bill_timestamp, cleared) VALUES
 -- Payments for Membership
-('robert', 100.00, 'Membership purchase', CURRENT_TIMESTAMP - INTERVAL '5 day', true),
-('vojislav', 100.00, 'Membership purchase', CURRENT_TIMESTAMP - INTERVAL '5 day', true),
-('patrick', 100.00, 'Membership purchase', CURRENT_TIMESTAMP - INTERVAL '5 day', true),
+('robert', 100.00, 'Membership purchase', CURRENT_TIMESTAMP - INTERVAL '5 day', FALSE),
+('vojislav', 100.00, 'Membership purchase', CURRENT_TIMESTAMP - INTERVAL '5 day', TRUE),
+('patrick', 100.00, 'Membership purchase', CURRENT_TIMESTAMP - INTERVAL '5 day', TRUE),
 -- Payments for Group Class
-('robert', 50.00, 'Cardio Session with JY', CURRENT_TIMESTAMP - INTERVAL '4 day', true),
-('vojislav', 50.00, 'Cardio Session with JY', CURRENT_TIMESTAMP - INTERVAL '4 day', true),
-('patrick', 50.00, 'Cardio Session with JY', CURRENT_TIMESTAMP - INTERVAL '4 day', true),
+('robert', 50.00, 'Cardio Session with Jiayu', CURRENT_TIMESTAMP - INTERVAL '4 day', FALSE),
+('vojislav', 50.00, 'Cardio Session with Jiayu', CURRENT_TIMESTAMP - INTERVAL '4 day', TRUE),
+('patrick', 50.00, 'Cardio Session with Jiayu', CURRENT_TIMESTAMP - INTERVAL '4 day', TRUE),
 -- Payments for Personal Training (Robert and Vojislav)
-('robert', 75.00, 'Strength Training with Andrew Proshare', CURRENT_TIMESTAMP - INTERVAL '3 day', true),
-('vojislav', 75.00, 'Endurance Training with Hitori Bocchi', CURRENT_TIMESTAMP - INTERVAL '3 day', true);
-
--- Creating rooms and equipment pieces
-INSERT INTO room (description) VALUES
-('Cardio Zone'),  -- room_id = 1
-('Weight Training Area'),  -- room_id = 2
-('Yoga Studio'),  -- room_id = 3
-('Cycling Room');  -- room_id = 4
-
-INSERT INTO equipment (description, room_id, needs_maintenance) VALUES
-('Treadmill', 1, FALSE),
-('Elliptical', 1, TRUE),
-('Dumbbell Set', 2, FALSE),
-('Adjustable Bench', 2, TRUE),
-('Yoga Mat', 3, FALSE),
-('Yoga Block', 3, FALSE),
-('Spin Bike (Nokia brand)', 4, FALSE),
-('Spin Bike (Ford brand)', 4, TRUE);
-
-UPDATE group_class
-SET room_id = 1
-WHERE class_id = 1;
+('robert', 75.00, 'Strength Training with Andrew Proshare', CURRENT_TIMESTAMP - INTERVAL '3 day', FALSE),
+('vojislav', 75.00, 'Endurance Training with Hitori Bocchi', CURRENT_TIMESTAMP - INTERVAL '3 day', TRUE);

@@ -66,6 +66,7 @@ const Table = () => {
     isError: isLoadingSessionsError,
     isFetching: isFetchingSessions,
     isLoading: isLoadingSessions,
+    refetch
   } = useGetSessions();
 
   const table = useMantineReactTable({
@@ -110,7 +111,7 @@ const Table = () => {
 
   const handleMarkAsCompleted = () => {
     modals.openConfirmModal({
-      title: "Please confirm your payment",
+      title: "Please confirm completion",
       children: (
         <Text size="sm">
           Are you sure you want to mark the selected sessions as completed?
@@ -142,17 +143,20 @@ const Table = () => {
         // Show success notification
         showNotification({
           title: "Success",
-          message: "Successfully registered for training session!",
+          message: "Thank you for using our service!",
           color: "green",
         });
 
         table.toggleAllRowsSelected(false);
-        await queryClient.invalidateQueries();
+        await refetch();
       } else {
         console.error("Error submitting data: ", response.statusText);
       }
     } catch (error) {
       console.error("Network error: ", error);
+    } finally {
+
+      await queryClient.invalidateQueries({queryKey: ["Sessions"]});
     }
   };
 

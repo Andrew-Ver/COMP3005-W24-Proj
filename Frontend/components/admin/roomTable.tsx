@@ -123,16 +123,15 @@ const Example = () => {
   //DELETE action
   const openDeleteConfirmModal = (row: MRT_Row<Room>) =>
     modals.openConfirmModal({
-      title: "Confirm Equipment Room Deletion?",
+      title: "Confirm Room Deletion?",
       children: (
         <Text>
-          Are you sure you want to delete this Room? All equipment will be deleted as well. This action cannot be
-          undone.
+          Are you sure you want to delete this Room?
         </Text>
       ),
       labels: { confirm: "Delete", cancel: "Cancel" },
       confirmProps: { color: "red" },
-      onConfirm: () => deleteRoom(row.original.id),
+      onConfirm: () => deleteRoom(row.original.room_id),
     });
 
   const table = useMantineReactTable({
@@ -315,12 +314,11 @@ function useUpdateRoom() {
 function useDeleteRoom() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (RoomID: string) => {
+    mutationFn: async (room_id: string) => {
       //send api request here
-      const response = await fetch("/api/user/Rooms/delete", {
+      const response = await fetch("/api/room/delete", {
         method: "POST",
-        // Send timestamp and username
-        body: JSON.stringify({}),
+        body: JSON.stringify({room_id}),
         headers: {
           "Content-Type": "application/json",
         },

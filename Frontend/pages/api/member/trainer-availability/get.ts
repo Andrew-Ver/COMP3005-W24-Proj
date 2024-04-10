@@ -9,9 +9,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
                  ta.is_booked,
                  ta.begin_time AT TIME ZONE 'UTC' AT TIME ZONE 'America/New_York' AS begin_time, 
                  ta.end_time AT TIME ZONE 'UTC' AT TIME ZONE 'America/New_York' AS end_time,
-                 t.rate_per_hour
+                 t.rate_per_hour,
+                 a.name AS trainer_name
                  FROM trainer_availability ta
                  JOIN trainer t ON ta.trainer_username = t.trainer_username
+                 JOIN account a ON t.trainer_username = a.username
                  WHERE ta.is_booked = FALSE
                  ORDER BY ta.begin_time ASC;`;
 

@@ -274,7 +274,7 @@ const Example = ({ roomIds }: EquipmentRooms) => {
         });
 
         table.toggleAllRowsSelected(false);
-        await queryClient.invalidateQueries();
+        await queryClient.invalidateQueries({ queryKey: ["equipmentRoom"] });
       } else {
         console.error("Error submitting data: ", response.statusText);
       }
@@ -308,7 +308,7 @@ const Example = ({ roomIds }: EquipmentRooms) => {
         });
 
         table.toggleAllRowsSelected(false);
-        await queryClient.invalidateQueries();
+        await queryClient.invalidateQueries({ queryKey: ["equipmentRoom"] });
       } else {
         console.error("Error submitting data: ", response.statusText);
       }
@@ -340,7 +340,7 @@ const Example = ({ roomIds }: EquipmentRooms) => {
           color: "green",
         });
 
-        await queryClient.invalidateQueries();
+        await queryClient.invalidateQueries({ queryKey: ["equipmentRoom"] });
         table.toggleAllRowsSelected(false);
       } else {
         console.error("Error submitting data: ", response.statusText);

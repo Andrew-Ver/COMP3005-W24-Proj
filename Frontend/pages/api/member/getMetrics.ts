@@ -46,8 +46,15 @@ export default async function getUserHealthMetrics(req: NextApiRequest, res: Nex
                 latest_pressure: `${row.latest_systolic_pressure}/${row.latest_diastolic_pressure}`
             };
             res.status(200).json(formattedResult);
-        } else {
-            res.status(404).json({ message: "User metrics not found" });
+            } else {    const defaultResult = {
+                avg_weight: "N/A",
+                avg_body_fat: "N/A",
+                avg_pressure: "N/A/N/A",
+                latest_weight: "N/A",
+                latest_body_fat: "N/A",
+                latest_pressure: "N/A/N/A"
+            };
+            res.status(200).json(defaultResult);
         }
     } catch (error) {
         console.error(error);
