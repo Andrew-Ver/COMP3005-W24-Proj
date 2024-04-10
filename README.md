@@ -82,7 +82,7 @@ The project incorporates a PostgreSQL DB interfaced with using the [pg](https://
 
 * [Andrew Verbovsky](https://github.com/Andrew-Ver)
 * [Zhenxuan Ding](https://github.com/InvalidPathException)
-* [Jiyayu Hu](https://github.com/JennyHo5)
+* [Jiayu Hu](https://github.com/JennyHo5)
 
 ## Acknowledgements
 
