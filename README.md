@@ -2,7 +2,7 @@
 
 This Project is for COMP3005 Database Management Systems Winter 2024, Option 2.
 
-**Team Members: Andrew Verbovsky, Zhenxuan Ding, Jiyayu Hu**
+**Team Members: Andrew Verbovsky, Zhenxuan Ding, Jiayu Hu**
 
 ## Description
 
