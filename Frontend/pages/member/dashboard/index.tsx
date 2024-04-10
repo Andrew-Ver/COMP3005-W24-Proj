@@ -1,4 +1,4 @@
-import { Center, Title } from "@mantine/core";
+import { Center, Title, Tabs } from "@mantine/core";
 import GoalsTable from "@/components/member/dashboard/goals";
 import Sessions from "@/components/member/dashboard/sessions";
 import GroupClasses from "@/components/member/dashboard/groupClasses";
@@ -29,8 +29,8 @@ export default function Dashboard() {
     padding: "20px",
   };
 
-  if (isLoading) return <p>Loading...</p>;
-  if (isError) return <p>Error: {error.message}</p>;
+  if (isLoading) return <Center>Loading...</Center>;
+  if (isError) return <Center>Error: {error.message}</Center>;
 
   return (
     <>
