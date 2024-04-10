@@ -37,14 +37,24 @@ interface EquipmentRooms {
 }
 
 export default function EquipmentTable() {
-  const [roomIds, setRoomIds] = useState<string[]>([]);
+  return (
+    <Stack gap="sm" align="center">
+      <Title order={2} c="rgb(73, 105, 137)" ta="center">
+        Equipment Management Administration
+      </Title>
+      <Example/>
+    </Stack>
+  );
+}
 
-  // TODO: add code to the following block
-  useEffect(() => {
-    // sort the fetched room ids
-    fetchRoomIds();
-    setRoomIds(roomIds.sort());
-  }, [roomIds]);
+const Example = () => {
+  const [validationErrors, setValidationErrors] = useState<
+    Record<string, string | undefined>
+  >({});
+
+  const [roomIds, setRoomIds] = useState<string[]>([]);
+  const [columns, setColumns] = useState<MRT_ColumnDef<Equipment>[]>([]);
+
 
   const fetchRoomIds = async () => {
     try {
@@ -60,25 +70,14 @@ export default function EquipmentTable() {
     }
   };
 
-  return (
-    <Stack gap="sm" align="center">
-      <Title order={2} c="rgb(73, 105, 137)" ta="center">
-        Equipment Management Administration
-      </Title>
-      <Example roomIds={roomIds} />
-    </Stack>
-  );
-}
+  useEffect(() => {
+    // sort the fetched room ids
+    fetchRoomIds();
+    setRoomIds(roomIds.sort());
+  }, [roomIds]);
 
-const Example = ({ roomIds }: EquipmentRooms) => {
-  const [validationErrors, setValidationErrors] = useState<
-    Record<string, string | undefined>
-  >({});
-
-  const queryClient = useQueryClient();
-
-  const columns = useMemo<MRT_ColumnDef<Equipment>[]>(
-    () => [
+  useEffect(() => {
+    setColumns([
       {
         accessorKey: "equipment_id",
         header: "Equipment ID",
@@ -123,14 +122,15 @@ const Example = ({ roomIds }: EquipmentRooms) => {
         header: "Last Maintained At",
         enableEditing: false,
       },
-    ],
-    [validationErrors]
-  );
+    ]);
+  }, [roomIds, validationErrors]);
+
+  const queryClient = useQueryClient();
 
   //call CREATE hook
   const { mutateAsync: createEquipment, isPending: isCreatingEquipment } =
     useCreateEquipment();
-  const { mutateAsync: updateMetric, isPending: isUpdatingMetric } =
+  const { mutateAsync: updateMetric, isPending: isUpdatingEquipment } =
     useUpdateMetric();
   //call READ hook
   const {
@@ -184,6 +184,7 @@ const Example = ({ roomIds }: EquipmentRooms) => {
       },
     },
     state: {
+      isSaving: isCreatingEquipment || isUpdatingEquipment,
       isLoading: isLoadingEquipment,
       showAlertBanner: isLoadingEquipmentError,
       showProgressBars: isFetchingEquipment,
