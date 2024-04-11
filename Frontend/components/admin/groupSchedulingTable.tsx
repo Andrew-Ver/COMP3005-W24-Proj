@@ -1,7 +1,7 @@
 import "@mantine/core/styles.css";
 import "@mantine/dates/styles.css"; //if using mantine date picker features
 import "mantine-react-table/styles.css"; //make sure MRT styles were imported in your app root (once)
-import {useEffect, useLayoutEffect, useMemo, useState} from "react";
+import { useEffect, useLayoutEffect, useMemo, useState } from "react";
 import {
   MantineReactTable,
   type MRT_ColumnDef,
@@ -11,7 +11,7 @@ import {
 } from "mantine-react-table";
 import { ActionIcon, Button, Flex, Text, Tooltip, Stack } from "@mantine/core";
 import { ModalsProvider, modals } from "@mantine/modals";
-import {IconCheckbox, IconEdit, IconTrash} from "@tabler/icons-react";
+import { IconCheckbox, IconEdit, IconTrash } from "@tabler/icons-react";
 import { CirclePlus } from "tabler-icons-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
@@ -47,7 +47,7 @@ interface ExampleProps {
 export default function GroupSchedulingTable() {
   return (
     <Stack gap="sm" align="center">
-      <Example/>
+      <Example />
     </Stack>
   );
 }
@@ -134,17 +134,17 @@ const Example = () => {
       {
         accessorKey: "trainer_name",
         header: "Trainer Name",
-        enableEditing: false
+        enableEditing: false,
       },
       {
         accessorKey: "begin_time",
         header: "Begin Time",
-        enableEditing: false
+        enableEditing: false,
       },
       {
         accessorKey: "end_time",
         header: "End Time",
-        enableEditing: false
+        enableEditing: false,
       },
       {
         accessorKey: "description",
@@ -177,7 +177,6 @@ const Example = () => {
       },
     ]);
   }, [roomIds, availabilityIds, validationErrors]);
-
 
   //call CREATE hook
   const { mutateAsync: createMetric, isPending: isCreatingMetric } =
@@ -228,8 +227,8 @@ const Example = () => {
       title: "Confirm class completion?",
       children: (
         <Text>
-          Are you sure you want to mark this class as complete? This action cannot be
-          undone.
+          Are you sure you want to mark this class as complete? This action
+          cannot be undone.
         </Text>
       ),
       labels: { confirm: "Confirm", cancel: "Cancel" },
@@ -253,7 +252,7 @@ const Example = () => {
     mantineTableContainerProps: {
       style: {
         minHeight: "500px",
-        ml: "auto"
+        ml: "auto",
       },
     },
     onCreatingRowCancel: () => setValidationErrors({}),
@@ -342,7 +341,8 @@ function useCreateMetric() {
           ] as Metric[]
       );
     },
-    onSettled: () => queryClient.invalidateQueries({ queryKey: ["metrics", "TimeSlots"] }), //refetch users after mutation, disabled for demo
+    onSettled: () =>
+      queryClient.invalidateQueries({ queryKey: ["metrics", "TimeSlots"] }), //refetch users after mutation, disabled for demo
   });
 }
 
@@ -403,7 +403,8 @@ function useUpdateMetric() {
     },
     //client side optimistic update
     onMutate: () => queryClient.invalidateQueries({ queryKey: ["TimeSlots"] }),
-    onSettled: () => queryClient.invalidateQueries({ queryKey: ["metrics", "TimeSlots"] }), //refetch users after mutation, disabled for demo
+    onSettled: () =>
+      queryClient.invalidateQueries({ queryKey: ["metrics", "TimeSlots"] }), //refetch users after mutation, disabled for demo
   });
 }
 
@@ -419,7 +420,7 @@ function useDeleteMetric() {
         method: "POST",
         // Send timestamp and username
         body: JSON.stringify({
-            class_id: class_id,
+          class_id: class_id,
         }),
         headers: {
           "Content-Type": "application/json",
@@ -430,8 +431,7 @@ function useDeleteMetric() {
       return data;
     },
     //client side optimistic update
-    onMutate: (id: string) => {
-    },
+    onMutate: (id: string) => {},
     onSettled: () => queryClient.invalidateQueries({ queryKey: ["metrics"] }), //refetch users after mutation, disabled for demo
   });
 }

@@ -52,9 +52,7 @@ export default function Search() {
   return (
     <Center>
       <Stack miw="50%">
-        <Title order={1} align="center">
-          Search for a Member
-        </Title>
+        <Title order={1}>Search for a Member</Title>
         <input
           type="text"
           placeholder="Search"
@@ -64,17 +62,16 @@ export default function Search() {
 
         {query.length < 3 && (
           <>
-            <Text align="center" c="blue" tt>
-              Please enter at least 3 characters of a Member's Name to search.
+            <Text c="blue">
+              Please enter at least 3 characters of a Member&apos;s Name to
+              search.
             </Text>
           </>
         )}
 
         {searchResults.length > 0 ? (
           <>
-            <Text align="center" tt>
-              🔍 Results:
-            </Text>
+            <Text>🔍 Results:</Text>
 
             <Table
               miw={500}
@@ -88,7 +85,7 @@ export default function Search() {
             />
           </>
         ) : (
-          <Text align="center">No results found.</Text>
+          <Text>No results found.</Text>
         )}
       </Stack>
     </Center>

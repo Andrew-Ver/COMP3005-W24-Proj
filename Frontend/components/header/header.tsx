@@ -43,7 +43,8 @@ const membersLinks = [
 const trainerLinks = [
   { href: "/", title: "Home" },
   { href: "/trainer/profile", title: "Profile" },
-  { href: "/trainer/schedule", title: "Scheduling" },,
+  { href: "/trainer/schedule", title: "Scheduling" },
+  ,
   { href: "/trainer/timetable", title: "Your Timetable" },
   { href: "/trainer/search", title: "Member Search" },
 ];
@@ -83,7 +84,7 @@ export default function Header() {
     name: session?.user?.name,
   };
 
-  let links: Array<Record<string, string>> = [];
+  let links: Array<Record<string, string> | undefined> = [];
 
   if (currentUser.role === "member") {
     links = membersLinks;
@@ -133,16 +134,16 @@ export default function Header() {
             </Menu.Target>
 
             <Menu.Dropdown>
-              {links.map((link: Record<string, string>) => (
+              {links.map((link: Record<string, string> | undefined) => (
                 <Menu.Item
-                  value={link.href}
-                  key={link.title}
+                  value={link?.href}
+                  key={link?.title}
                   onClick={() => {
                     toggle();
-                    router.push(link.href);
+                    router.push(link?.href as string);
                   }}
                 >
-                  {link.title}
+                  {link?.title}
                 </Menu.Item>
               ))}
             </Menu.Dropdown>

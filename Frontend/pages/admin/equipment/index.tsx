@@ -1,4 +1,4 @@
-import { Center, Title, Container, Space } from "@mantine/core";
+import { Container } from "@mantine/core";
 import EquipmentTable from "@/components/admin/equipmentTable";
 
 export default function EquipmentMaintenance() {
