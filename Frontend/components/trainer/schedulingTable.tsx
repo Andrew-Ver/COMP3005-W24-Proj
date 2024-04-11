@@ -255,6 +255,9 @@ function useCreateMetric() {
           "Content-Type": "application/json",
         },
       });
+      if (!response.ok) {
+        alert("Existing time slot conflicts with current entry, or the end time is before begin time.")
+      }
       const data = await response.json();
 
       return data;
@@ -313,6 +316,7 @@ function useGetMetrics() {
 //UPDATE hook (put user in api)
 function useUpdateMetric() {
   const queryClient = useQueryClient();
+  const { data: session, status } = useSession();
   return useMutation({
     mutationFn: async (metric: Metric) => {
       //send api update request here
@@ -322,11 +326,15 @@ function useUpdateMetric() {
           availability_id: metric.availability_id,
           begin_time: metric.begin_time,
           end_time: metric.end_time,
+          trainer_username: session?.user?.username
         }),
         headers: {
           "Content-Type": "application/json",
         },
       });
+      if (!response.ok) {
+        alert("Existing time slot conflicts with current entry, or the end time is before begin time.")
+      }
       const data = await response.json();
       return data;
     },
