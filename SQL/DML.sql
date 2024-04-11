@@ -24,7 +24,10 @@ INSERT INTO trainer_availability (trainer_username, begin_time, end_time) VALUES
 ('jy', '2024-04-23 15:00', '2024-04-23 17:00'),  -- availability_id = 3
 ('andrew', '2024-04-24 09:00', '2024-04-24 11:00'),  -- availability_id = 4
 ('bocchi', '2024-04-24 12:00', '2024-04-24 14:00'),  -- availability_id = 5
-('jy', '2024-04-24 15:00', '2024-04-24 17:00');  -- availability_id = 6
+('jy', '2024-04-24 15:00', '2024-04-24 17:00'),  -- availability_id = 6
+('andrew', '2024-04-25 09:00', '2024-04-25 11:00'),  -- availability_id = 7
+('bocchi', '2024-04-25 12:00', '2024-04-25 14:00'),  -- availability_id = 8
+('jy', '2024-04-25 15:00', '2024-04-25 17:00');  -- availability_id = 9
 
 -- Adding Members
 INSERT INTO account (username, name, password, user_type) VALUES ('robert', 'Robert Prolog', 'password', 'member');
@@ -74,15 +77,21 @@ UPDATE trainer_availability
 SET is_booked = TRUE
 WHERE availability_id = 3;
 
+INSERT INTO group_class (availability_id, description, fee, room_id) VALUES
+(5, 'Mewing Session with Bocchi', 50.00, 2);  -- class_id = 2
+UPDATE trainer_availability
+SET is_booked = TRUE
+WHERE availability_id = 5;
+
 -- Linking group class enrollments
 INSERT INTO class_member (class_id, member_username) VALUES
 (1, 'vojislav'),
 (1, 'patrick');
 
--- Creating personal training sessions (Removed bill_id linkage as it does not exist in the schema)
+-- Creating personal training sessions
 INSERT INTO personal_training_session (member_username, availability_id, description) VALUES
-('robert', 1, 'Strength Training with Andrew Proshare'), -- Link to Robert's Personal Training
-('vojislav', 2, 'Endurance Training with Hitori Bocchi'); -- Link to Vojislav's Personal Training
+('robert', 1, 'Strength Training with Andrew Proshare'),
+('vojislav', 2, 'Endurance Training with Hitori Bocchi');
 
 UPDATE trainer_availability
 SET is_booked = TRUE

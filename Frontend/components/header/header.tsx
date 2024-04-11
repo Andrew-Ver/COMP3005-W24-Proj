@@ -52,6 +52,7 @@ const adminLinks = [
   { href: "/", title: "Home" },
   { href: "/admin/equipment", title: "Maintenance" },
   { href: "/admin/room-booking", title: "Room Management" },
+  { href: "/admin/trainers", title: "Trainer Availability" },
   { href: "/admin/schedule", title: "Group Class Schedule" },
   { href: "/admin/billing", title: "Billing" },
   { href: "/admin/payment-processing", title: "Payment Processing" },

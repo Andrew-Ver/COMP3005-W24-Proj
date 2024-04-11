@@ -342,7 +342,7 @@ function useCreateMetric() {
           ] as Metric[]
       );
     },
-    onSettled: () => queryClient.invalidateQueries({ queryKey: ["metrics"] }), //refetch users after mutation, disabled for demo
+    onSettled: () => queryClient.invalidateQueries({ queryKey: ["metrics", "TimeSlots"] }), //refetch users after mutation, disabled for demo
   });
 }
 
@@ -402,8 +402,8 @@ function useUpdateMetric() {
       return data;
     },
     //client side optimistic update
-    onMutate: () => queryClient.invalidateQueries({ queryKey: ["metrics"] }),
-    onSettled: () => queryClient.invalidateQueries({ queryKey: ["metrics"] }), //refetch users after mutation, disabled for demo
+    onMutate: () => queryClient.invalidateQueries({ queryKey: ["TimeSlots"] }),
+    onSettled: () => queryClient.invalidateQueries({ queryKey: ["metrics", "TimeSlots"] }), //refetch users after mutation, disabled for demo
   });
 }
 

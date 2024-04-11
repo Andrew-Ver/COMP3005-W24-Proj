@@ -71,6 +71,11 @@ export default function Search() {
             fee: fee,
         };
 
+        if (!description || !fee) {
+            alert("Please fill out all fields.");
+            return;
+        }
+
         createBill(billDetails, {
             onSuccess: () => {
                 setModalOpened(false);

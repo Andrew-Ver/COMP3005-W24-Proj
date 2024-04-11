@@ -89,7 +89,7 @@ function MetricTable() {
       },
       {
         accessorKey: "weight",
-        header: "Weight",
+        header: "Weight (lbs)",
         mantineEditTextInputProps: {
           type: "number",
           required: true,
