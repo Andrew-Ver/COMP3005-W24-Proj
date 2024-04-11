@@ -73,7 +73,7 @@ const Example = () => {
         accessorKey: "cleared",
         header: "Cleared?",
         accessorFn: (row) => {
-          return row.cleared ? "Paid" : "Not paid";
+          return row.cleared ? "YES" : "NO";
         },
       },
     ],

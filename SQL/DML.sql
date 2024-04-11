@@ -2,7 +2,7 @@
     Zhenxuan Ding, Jiayu Hu and Andrew Verbovsky  */
 
 -- Adding an administrator
-INSERT INTO account (username, name, password, user_type) VALUES ('admin', 'Manager', 'admin', 'administrator');
+INSERT INTO account (username, name, password, user_type) VALUES ('admin', 'Manager', 'password', 'administrator');
 INSERT INTO administrator (admin_username) VALUES ('admin');
 
 -- Adding trainers
@@ -10,9 +10,9 @@ INSERT INTO account (username, name, password, user_type) VALUES ('andrew', 'And
 INSERT INTO trainer (trainer_username, rate_per_hour) VALUES ('andrew', 37.50);
 INSERT INTO trainer_specialty (trainer_username, specialty) VALUES ('andrew', 'mewing'), ('andrew', 'bonesmashing');
 
-INSERT INTO account (username, name, password, user_type) VALUES ('mark', 'Hitori Bocchi', 'password', 'trainer');
-INSERT INTO trainer (trainer_username, rate_per_hour) VALUES ('mark', 37.50);
-INSERT INTO trainer_specialty (trainer_username, specialty) VALUES ('mark', 'crawling'), ('mark', 'dooming');
+INSERT INTO account (username, name, password, user_type) VALUES ('bocchi', 'Hitori Bocchi', 'password', 'trainer');
+INSERT INTO trainer (trainer_username, rate_per_hour) VALUES ('bocchi', 37.50);
+INSERT INTO trainer_specialty (trainer_username, specialty) VALUES ('bocchi', 'crawling'), ('bocchi', 'dooming');
 
 INSERT INTO account (username, name, password, user_type) VALUES ('jy', 'Jiayu', 'password', 'trainer');
 INSERT INTO trainer (trainer_username, rate_per_hour) VALUES ('jy', 50.00);
@@ -20,10 +20,10 @@ INSERT INTO trainer (trainer_username, rate_per_hour) VALUES ('jy', 50.00);
 -- Adding Trainer Availability
 INSERT INTO trainer_availability (trainer_username, begin_time, end_time) VALUES
 ('andrew', '2024-04-23 09:00', '2024-04-23 11:00'),  -- availability_id = 1
-('mark', '2024-04-23 12:00', '2024-04-23 14:00'),  -- availability_id = 2
+('bocchi', '2024-04-23 12:00', '2024-04-23 14:00'),  -- availability_id = 2
 ('jy', '2024-04-23 15:00', '2024-04-23 17:00'),  -- availability_id = 3
 ('andrew', '2024-04-24 09:00', '2024-04-24 11:00'),  -- availability_id = 4
-('mark', '2024-04-24 12:00', '2024-04-24 14:00'),  -- availability_id = 5
+('bocchi', '2024-04-24 12:00', '2024-04-24 14:00'),  -- availability_id = 5
 ('jy', '2024-04-24 15:00', '2024-04-24 17:00');  -- availability_id = 6
 
 -- Adding Members
@@ -76,7 +76,6 @@ WHERE availability_id = 3;
 
 -- Linking group class enrollments
 INSERT INTO class_member (class_id, member_username) VALUES
-(1, 'robert'),
 (1, 'vojislav'),
 (1, 'patrick');
 
@@ -85,7 +84,6 @@ INSERT INTO personal_training_session (member_username, availability_id, descrip
 ('robert', 1, 'Strength Training with Andrew Proshare'), -- Link to Robert's Personal Training
 ('vojislav', 2, 'Endurance Training with Hitori Bocchi'); -- Link to Vojislav's Personal Training
 
--- Assuming trainer_availability table exists and is_booked is a valid column
 UPDATE trainer_availability
 SET is_booked = TRUE
 WHERE availability_id IN (1, 2);

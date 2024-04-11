@@ -98,13 +98,19 @@ const Table = () => {
       const isRowSelected = table.getSelectedRowModel().rows.length > 0;
 
       return (
-        <Button
-          onClick={handleMarkAsCompleted}
-          // Disable the button if no rows are selected
-          disabled={!isRowSelected}
-        >
-          Mark as completed
-        </Button>
+          <><Button
+              onClick={handleMarkAsCompleted}
+              // Disable the button if no rows are selected
+              disabled={!isRowSelected}
+          >
+            Mark as completed
+          </Button><Button
+              onClick={handleRefund}
+              // Disable the button if no rows are selected
+              disabled={!isRowSelected}
+          >
+            Cancel and refund
+          </Button></>
       );
     },
   });
@@ -123,6 +129,20 @@ const Table = () => {
     });
   };
 
+  const handleRefund = () => {
+    modals.openConfirmModal({
+      title: "Please confirm refund",
+      children: (
+        <Text size="sm">
+          Are you sure you want to cancel and refund the selected sessions?
+        </Text>
+      ),
+      labels: { confirm: "Confirm", cancel: "Cancel" },
+      onCancel: () => console.log("Cancel"),
+      onConfirm: () => handleRefundConfirmed(),
+    });
+  };
+
   const handleCompletionConfirmed = async () => {
     const selectedRows = table.getSelectedRowModel().rows;
     const session_ids: number[] = selectedRows.map(
@@ -130,6 +150,43 @@ const Table = () => {
     );
     try {
       const response = await fetch("/api/member/personal-training/complete", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ session_ids }),
+      });
+
+      if (response.ok) {
+        modals.closeAll();
+
+        // Show success notification
+        showNotification({
+          title: "Success",
+          message: "Thank you for using our service!",
+          color: "green",
+        });
+
+        table.toggleAllRowsSelected(false);
+        await refetch();
+      } else {
+        console.error("Error submitting data: ", response.statusText);
+      }
+    } catch (error) {
+      console.error("Network error: ", error);
+    } finally {
+
+      await queryClient.invalidateQueries({queryKey: ["Sessions"]});
+    }
+  };
+
+  const handleRefundConfirmed = async () => {
+    const selectedRows = table.getSelectedRowModel().rows;
+    const session_ids: number[] = selectedRows.map(
+        (row) => row.original.session_id
+    );
+    try {
+      const response = await fetch("/api/member/personal-training/refund", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
