@@ -36,7 +36,7 @@ The project incorporates a PostgreSQL DB interfaced with using the [pg](https://
 <br>
 
 ```
-├── Documentation - (Diagrams and Justifications for Database Design)
+├── Documentation - (Diagrams)
 │   ├── Diagrams.drawio
 │   ├── ER Diagram.png
 │   └── Schema.png
@@ -46,8 +46,7 @@ The project incorporates a PostgreSQL DB interfaced with using the [pg](https://
 │   ├── ... (...Many other files and folders related to the frontend...)
 ├── GRADING.md - (A copy of the Project Grading Scheme in markdown format)
 ├── Project_COMP_3005_W24_V2.pdf - (Project Specifications)
-├── Queries
-│   └── queries.md - (A list of node-postgres queries used in the project)
+├── Project Report.pdf - (Project Report)
 ├── README.md
 └── SQL - (SQL query scripts to inititalize the Database and populate it with data)
     ├── DDL.sql - Script to define database structure

@@ -43,7 +43,8 @@ const membersLinks = [
 const trainerLinks = [
   { href: "/", title: "Home" },
   { href: "/trainer/profile", title: "Profile" },
-  { href: "/trainer/schedule", title: "Scheduling" },
+  { href: "/trainer/schedule", title: "Scheduling" },,
+  { href: "/trainer/timetable", title: "Your Timetable" },
   { href: "/trainer/search", title: "Member Search" },
 ];
 

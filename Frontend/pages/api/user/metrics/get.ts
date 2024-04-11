@@ -33,7 +33,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     delete row.diastolic_pressure;
     row.metric_timestamp = row.metric_timestamp = new Date(row.metric_timestamp).toISOString().replace("T", " ").slice(0, -5);
     // row.metric_timestamp = new Intl.DateTimeFormat('en-US', options).format(new Date(row.metric_timestamp));
-    row.weight = row.weight + " kg";
+    row.weight = row.weight + " lbs";
     row.body_fat_percentage = row.body_fat_percentage + "%";
   });
 

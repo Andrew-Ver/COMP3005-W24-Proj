@@ -44,6 +44,7 @@ export default function SchedulingTable() {
       <Title order={1} c="rgb(73, 105, 137)" ta="center">
         Available Time Slots for {session?.user?.name}
       </Title>
+      Note: You can only reschedule (edit) unbooked time slots.
       <Example />
       <Divider my="sm" variant="dashed" />
     </Stack>
