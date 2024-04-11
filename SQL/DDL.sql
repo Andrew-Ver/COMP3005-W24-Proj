@@ -28,7 +28,7 @@ CREATE TABLE account (
     username VARCHAR(50) PRIMARY KEY,
     name VARCHAR(50) NOT NULL,
     password VARCHAR(50) NOT NULL,
-    is_deleted BOOLEAN DEFAULT FALSE,
+    is_deleted BOOLEAN NOT NULL DEFAULT FALSE,
     user_type user_type NOT NULL
 );
 
@@ -43,11 +43,11 @@ CREATE TABLE trainer (
 
 CREATE TABLE member (
     member_username VARCHAR(50) PRIMARY KEY REFERENCES account(username) ON DELETE CASCADE,
-    age numeric(3, 0) CHECK (
+    age numeric(3, 0) NOT NULL CHECK (
         age > 0
         AND age < 150
     ),
-    gender gender
+    gender gender NOT NULL
 );
 
 CREATE TABLE trainer_specialty (
@@ -70,7 +70,7 @@ CREATE TABLE trainer_availability (
 CREATE TABLE member_goal (
     member_username VARCHAR(50),
     goal_type VARCHAR(50),
-    achieved BOOLEAN DEFAULT FALSE,
+    achieved BOOLEAN NOT NULL DEFAULT FALSE,
     PRIMARY KEY (member_username, goal_type),
     FOREIGN KEY (member_username) REFERENCES member(member_username) ON DELETE CASCADE
 );
@@ -85,7 +85,7 @@ CREATE TABLE exercise_routine (
 CREATE TABLE health_metric (
     member_username VARCHAR(50) NOT NULL,
     metric_timestamp TIMESTAMP NOT NULL DEFAULT NOW(),
-    weight DECIMAL NOT NULL, --In lbs
+    weight DECIMAL NOT NULL, -- In lbs
     body_fat_percentage DECIMAL NOT NULL CHECK (
         body_fat_percentage > 0
         AND body_fat_percentage < 100
@@ -103,7 +103,7 @@ CREATE TABLE bill (
     amount DECIMAL NOT NULL,  -- Can be negative (refund)
     description VARCHAR(255) NOT NULL,
     bill_timestamp TIMESTAMP NOT NULL DEFAULT NOW(),
-    cleared BOOLEAN DEFAULT FALSE,
+    cleared BOOLEAN NOT NULL DEFAULT FALSE,
     FOREIGN KEY (member_username) REFERENCES member(member_username) ON DELETE CASCADE
 );
 
