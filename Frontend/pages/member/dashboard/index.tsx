@@ -73,16 +73,6 @@ export default function Dashboard() {
             </Stack>
           </Tabs.Panel>
 
-          <Tabs.Panel value="goals" my="15px">
-            <Title order={3} c="rgb(73, 105, 137)" ta="center">
-              Completed Goals
-            </Title>
-
-            <Stack gap="md" my="auto">
-              <GroupClasses />
-            </Stack>
-          </Tabs.Panel>
-
           <Tabs.Panel value="routines" my="15px">
             <Stack gap="md" my="auto">
               <Routines />
