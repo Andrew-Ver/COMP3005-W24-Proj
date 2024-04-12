@@ -1,105 +1,105 @@
 .header {
-    padding-top: var(--mantine-spacing-sm);
-    background-color: light-dark(
-        var(--mantine-color-gray-0),
-        var(--mantine-color-dark-6)
-    );
-    border-bottom: rem(1px) solid
-        light-dark(var(--mantine-color-gray-2), transparent);
-    margin-bottom: rem(30px);
+  padding-top: var(--mantine-spacing-sm);
+  background-color: light-dark(
+    var(--mantine-color-gray-0),
+    var(--mantine-color-dark-6)
+  );
+  border-bottom: rem(1px) solid
+    light-dark(var(--mantine-color-gray-2), transparent);
+  margin-bottom: rem(30px);
 }
 
 .mainSection {
-    padding-bottom: var(--mantine-spacing-xs);
+  padding-bottom: var(--mantine-spacing-xs);
 }
 
 .user {
-    color: light-dark(var(--mantine-color-black), var(--mantine-color-dark-0));
-    padding: var(--mantine-spacing-xs) var(--mantine-spacing-sm);
-    border-radius: var(--mantine-radius-xs);
-    transition: background-color 100ms ease;
+  color: light-dark(var(--mantine-color-black), var(--mantine-color-dark-0));
+  padding: var(--mantine-spacing-xs) var(--mantine-spacing-sm);
+  border-radius: var(--mantine-radius-xs);
+  transition: background-color 100ms ease;
 
-    &:hover {
-        background-color: light-dark(
-            var(--mantine-color-blue-light),
-            var(--mantine-color-dark-8)
-        );
-    }
+  &:hover {
+    background-color: light-dark(
+      var(--mantine-color-blue-light),
+      var(--mantine-color-dark-8)
+    );
+  }
 
-    @media (max-width: $mantine-breakpoint-xs) {
-        display: none;
-    }
+  @media (max-width: $mantine-breakpoint-xs) {
+    display: none;
+  }
 }
 
 .userActive {
-    background-color: light-dark(
-        var(--mantine-color-blue-light),
-        var(--mantine-color-dark-8)
-    );
+  background-color: light-dark(
+    var(--mantine-color-blue-light),
+    var(--mantine-color-dark-8)
+  );
 }
 
 .tabsList {
-    &::before {
-        display: none;
-    }
+  &::before {
+    display: none;
+  }
 }
 
 .tab {
-    font-weight: 500;
-    height: rem(38);
-    background-color: transparent;
-    position: relative;
-    bottom: -1px;
+  font-weight: 500;
+  height: rem(38);
+  background-color: transparent;
+  position: relative;
+  bottom: -1px;
 
-    &::before,
-    &::after {
-        background-color: light-dark(
-            var(--mantine-color-gray-2),
-            var(--mantine-color-dark-7)
-        ) !important;
-    }
+  &::before,
+  &::after {
+    background-color: light-dark(
+      var(--mantine-color-gray-2),
+      var(--mantine-color-dark-7)
+    ) !important;
+  }
 
-    &:hover {
-        background-color: light-dark(
-            var(--mantine-color-blue-1),
-            var(--mantine-color-dark-5)
-        );
-    }
+  &:hover {
+    background-color: light-dark(
+      var(--mantine-color-blue-1),
+      var(--mantine-color-dark-5)
+    );
+  }
 
-    &[data-active] {
-        background-color: light-dark(
-            var(--mantine-color-blue-light),
-            var(--mantine-color-dark-7)
-        );
-        border-color: light-dark(
-            var(--mantine-color-dark-2),
-            var(--mantine-color-dark-7)
-        );
-        border-bottom-color: transparent;
-    }
+  &[data-active] {
+    background-color: light-dark(
+      var(--mantine-color-blue-light),
+      var(--mantine-color-dark-7)
+    );
+    border-color: light-dark(
+      var(--mantine-color-dark-2),
+      var(--mantine-color-dark-7)
+    );
+    border-bottom-color: transparent;
+  }
 }
 
 .icon {
-    width: rem(22px);
-    height: rem(22px);
+  width: rem(22px);
+  height: rem(22px);
 }
 
 .dark {
-    @mixin dark {
-        display: none;
-    }
+  @mixin dark {
+    display: none;
+  }
 
-    @mixin light {
-        display: block;
-    }
+  @mixin light {
+    display: block;
+  }
 }
 
 .light {
-    @mixin light {
-        display: none;
-    }
+  @mixin light {
+    display: none;
+  }
 
-    @mixin dark {
-        display: block;
-    }
+  @mixin dark {
+    display: block;
+  }
 }

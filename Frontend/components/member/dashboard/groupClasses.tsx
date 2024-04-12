@@ -36,8 +36,6 @@ type Metric = {
   description: string;
 };
 
-
-
 export default function GroupClasses() {
   const { data: session, status } = useSession();
 
@@ -70,15 +68,15 @@ const Example = () => {
         header: "Trainer Name",
       },
       {
-          accessorKey: "end_time",
-          header: "Completed at",
+        accessorKey: "end_time",
+        header: "Completed at",
       },
       {
         accessorKey: "description",
         header: "Description",
       },
     ],
-    []
+    [],
   );
 
   //call READ hook
@@ -99,9 +97,9 @@ const Example = () => {
     // getRowId: (row) => row.availability_id.toString(),
     mantineToolbarAlertBannerProps: isLoadingMetricsError
       ? {
-        color: "red",
-        children: "Error loading data",
-      }
+          color: "red",
+          children: "Error loading data",
+        }
       : undefined,
     mantineTableContainerProps: {
       style: {
@@ -131,7 +129,7 @@ function useGetMetrics() {
       //send api request here
       const response = await fetch("/api/member/group-class/getComplete", {
         method: "POST",
-        body: JSON.stringify({member_username}),
+        body: JSON.stringify({ member_username }),
         headers: {
           "Content-Type": "application/json",
         },

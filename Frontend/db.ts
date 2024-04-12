@@ -1,7 +1,6 @@
 import { Pool } from "pg";
 require("dotenv").config();
 
-
 let pool: Pool;
 
 /*
@@ -23,26 +22,25 @@ if (!process.env.POSTGRES_URL) {
 
 export default pool;
 
-
 // Some type definitions
 
 export type Metric = {
-    id: string;
-    metric_timestamp: string;
-    weight: string;
-    body_fat_percentage: string;
-    blood_pressure: string;
-  };
+  id: string;
+  metric_timestamp: string;
+  weight: string;
+  body_fat_percentage: string;
+  blood_pressure: string;
+};
 
 export type TimeSlot = {
-    id: string;
-    username: string;
-    is_booked: boolean;
-    begin_time: string;
-    end_time: string;
-}
+  id: string;
+  username: string;
+  is_booked: boolean;
+  begin_time: string;
+  end_time: string;
+};
 
 export type Specialty = {
-    trainer_username: string;
-    specialty: string;
-}
+  trainer_username: string;
+  specialty: string;
+};

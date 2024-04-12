@@ -59,9 +59,9 @@ const AvailabilityTable = () => {
       {
         accessorKey: "end_time",
         header: "End Time",
-      }
+      },
     ],
-    []
+    [],
   );
 
   const queryClient = useQueryClient();
@@ -72,7 +72,7 @@ const AvailabilityTable = () => {
     isError: isLoadingTimeSlotsError,
     isFetching: isFetchingTimeSlots,
     isLoading: isLoadingTimeSlots,
-      refetch
+    refetch,
   } = useGetTimeSlots();
 
   const table = useMantineReactTable({
@@ -99,7 +99,6 @@ const AvailabilityTable = () => {
       showAlertBanner: isLoadingTimeSlotsError,
       showProgressBars: isFetchingTimeSlots,
     },
-
   });
 
   // After press the button
@@ -142,7 +141,7 @@ const AvailabilityTable = () => {
         });
 
         table.toggleAllRowsSelected(false);
-        await refetch()
+        await refetch();
       } else {
         console.error("Error submitting data:", response.statusText);
         // Show error notification
@@ -174,7 +173,7 @@ const AvailabilityTable = () => {
       <Box mx="auto">
         <form
           onSubmit={form.onSubmit((values) =>
-            handleDescriptionSubmitted(values.description)
+            handleDescriptionSubmitted(values.description),
           )}
         >
           <TextInput

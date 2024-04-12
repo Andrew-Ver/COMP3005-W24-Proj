@@ -1,24 +1,12 @@
 import { useSession } from "next-auth/react";
 import { notifications } from "@mantine/notifications";
-import {
-  Box,
-  Stack,
-  Select,
-  Button,
-  Text,
-  TextInput,
-  NumberInput,
-  Flex,
-  Paper
-} from "@mantine/core";
+import { Paper } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { useState } from "react";
 import { UserInfoIcons } from "./UserInfoIcons";
 
 export default function MemberProfile() {
   const { data: session } = useSession();
-  const [age, setAge] = useState<string | null>(null);
-  const [gender, setGender] = useState<string | null>(null);
 
   async function handleFormSubmit(values: { age: number; gender: string }) {
     /*
@@ -70,7 +58,15 @@ export default function MemberProfile() {
   };
 
   return (
-    <Paper maw={250} mx="auto" my="auto" shadow="lg" radius="lg" p="xl" withBorder>
+    <Paper
+      maw={250}
+      mx="auto"
+      my="auto"
+      shadow="lg"
+      radius="lg"
+      p="xl"
+      withBorder
+    >
       <UserInfoIcons></UserInfoIcons>
     </Paper>
   );

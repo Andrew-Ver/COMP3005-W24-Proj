@@ -1,10 +1,13 @@
-import { NextApiRequest, NextApiResponse } from 'next';
+import { NextApiRequest, NextApiResponse } from "next";
 import pool from "@/db";
 
-export default async function getSession(req: NextApiRequest, res: NextApiResponse) {
-    const { trainer_name } = req.body;
+export default async function getSession(
+  req: NextApiRequest,
+  res: NextApiResponse,
+) {
+  const { trainer_name } = req.body;
 
-    const query = `
+  const query = `
         SELECT 
           pts.session_id,
           m.name AS member_name,
@@ -21,15 +24,21 @@ export default async function getSession(req: NextApiRequest, res: NextApiRespon
         ORDER BY ta.begin_time ASC;
     `;
 
-    try {
-        const result = await pool.query(query, [trainer_name]);
-        result.rows.forEach((row: any) => {
-            row.begin_time = new Date(row.begin_time).toISOString().replace("T", " ").slice(0, -5);
-            row.end_time = new Date(row.end_time).toISOString().replace("T", " ").slice(0, -5);
-        });
-        res.status(200).json(result.rows);
-    } catch (error) {
-        console.error("Error:", error);
-        return res.status(500).json({ message: "Internal server error" });
-    }
+  try {
+    const result = await pool.query(query, [trainer_name]);
+    result.rows.forEach((row: any) => {
+      row.begin_time = new Date(row.begin_time)
+        .toISOString()
+        .replace("T", " ")
+        .slice(0, -5);
+      row.end_time = new Date(row.end_time)
+        .toISOString()
+        .replace("T", " ")
+        .slice(0, -5);
+    });
+    res.status(200).json(result.rows);
+  } catch (error) {
+    console.error("Error:", error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
 }

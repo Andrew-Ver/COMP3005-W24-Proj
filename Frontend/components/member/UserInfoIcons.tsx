@@ -1,5 +1,15 @@
 import React, { useEffect, useState } from "react";
-import { Avatar, Text, Group, Input, Button, Select, Stack, ActionIcon } from "@mantine/core";
+import {
+  Avatar,
+  Text,
+  Group,
+  Input,
+  Button,
+  Select,
+  Stack,
+  ActionIcon,
+  NumberInput,
+} from "@mantine/core";
 import classes from "./UserInfoIcons.module.css";
 import { useSession } from "next-auth/react";
 import { notifications } from "@mantine/notifications";
@@ -12,7 +22,9 @@ export function UserInfoIcons() {
   const [gender, setGender] = useState<string | null>(null);
   const [isEditingAge, setIsEditingAge] = useState(false);
   const [isEditingGender, setIsEditingGender] = useState(false);
-  const [newAge, setNewAge] = useState<string | number | readonly string[] | undefined>('');
+  const [newAge, setNewAge] = useState<
+    string | number | readonly string[] | undefined
+  >("");
   const [newGender, setNewGender] = useState<string | null>(null);
 
   useEffect(() => {
@@ -41,7 +53,7 @@ export function UserInfoIcons() {
       body: JSON.stringify({
         username: session?.user?.username,
         age: newAge,
-        gender: gender
+        gender: gender,
       }),
       headers: {
         "Content-Type": "application/json",
@@ -73,7 +85,7 @@ export function UserInfoIcons() {
       body: JSON.stringify({
         username: session?.user?.username,
         age: age,
-        gender: newGender
+        gender: newGender,
       }),
       headers: {
         "Content-Type": "application/json",
@@ -105,11 +117,7 @@ export function UserInfoIcons() {
         size={94}
         radius="md"
       />
-      <Stack
-        bg="var(--mantine-color-body)"
-        gap="sm"
-        align="center"
-        >
+      <Stack bg="var(--mantine-color-body)" gap="sm" align="center">
         <Text fz="xs" tt="uppercase" fw={700} c="dimmed">
           Username: {username}
         </Text>
@@ -119,17 +127,24 @@ export function UserInfoIcons() {
         <Group gap={10} mt={3} justify="center" grow>
           {isEditingAge ? (
             <>
-              <Input
+              <NumberInput
                 size="xs"
-                value={newAge}
-                onChange={(e) => setNewAge(e.target.value)}
+                value={newAge as string} // Explicitly type newAge as string
+                onChange={(value) => setNewAge(value)} // Pass the value directly to setNewAge
                 placeholder="New age"
+                max={100}
+                min={18}
               />
               <Button
-                variant="outline" 
+                variant="outline"
                 size="xs"
-                onClick={handleUpdateAge}
-              >Save</Button>
+                onClick={() => setIsEditingAge(false)}
+              >
+                Cancel
+              </Button>
+              <Button variant="outline" size="xs" onClick={handleUpdateAge}>
+                Save
+              </Button>
             </>
           ) : (
             <Text fz="xs" c="dimmed" onClick={() => setIsEditingAge(true)}>
@@ -147,9 +162,16 @@ export function UserInfoIcons() {
                 onChange={setNewGender}
                 placeholder="Select gender"
               />
-              <Button 
-              variant="outline" size="xs"
-              onClick={handleUpdateGender}>Save</Button>
+              <Button
+                variant="outline"
+                size="xs"
+                onClick={() => setIsEditingGender(false)}
+              >
+                Cancel
+              </Button>
+              <Button variant="outline" size="xs" onClick={handleUpdateGender}>
+                Save
+              </Button>
             </>
           ) : (
             <Text fz="xs" c="dimmed" onClick={() => setIsEditingGender(true)}>

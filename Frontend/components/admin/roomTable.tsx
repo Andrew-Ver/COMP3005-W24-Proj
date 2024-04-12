@@ -70,7 +70,7 @@ const Example = () => {
         },
       },
     ],
-    [validationErrors]
+    [validationErrors],
   );
 
   //call CREATE hook
@@ -124,11 +124,7 @@ const Example = () => {
   const openDeleteConfirmModal = (row: MRT_Row<Room>) =>
     modals.openConfirmModal({
       title: "Confirm Room Deletion?",
-      children: (
-        <Text>
-          Are you sure you want to delete this Room?
-        </Text>
-      ),
+      children: <Text>Are you sure you want to delete this Room?</Text>,
       labels: { confirm: "Delete", cancel: "Cancel" },
       confirmProps: { color: "red" },
       onConfirm: () => deleteRoom(row.original.room_id),
@@ -233,7 +229,7 @@ function useCreateRoom() {
               time: new Date().toISOString(),
               id: (Math.random() + 1).toString(36).substring(7),
             },
-          ] as Room[]
+          ] as Room[],
       );
     },
     onSettled: () => queryClient.invalidateQueries({ queryKey: ["Rooms"] }), //refetch users after mutation, disabled for demo
@@ -303,7 +299,7 @@ function useUpdateRoom() {
               ...newRoomInfo,
               id: (Math.random() + 1).toString(36).substring(7),
             },
-          ] as Room[]
+          ] as Room[],
       );
     },
     onSettled: () => queryClient.invalidateQueries({ queryKey: ["Rooms"] }), //refetch users after mutation, disabled for demo
@@ -318,7 +314,7 @@ function useDeleteRoom() {
       //send api request here
       const response = await fetch("/api/room/delete", {
         method: "POST",
-        body: JSON.stringify({room_id}),
+        body: JSON.stringify({ room_id }),
         headers: {
           "Content-Type": "application/json",
         },
@@ -330,7 +326,7 @@ function useDeleteRoom() {
     //client side optimistic update
     onMutate: (id: string) => {
       queryClient.setQueryData(["Rooms"], (prevRooms: any) =>
-        prevRooms?.filter((Room: Room) => Room.id !== id)
+        prevRooms?.filter((Room: Room) => Room.id !== id),
       );
     },
     onSettled: () => queryClient.invalidateQueries({ queryKey: ["Rooms"] }), //refetch users after mutation, disabled for demo

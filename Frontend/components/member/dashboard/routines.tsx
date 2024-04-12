@@ -5,7 +5,6 @@ import { useEffect, useMemo, useState } from "react";
 import {
   MantineReactTable,
   type MRT_ColumnDef,
-  type MRT_Row,
   type MRT_TableOptions,
   useMantineReactTable,
 } from "mantine-react-table";
@@ -13,13 +12,12 @@ import {
   ActionIcon,
   Button,
   Flex,
-  Text,
   Tooltip,
   Stack,
   Title,
   Divider,
 } from "@mantine/core";
-import { IconEdit, IconTrash } from "@tabler/icons-react";
+import { IconTrash } from "@tabler/icons-react";
 import { CirclePlus } from "tabler-icons-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
@@ -53,6 +51,16 @@ const Example = () => {
         accessorKey: "description",
         header: "Routine",
         minSize: 300,
+        mantineEditTextInputProps: {
+          type: "text",
+          required: true,
+          error: validationErrors?.description,
+          onFocus: () =>
+            setValidationErrors({
+              ...validationErrors,
+              description: undefined,
+            }),
+        },
       },
     ],
     [validationErrors]
@@ -236,7 +244,6 @@ function useDeleteRoom() {
       return data;
     },
     //client side optimistic update
-    onMutate: (id: string) => {},
     onSettled: () => queryClient.invalidateQueries({ queryKey: ["Rooms"] }), //refetch users after mutation, disabled for demo
   });
 }

@@ -77,11 +77,17 @@ const Example = () => {
         },
       },
     ],
-    []
+    [],
   );
 
   //call READ hook
-  const { data: fetchedBills = [], isError: isLoadingBillsError, isFetching: isFetchingBills, isLoading: isLoadingBills, refetch } = useGetBills();
+  const {
+    data: fetchedBills = [],
+    isError: isLoadingBillsError,
+    isFetching: isFetchingBills,
+    isLoading: isLoadingBills,
+    refetch,
+  } = useGetBills();
 
   const table = useMantineReactTable({
     columns,

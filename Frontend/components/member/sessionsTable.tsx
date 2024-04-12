@@ -55,7 +55,7 @@ const Table = () => {
         header: "Description",
       },
     ],
-    []
+    [],
   );
 
   const queryClient = new QueryClient();
@@ -66,7 +66,7 @@ const Table = () => {
     isError: isLoadingSessionsError,
     isFetching: isFetchingSessions,
     isLoading: isLoadingSessions,
-    refetch
+    refetch,
   } = useGetSessions();
 
   const table = useMantineReactTable({
@@ -98,19 +98,22 @@ const Table = () => {
       const isRowSelected = table.getSelectedRowModel().rows.length > 0;
 
       return (
-          <><Button
-              onClick={handleMarkAsCompleted}
-              // Disable the button if no rows are selected
-              disabled={!isRowSelected}
+        <>
+          <Button
+            onClick={handleMarkAsCompleted}
+            // Disable the button if no rows are selected
+            disabled={!isRowSelected}
           >
             Mark as completed
-          </Button><Button
-              onClick={handleRefund}
-              // Disable the button if no rows are selected
-              disabled={!isRowSelected}
+          </Button>
+          <Button
+            onClick={handleRefund}
+            // Disable the button if no rows are selected
+            disabled={!isRowSelected}
           >
             Cancel and refund
-          </Button></>
+          </Button>
+        </>
       );
     },
   });
@@ -146,7 +149,7 @@ const Table = () => {
   const handleCompletionConfirmed = async () => {
     const selectedRows = table.getSelectedRowModel().rows;
     const session_ids: number[] = selectedRows.map(
-      (row) => row.original.session_id
+      (row) => row.original.session_id,
     );
     try {
       const response = await fetch("/api/member/personal-training/complete", {
@@ -175,15 +178,14 @@ const Table = () => {
     } catch (error) {
       console.error("Network error: ", error);
     } finally {
-
-      await queryClient.invalidateQueries({queryKey: ["Sessions"]});
+      await queryClient.invalidateQueries({ queryKey: ["Sessions"] });
     }
   };
 
   const handleRefundConfirmed = async () => {
     const selectedRows = table.getSelectedRowModel().rows;
     const session_ids: number[] = selectedRows.map(
-        (row) => row.original.session_id
+      (row) => row.original.session_id,
     );
     try {
       const response = await fetch("/api/member/personal-training/refund", {
@@ -212,8 +214,7 @@ const Table = () => {
     } catch (error) {
       console.error("Network error: ", error);
     } finally {
-
-      await queryClient.invalidateQueries({queryKey: ["Sessions"]});
+      await queryClient.invalidateQueries({ queryKey: ["Sessions"] });
     }
   };
 
@@ -236,7 +237,7 @@ function useGetSessions() {
           headers: {
             "Content-Type": "application/json",
           },
-        }
+        },
       );
       const data = await response.json();
 

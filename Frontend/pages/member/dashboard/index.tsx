@@ -1,4 +1,4 @@
-import { Center, Title, Tabs } from "@mantine/core";
+import { Center, Title, Tabs, Stack } from "@mantine/core";
 import GoalsTable from "@/components/member/dashboard/goals";
 import Sessions from "@/components/member/dashboard/sessions";
 import GroupClasses from "@/components/member/dashboard/groupClasses";
@@ -20,15 +20,6 @@ export default function Dashboard() {
     queryFn: () => fetchMetrics(member_username as string),
   });
 
-  const gridStyle = {
-    display: "grid",
-    gridTemplateColumns: "repeat(2, 1fr)",
-    gap: "20px",
-    maxWidth: "1200px",
-    margin: "0 auto",
-    padding: "20px",
-  };
-
   if (isLoading) return <Center>Loading...</Center>;
   if (isError) return <Center>Error: {error.message}</Center>;
 
@@ -40,34 +31,71 @@ export default function Dashboard() {
       >
         Member Dashboard
       </Title>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          flexDirection: "column",
-          margin: "20px 0",
-        }}
-      >
-        <Title order={2}>Your Health Stats:</Title>
-        <pre
-          style={{ textAlign: "center" }}
-        >{`Avg historical weight: ${metrics.avg_weight} lbs\nLatest weight: ${metrics.latest_weight} lbs\nAvg historical body fat: ${metrics.avg_body_fat}%\nLatest body fat: ${metrics.latest_body_fat}%\nAvg historical blood pressure: ${metrics.avg_pressure}\nLatest blood pressure: ${metrics.latest_pressure}`}</pre>
-      </div>
-      <div style={gridStyle}>
-        <div>
-          <GoalsTable />
-        </div>
-        <div>
-          <Sessions />
-        </div>
-        <div>
-          <Routines />
-        </div>
-        <div>
-          <GroupClasses />
-        </div>
-      </div>
+
+      <Center>
+        <Tabs defaultValue="stats" my="auto">
+          <Tabs.List>
+            <Tabs.Tab value="stats" miw={200}>
+              Stats
+            </Tabs.Tab>
+            <Tabs.Tab value="goals" miw={200}>
+              Goals
+            </Tabs.Tab>
+            <Tabs.Tab value="sessions" miw={200}>
+              Sessions
+            </Tabs.Tab>
+            <Tabs.Tab value="routines" miw={200}>
+              Routines
+            </Tabs.Tab>
+            <Tabs.Tab value="group-classes" miw={200}>
+              Group Classes
+            </Tabs.Tab>
+          </Tabs.List>
+
+          <Tabs.Panel value="stats" my="15px">
+            <Title order={2} c="rgb(73, 105, 137)" ta="center" mb="md">
+              Member Stats
+            </Title>
+            <Center>
+              <pre>{`Avg historical weight: ${metrics.avg_weight} lbs\nLatest weight: ${metrics.latest_weight} lbs\nAvg historical body fat: ${metrics.avg_body_fat}%\nLatest body fat: ${metrics.latest_body_fat}%\nAvg historical blood pressure: ${metrics.avg_pressure}\nLatest blood pressure: ${metrics.latest_pressure}`}</pre>
+            </Center>
+          </Tabs.Panel>
+
+          <Tabs.Panel value="goals" my="15px">
+            <Stack gap="md" my="auto">
+              <GoalsTable />
+            </Stack>
+          </Tabs.Panel>
+
+          <Tabs.Panel value="sessions" my="15px">
+            <Stack gap="md" my="auto">
+              <Sessions />
+            </Stack>
+          </Tabs.Panel>
+
+          <Tabs.Panel value="goals" my="15px">
+            <Title order={3} c="rgb(73, 105, 137)" ta="center">
+              Completed Goals
+            </Title>
+
+            <Stack gap="md" my="auto">
+              <GroupClasses />
+            </Stack>
+          </Tabs.Panel>
+
+          <Tabs.Panel value="routines" my="15px">
+            <Stack gap="md" my="auto">
+              <Routines />
+            </Stack>
+          </Tabs.Panel>
+
+          <Tabs.Panel value="group-classes" my="15px">
+            <Stack gap="md" my="auto">
+              <GroupClasses />
+            </Stack>
+          </Tabs.Panel>
+        </Tabs>
+      </Center>
     </>
   );
 }

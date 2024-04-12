@@ -8,7 +8,7 @@ import {
   type MRT_TableOptions,
   useMantineReactTable,
 } from "mantine-react-table";
-import { Stack, Title, Divider, Button } from "@mantine/core";
+import { Stack, Button } from "@mantine/core";
 import { modals } from "@mantine/modals";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -43,9 +43,19 @@ const GoalTable = () => {
       {
         accessorKey: "goal_type",
         header: "Goal",
+        mantineEditTextInputProps: {
+          type: "text",
+          required: true,
+          error: validationErrors?.description,
+          onFocus: () =>
+            setValidationErrors({
+              ...validationErrors,
+              description: undefined,
+            }),
+        },
       },
     ],
-    []
+    [],
   );
 
   const { mutateAsync: createGoal, isPending: isCreatingGoal } =
@@ -71,7 +81,7 @@ const GoalTable = () => {
     values,
     exitCreatingMode,
   }) => {
-    const newValidationErrors = validGoal(values);
+    const newValidationErrors = validateGoal(values);
     if (Object.values(newValidationErrors).some((error) => error)) {
       setValidationErrors(newValidationErrors);
       return;
@@ -139,7 +149,7 @@ const GoalTable = () => {
   const handleCompletionConfirmed = async () => {
     const selectedRows = table.getSelectedRowModel().rows;
     const goal_types: string[] = selectedRows.map(
-      (row) => row.original.goal_type
+      (row) => row.original.goal_type,
     );
     try {
       const response = await fetch("/api/member/goals/complete", {
@@ -202,11 +212,14 @@ function useGetGoals() {
   });
 }
 
-const validateRequired = (value: string) => !!value.length;
-function validGoal(goal: Goal) {
+const validateRequired = (value: string) => {
+  return value.length >= 5;
+};
+
+function validateGoal(goal: Goal) {
   return {
     description: !validateRequired(goal.goal_type)
-      ? "Description is Required"
+      ? "Description >= length 5 is required."
       : "",
   };
 }

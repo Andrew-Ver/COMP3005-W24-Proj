@@ -10,7 +10,7 @@ import {
 import { Stack, Divider, Button } from "@mantine/core";
 import { modals } from "@mantine/modals";
 
-import { QueryClient, useQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { showNotification } from "@mantine/notifications";
 
 import { useSession } from "next-auth/react";
@@ -36,8 +36,6 @@ export default function GroupClassTable() {
 }
 
 const Table = () => {
-  const queryClient = new QueryClient();
-
   const columns = useMemo<MRT_ColumnDef<GroupClass>[]>(
     () => [
       {
@@ -68,7 +66,7 @@ const Table = () => {
         },
       },
     ],
-    []
+    [],
   );
 
   //call READ hook

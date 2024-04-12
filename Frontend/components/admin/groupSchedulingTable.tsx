@@ -1,7 +1,7 @@
 import "@mantine/core/styles.css";
 import "@mantine/dates/styles.css"; //if using mantine date picker features
 import "mantine-react-table/styles.css"; //make sure MRT styles were imported in your app root (once)
-import { useEffect, useLayoutEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   MantineReactTable,
   type MRT_ColumnDef,
@@ -10,7 +10,7 @@ import {
   useMantineReactTable,
 } from "mantine-react-table";
 import { ActionIcon, Button, Flex, Text, Tooltip, Stack } from "@mantine/core";
-import { ModalsProvider, modals } from "@mantine/modals";
+import { modals } from "@mantine/modals";
 import { IconCheckbox, IconEdit, IconTrash } from "@tabler/icons-react";
 import { CirclePlus } from "tabler-icons-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -37,11 +37,6 @@ interface Room {
 
 interface Availability {
   availability_id: string;
-}
-
-interface ExampleProps {
-  roomIds: string[];
-  availabilityIds: string[];
 }
 
 export default function GroupSchedulingTable() {
@@ -348,18 +343,6 @@ function useCreateMetric() {
 
 //READ hook (get users from api)
 function useGetMetrics() {
-  const { data: session, status } = useSession();
-
-  // TODO: add code to the following block
-  useEffect(() => {
-    // Fetch data when the component mounts or when session changes
-    if (session) {
-      // Fetch data from the API
-      // This will automatically trigger the useGetMetrics hook
-      // and update the fetchedMetrics state
-    }
-  }, [session]);
-
   return useQuery<Metric[]>({
     queryKey: ["metrics"],
     queryFn: async () => {
@@ -410,8 +393,6 @@ function useUpdateMetric() {
 
 //DELETE hook (delete user in api)
 function useDeleteMetric() {
-  const { data: session, status } = useSession();
-
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (class_id: string) => {

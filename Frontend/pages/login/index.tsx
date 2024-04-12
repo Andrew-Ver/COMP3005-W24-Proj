@@ -9,24 +9,24 @@ import { useRouter } from "next/router";
 import { useSession } from "next-auth/react";
 
 export default function Login(props: PaperProps) {
-    const { data: session, status } = useSession();
-    const router = useRouter();
+  const { data: session, status } = useSession();
+  const router = useRouter();
 
-    if (status === "loading") {
-        return (
-            <Center>
-                <Loader size="xl" />
-            </Center>
-        );
-    }
-
-    if (session?.user && status === "authenticated") {
-        router.push("/");
-    }
-
+  if (status === "loading") {
     return (
-        <Group mt={50} justify="center">
-            <AuthForm></AuthForm>
-        </Group>
+      <Center>
+        <Loader size="xl" />
+      </Center>
     );
+  }
+
+  if (session?.user && status === "authenticated") {
+    router.push("/");
+  }
+
+  return (
+    <Group mt={50} justify="center">
+      <AuthForm></AuthForm>
+    </Group>
+  );
 }

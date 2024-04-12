@@ -1,7 +1,10 @@
 import pool from "@/db";
 import { NextApiRequest, NextApiResponse } from "next";
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse,
+) {
   try {
     const { searchQuery } = req.body;
 
@@ -16,9 +19,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     `;
 
     const result = await pool.query(query, [searchQuery.toLowerCase()]);
-    const rows = result.rows.map(row => ({
+    const rows = result.rows.map((row) => ({
       ...row,
-      goals: row.goals && row.goals.length > 50 ? `${row.goals.substring(0, 47)}...` : row.goals
+      goals:
+        row.goals && row.goals.length > 50
+          ? `${row.goals.substring(0, 47)}...`
+          : row.goals,
     }));
 
     res.status(200).json(rows);

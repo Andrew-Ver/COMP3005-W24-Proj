@@ -104,7 +104,7 @@ const Example = () => {
         },
       },
     ],
-    [validationErrors]
+    [validationErrors],
   );
 
   //call CREATE hook
@@ -194,13 +194,13 @@ const Example = () => {
     renderRowActions: ({ row, table }) => {
       if (row.original.is_booked === false) {
         return (
-            <Flex gap="md" justify="center">
-              <Tooltip label="Edit">
-                <ActionIcon onClick={() => table.setEditingRow(row)}>
-                  <IconEdit />
-                </ActionIcon>
-              </Tooltip>
-            </Flex>
+          <Flex gap="md" justify="center">
+            <Tooltip label="Edit">
+              <ActionIcon onClick={() => table.setEditingRow(row)}>
+                <IconEdit />
+              </ActionIcon>
+            </Tooltip>
+          </Flex>
         );
       }
       return null;
@@ -256,7 +256,9 @@ function useCreateMetric() {
         },
       });
       if (!response.ok) {
-        alert("Existing time slot conflicts with current entry, or the end time is before begin time.")
+        alert(
+          "Existing time slot conflicts with current entry, or the end time is before begin time.",
+        );
       }
       const data = await response.json();
 
@@ -273,7 +275,7 @@ function useCreateMetric() {
               ...newMetricInfo,
               id: (Math.random() + 1).toString(36).substring(7),
             },
-          ] as Metric[]
+          ] as Metric[],
       );
     },
     onSettled: () => queryClient.invalidateQueries({ queryKey: ["metrics"] }), //refetch users after mutation, disabled for demo
@@ -326,14 +328,16 @@ function useUpdateMetric() {
           availability_id: metric.availability_id,
           begin_time: metric.begin_time,
           end_time: metric.end_time,
-          trainer_username: session?.user?.username
+          trainer_username: session?.user?.username,
         }),
         headers: {
           "Content-Type": "application/json",
         },
       });
       if (!response.ok) {
-        alert("Existing time slot conflicts with current entry, or the end time is before begin time.")
+        alert(
+          "Existing time slot conflicts with current entry, or the end time is before begin time.",
+        );
       }
       const data = await response.json();
       return data;
@@ -349,7 +353,7 @@ function useUpdateMetric() {
               ...newMetricInfo,
               id: (Math.random() + 1).toString(36).substring(7),
             },
-          ] as Metric[]
+          ] as Metric[],
       );
     },
     onSettled: () => queryClient.invalidateQueries({ queryKey: ["metrics"] }), //refetch users after mutation, disabled for demo
@@ -382,7 +386,7 @@ function useDeleteMetric() {
     //client side optimistic update
     onMutate: (id: string) => {
       queryClient.setQueryData(["metrics"], (prevMetrics: any) =>
-        prevMetrics?.filter((metric: Metric) => metric.id !== id)
+        prevMetrics?.filter((metric: Metric) => metric.id !== id),
       );
     },
     onSettled: () => queryClient.invalidateQueries({ queryKey: ["metrics"] }), //refetch users after mutation, disabled for demo

@@ -1,10 +1,13 @@
-import { NextApiRequest, NextApiResponse } from 'next';
+import { NextApiRequest, NextApiResponse } from "next";
 import pool from "@/db";
 
-export default async function getCompletedClasses(req: NextApiRequest, res: NextApiResponse) {
-    const { member_username } = req.body;
+export default async function getCompletedClasses(
+  req: NextApiRequest,
+  res: NextApiResponse,
+) {
+  const { member_username } = req.body;
 
-    const query = `
+  const query = `
         SELECT 
           gc.class_id,
           a.name AS trainer_name,
@@ -21,14 +24,17 @@ export default async function getCompletedClasses(req: NextApiRequest, res: Next
         ORDER BY ta.end_time ASC;
     `;
 
-    try {
-        const result = await pool.query(query, [member_username]);
-        result.rows.forEach((row: any) => {
-            row.end_time = new Date(row.end_time).toISOString().replace("T", " ").slice(0, -5);
-        });
-        res.status(200).json(result.rows);
-    } catch (error) {
-        console.error("Error:", error);
-        return res.status(500).json({ message: "Internal server error" });
-    }
+  try {
+    const result = await pool.query(query, [member_username]);
+    result.rows.forEach((row: any) => {
+      row.end_time = new Date(row.end_time)
+        .toISOString()
+        .replace("T", " ")
+        .slice(0, -5);
+    });
+    res.status(200).json(result.rows);
+  } catch (error) {
+    console.error("Error:", error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
 }

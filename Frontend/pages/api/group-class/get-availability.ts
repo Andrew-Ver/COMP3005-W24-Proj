@@ -1,8 +1,10 @@
-import { NextApiRequest, NextApiResponse } from 'next';
+import { NextApiRequest, NextApiResponse } from "next";
 import pool, { TimeSlot } from "@/db";
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse<TimeSlot[]>) {
-
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse<TimeSlot[]>,
+) {
   const query = `SELECT  
                 availability_id
                 FROM trainer_availability

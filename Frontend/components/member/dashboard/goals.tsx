@@ -43,7 +43,7 @@ const Table = () => {
         size: 500,
       },
     ],
-    []
+    [],
   );
 
   //call READ hook

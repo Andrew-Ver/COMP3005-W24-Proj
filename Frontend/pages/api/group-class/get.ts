@@ -1,7 +1,10 @@
-import { NextApiRequest, NextApiResponse } from 'next';
+import { NextApiRequest, NextApiResponse } from "next";
 import pool from "@/db";
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse,
+) {
   const { member_username } = req.body;
 
   if (!member_username) {
@@ -21,22 +24,27 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     WHERE gc.completed = FALSE AND ta.end_time > NOW();
   `;
 
-
   try {
     const result = await pool.query(query, [member_username]);
-    const metrics = result.rows.map(row => ({
-        class_id: row.class_id,
-        description: row.description,
-        fee: row.fee,
-        room_id: row.roomname,
-        completed: row.completed,
-        begin_time: row.begin_time = new Date(row.begin_time).toISOString().replace("T", " ").slice(0, -5),
-        end_time: row.end_time = new Date(row.end_time).toISOString().replace("T", " ").slice(0, -5),
-        signed_up: row.signed_up,
-        }));
-      res.status(200).json(metrics);
+    const metrics = result.rows.map((row) => ({
+      class_id: row.class_id,
+      description: row.description,
+      fee: row.fee,
+      room_id: row.roomname,
+      completed: row.completed,
+      begin_time: (row.begin_time = new Date(row.begin_time)
+        .toISOString()
+        .replace("T", " ")
+        .slice(0, -5)),
+      end_time: (row.end_time = new Date(row.end_time)
+        .toISOString()
+        .replace("T", " ")
+        .slice(0, -5)),
+      signed_up: row.signed_up,
+    }));
+    res.status(200).json(metrics);
   } catch (error) {
-    console.error('Database query error', error);
+    console.error("Database query error", error);
     res.status(500).json({ message: "Internal server error" });
   }
 }

@@ -1,8 +1,10 @@
-import { NextApiRequest, NextApiResponse } from 'next';
+import { NextApiRequest, NextApiResponse } from "next";
 import pool, { Metric } from "@/db";
 
-
-export default async function handler(req: NextApiRequest, res: NextApiResponse<Metric[]>) {
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse<Metric[]>,
+) {
   const { metric_timestamp, username } = req.body;
 
   // Convert timestamp?

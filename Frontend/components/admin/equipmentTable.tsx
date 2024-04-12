@@ -42,7 +42,7 @@ export default function EquipmentTable() {
       <Title order={2} c="rgb(73, 105, 137)" ta="center">
         Equipment Management Administration
       </Title>
-      <Example/>
+      <Example />
     </Stack>
   );
 }
@@ -54,7 +54,6 @@ const Example = () => {
 
   const [roomIds, setRoomIds] = useState<string[]>([]);
   const [columns, setColumns] = useState<MRT_ColumnDef<Equipment>[]>([]);
-
 
   const fetchRoomIds = async () => {
     try {
@@ -253,7 +252,7 @@ const Example = () => {
   const handleMarkAsNeedsMaintenance = async () => {
     const selectedRows = table.getSelectedRowModel().rows;
     const equipment_id: number[] = selectedRows.map(
-      (row) => row.original.equipment_id
+      (row) => row.original.equipment_id,
     );
     try {
       const response = await fetch("/api/equipment/mark", {
@@ -287,7 +286,7 @@ const Example = () => {
   const handleMarkAsMaintained = async () => {
     const selectedRows = table.getSelectedRowModel().rows;
     const equipment_id: number[] = selectedRows.map(
-      (row) => row.original.equipment_id
+      (row) => row.original.equipment_id,
     );
     try {
       const response = await fetch("/api/equipment/maintain", {
@@ -320,7 +319,7 @@ const Example = () => {
   const handleDeleteEquipment = async () => {
     const selectedRows = table.getSelectedRowModel().rows;
     const equipment_id: number[] = selectedRows.map(
-      (row) => row.original.equipment_id
+      (row) => row.original.equipment_id,
     );
     try {
       const response = await fetch("/api/equipment/delete", {
@@ -379,7 +378,7 @@ function useUpdateMetric() {
     onMutate: (newMetricInfo: Equipment) => {
       queryClient.setQueryData(
         ["equipmentRoom"],
-        (prevequipmentRoom: any) => [] as Equipment[]
+        (prevequipmentRoom: any) => [] as Equipment[],
       );
     },
     onSettled: () =>
@@ -413,7 +412,7 @@ function useCreateEquipment() {
     onMutate: (newEquipmentInfo: Equipment) => {
       queryClient.setQueryData(
         ["equipmentRoom"],
-        (prevequipmentRoom: any) => [] as Equipment[]
+        (prevequipmentRoom: any) => [] as Equipment[],
       );
     },
     onSettled: () =>

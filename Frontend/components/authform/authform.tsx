@@ -123,7 +123,7 @@ export default function AuthForm(props: PaperProps) {
           // Titlecase the name
           name: `${values.firstname} ${values.lastname}`.replace(
             /\b\w/g,
-            (c: any) => c.toUpperCase()
+            (c: any) => c.toUpperCase(),
           ),
           rate: values.rate,
         }),

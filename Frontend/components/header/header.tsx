@@ -213,7 +213,7 @@ export default function Header() {
                 radius="md"
                 onClick={() =>
                   setColorScheme(
-                    computedColorScheme === "light" ? "dark" : "light"
+                    computedColorScheme === "light" ? "dark" : "light",
                   )
                 }
               >

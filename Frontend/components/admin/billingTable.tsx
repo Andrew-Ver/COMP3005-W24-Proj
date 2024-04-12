@@ -81,7 +81,7 @@ const Example = () => {
         },
       },
     ],
-    []
+    [],
   );
 
   //call READ hook
@@ -90,7 +90,7 @@ const Example = () => {
     isError: isLoadingBillsError,
     isFetching: isFetchingBills,
     isLoading: isLoadingBills,
-      refetch
+    refetch,
   } = useGetBills();
 
   const table = useMantineReactTable({
@@ -165,7 +165,6 @@ const Example = () => {
       } else {
         console.error("Error submitting data: ", response.statusText);
       }
-
     } catch (error) {
       console.error("Network error: ", error);
     } finally {
