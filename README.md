@@ -10,6 +10,8 @@ This is a Full-Stack web application designed to mimick a Health and Fitness Clu
 
 The project incorporates a PostgreSQL DB interfaced with using the [pg](https://node-postgres.com/) client.
 
+A Vercel-Postgres based version is deployed on [Vercel](https://comp-3005-w24.vercel.app/).
+
 
 ## Built With
 
