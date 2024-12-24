@@ -1,10 +1,10 @@
-import { Container } from "@mantine/core";
-import EquipmentTable from "@/components/admin/equipmentTable";
+import EquipmentTable from '@/components/admin/equipmentTable'
+import { Container } from '@mantine/core'
 
 export default function EquipmentMaintenance() {
-  return (
-    <Container px="1.7rem">
-      <EquipmentTable />
-    </Container>
-  );
+    return (
+        <Container px="1.7rem">
+            <EquipmentTable />
+        </Container>
+    )
 }

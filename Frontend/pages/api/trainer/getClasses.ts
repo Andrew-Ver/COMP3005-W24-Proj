@@ -1,13 +1,13 @@
-import { NextApiRequest, NextApiResponse } from "next";
-import pool from "@/db";
+import { NextApiRequest, NextApiResponse } from 'next'
+import pool from '@/db'
 
 export default async function getUnfulfilledClasses(
-  req: NextApiRequest,
-  res: NextApiResponse,
+    req: NextApiRequest,
+    res: NextApiResponse
 ) {
-  const { trainer_username } = req.body;
+    const { trainer_username } = req.body
 
-  const query = `
+    const query = `
         SELECT 
           gc.class_id,
           ta.begin_time AT TIME ZONE 'UTC' AT TIME ZONE 'America/New_York' AS begin_time,
@@ -23,23 +23,23 @@ export default async function getUnfulfilledClasses(
           AND gc.completed = FALSE
           AND r.is_deleted = FALSE
         ORDER BY ta.begin_time ASC;
-    `;
+    `
 
-  try {
-    const result = await pool.query(query, [trainer_username]);
-    result.rows.forEach((row: any) => {
-      row.begin_time = new Date(row.begin_time)
-        .toISOString()
-        .replace("T", " ")
-        .slice(0, -5);
-      row.end_time = new Date(row.end_time)
-        .toISOString()
-        .replace("T", " ")
-        .slice(0, -5);
-    });
-    res.status(200).json(result.rows);
-  } catch (error) {
-    console.error("Error:", error);
-    return res.status(500).json({ message: "Internal server error" });
-  }
+    try {
+        const result = await pool.query(query, [trainer_username])
+        result.rows.forEach((row: any) => {
+            row.begin_time = new Date(row.begin_time)
+                .toISOString()
+                .replace('T', ' ')
+                .slice(0, -5)
+            row.end_time = new Date(row.end_time)
+                .toISOString()
+                .replace('T', ' ')
+                .slice(0, -5)
+        })
+        res.status(200).json(result.rows)
+    } catch (error) {
+        console.error('Error:', error)
+        return res.status(500).json({ message: 'Internal server error' })
+    }
 }

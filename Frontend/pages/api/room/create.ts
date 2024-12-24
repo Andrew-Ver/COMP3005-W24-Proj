@@ -1,18 +1,18 @@
-import { NextApiRequest, NextApiResponse } from "next";
-import pool from "@/db";
+import { NextApiRequest, NextApiResponse } from 'next'
+import pool from '@/db'
 
 export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse,
+    req: NextApiRequest,
+    res: NextApiResponse
 ) {
-  const { description } = req.body;
+    const { description } = req.body
 
-  // Fetch user data from the DB and return object
-  const query = `
+    // Fetch user data from the DB and return object
+    const query = `
                                 INSERT INTO room(description, is_deleted)
-                                VALUES ($1, $2);`;
+                                VALUES ($1, $2);`
 
-  const result = await pool.query(query, [description, false]);
+    const result = await pool.query(query, [description, false])
 
-  res.status(200).json(result.rows);
+    res.status(200).json(result.rows)
 }

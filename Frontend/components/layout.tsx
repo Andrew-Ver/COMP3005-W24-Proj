@@ -1,11 +1,10 @@
-import Header from "@/components/header/header";
-import React from "react";
+import Header from '@/components/header/header'
 
 export default function Layout({ children }: any) {
-  return (
-    <>
-      <Header />
-      <main>{children}</main>
-    </>
-  );
+    return (
+        <>
+            <Header />
+            <main>{children}</main>
+        </>
+    )
 }
